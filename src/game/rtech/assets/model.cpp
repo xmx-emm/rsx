@@ -1134,6 +1134,20 @@ void LoadModelAsset(CAssetContainer* const pak, CAsset* const asset)
         ParseModelAnimTypes_V16(mdlAsset->GetParsedData());
         break;
     }
+    case eMDLVersion::VERSION_19_2:
+    {
+        ModelAssetHeader_v16_t* hdr = reinterpret_cast<ModelAssetHeader_v16_t*>(pakAsset->header());
+        ModelAssetCPU_v16_t* cpu = reinterpret_cast<ModelAssetCPU_v16_t*>(pakAsset->cpu());
+        mdlAsset = new ModelAsset(hdr, cpu, streamEntry, ver);
+
+        ParseModelBoneData_v19(mdlAsset->GetParsedData());
+        ParseModelAttachmentData_v16(mdlAsset->GetParsedData());
+        ParseModelHitboxData_v16(mdlAsset->GetParsedData());
+        ParseModelTextureData_v16(mdlAsset->GetParsedData());
+        ParseModelVertexData_v16(pakAsset, mdlAsset);
+        ParseModelAnimTypes_V16(mdlAsset->GetParsedData());
+        break;
+    }
     default:
     {
         assertm(false, "unaccounted asset version, will cause major issues!");
@@ -1182,6 +1196,11 @@ void LoadModelAsset(CAssetContainer* const pak, CAsset* const asset)
     case eMDLVersion::VERSION_19_1:
     {
         asset->SetAssetVersion({ 19, 1 });
+        break;
+    }
+    case eMDLVersion::VERSION_19_2:
+    {
+        asset->SetAssetVersion({ 19, 2 });
         break;
     }
     default:

@@ -534,6 +534,10 @@ public:
 		localNodeNames(nullptr), numLocalNodes(0), poseparams(nullptr), ikchains(nullptr), iklocks(nullptr), studiohdr(hdr, dataSizePhys, dataSizeModel) {};
 	ModelParsedData_t(r5::studiohdr_v17_t* const hdr, const int dataSizePhys, const int dataSizeModel) : localSequences(nullptr), numLocalSequences(0), externalSequences(nullptr), numExternalSequences(0), externalIncludeModels(nullptr), numExternalIncludeModels(0),
 		localNodeNames(nullptr), numLocalNodes(0), poseparams(nullptr), ikchains(nullptr), iklocks(nullptr), studiohdr(hdr, dataSizePhys, dataSizeModel) {};
+	ModelParsedData_t(r5::studiohdr_v19_2_t* const hdr, const int dataSizePhys, const int dataSizeModel) : localSequences(nullptr), numLocalSequences(0), externalSequences(nullptr), numExternalSequences(0), externalIncludeModels(nullptr), numExternalIncludeModels(0),
+		localNodeNames(nullptr), numLocalNodes(0), poseparams(nullptr), ikchains(nullptr), iklocks(nullptr), studiohdr(hdr, dataSizePhys, dataSizeModel) {
+	};
+
 
 	~ModelParsedData_t()
 	{

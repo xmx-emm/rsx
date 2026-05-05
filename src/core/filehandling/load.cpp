@@ -176,7 +176,6 @@ void OnCLILoadComplete(const CCommandLine* const cli)
     }
     else if (cli->HasParam("-export"))
     {
-        bool filterAssets = false;
         std::vector<CGlobalAssetData::AssetLookup_t>& assets = g_assetData.v_assets;
         std::vector<CGlobalAssetData::AssetLookup_t> filteredAssets;
 

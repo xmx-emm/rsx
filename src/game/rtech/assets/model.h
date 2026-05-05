@@ -181,6 +181,7 @@ enum class eMDLVersion : int
 	VERSION_18,
 	VERSION_19,
 	VERSION_19_1,
+	VERSION_19_2,
 
 	// bleh
 	VERSION_52,
@@ -315,6 +316,9 @@ inline const eMDLVersion GetModelPakVersion(const int* const pHdr)
 	if (pHdrNew[100] == sizeof(r5::studiohdr_v17_t) || pHdrNew[59] == sizeof(r5::studiohdr_v17_t))
 		return eMDLVersion::VERSION_17;
 
+	if (pHdrNew[54] == sizeof(r5::studiohdr_v19_2_t))
+		return eMDLVersion::VERSION_19_2;
+
 	return eMDLVersion::VERSION_UNK;
 }
 
@@ -399,6 +403,11 @@ public:
 		case eMDLVersion::VERSION_19_1:
 		{
 			parsedData = ModelParsedData_t(reinterpret_cast<r5::studiohdr_v17_t*>(data), cpu->dataSizePhys, cpu->dataSizeModel);
+			break;
+		}
+		case eMDLVersion::VERSION_19_2:
+		{
+			parsedData = ModelParsedData_t(reinterpret_cast<r5::studiohdr_v19_2_t*>(data), cpu->dataSizePhys, cpu->dataSizeModel);
 			break;
 		}
 		}
