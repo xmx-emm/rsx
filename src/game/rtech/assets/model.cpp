@@ -355,7 +355,7 @@ static void ParseModelVertexData_v9(CPakAsset* const asset, ModelAsset* const mo
                     {
                         const char* const vertexData = rawVertexData + (vertIdx * mesh->vertCacheSize);
                         Vector2D* const texcoords = meshData.texcoordCount > 1 ? &meshVertexData->GetTexcoords()[vertIdx * (meshData.texcoordCount - 1)] : nullptr;
-                        Vertex_t::ParseVertexFromVG(&meshVertexData->GetVertices()[vertIdx], &meshVertexData->GetWeights()[weightIdx], texcoords, &meshData, vertexData, boneMap, weights, weightIdx);
+                        Vertex_t::ParseVertexFromVG(&meshVertexData->GetVertices()[vertIdx], &meshVertexData->GetWeights()[weightIdx], texcoords, &meshData, vertexData, boneMap, weights, false, weightIdx);
                     }
                     meshData.weightsCount = weightIdx;
                     meshVertexData->AddWeights(nullptr, meshData.weightsCount);
@@ -528,7 +528,7 @@ static void ParseModelVertexData_v12_1(CPakAsset* const asset, ModelAsset* const
                         {
                             char* const vertexData = rawVertexData + (vertIdx * mesh->vertCacheSize);
                             Vector2D* const texcoords = meshData.texcoordCount > 1 ? &meshVertexData->GetTexcoords()[vertIdx * (meshData.texcoordCount - 1)] : nullptr;
-                            Vertex_t::ParseVertexFromVG(&meshVertexData->GetVertices()[vertIdx], &meshVertexData->GetWeights()[weightIdx], texcoords, &meshData, vertexData, boneMap, weights, weightIdx);
+                            Vertex_t::ParseVertexFromVG(&meshVertexData->GetVertices()[vertIdx], &meshVertexData->GetWeights()[weightIdx], texcoords, &meshData, vertexData, boneMap, weights, false, weightIdx);
                         }
                         meshData.weightsCount = weightIdx;
                         meshVertexData->AddWeights(nullptr, meshData.weightsCount);
@@ -706,7 +706,7 @@ static void ParseModelVertexData_v14(CPakAsset* const asset, ModelAsset* const m
                         {
                             char* const vertexData = rawVertexData + (vertIdx * mesh->vertCacheSize);
                             Vector2D* const texcoords = meshData.texcoordCount > 1 ? &meshVertexData->GetTexcoords()[vertIdx * (meshData.texcoordCount - 1)] : nullptr;
-                            Vertex_t::ParseVertexFromVG(&meshVertexData->GetVertices()[vertIdx], &meshVertexData->GetWeights()[weightIdx], texcoords, &meshData, vertexData, boneMap, weights, weightIdx);
+                            Vertex_t::ParseVertexFromVG(&meshVertexData->GetVertices()[vertIdx], &meshVertexData->GetWeights()[weightIdx], texcoords, &meshData, vertexData, boneMap, weights, false, weightIdx);
                         }
                         meshData.weightsCount = weightIdx;
                         meshVertexData->AddWeights(nullptr, meshData.weightsCount);
@@ -911,7 +911,7 @@ static void ParseModelVertexData_v16(CPakAsset* const asset, ModelAsset* const m
                         {
                             char* const vertexData = rawVertexData + (vertIdx * mesh->vertCacheSize);
                             Vector2D* const texcoords = meshData.texcoordCount > 1 ? &meshVertexData->GetTexcoords()[vertIdx * (meshData.texcoordCount - 1)] : nullptr;
-                            Vertex_t::ParseVertexFromVG(&meshVertexData->GetVertices()[vertIdx], &meshVertexData->GetWeights()[weightIdx], texcoords, &meshData, vertexData, boneMap, weights, weightIdx);
+                            Vertex_t::ParseVertexFromVG(&meshVertexData->GetVertices()[vertIdx], &meshVertexData->GetWeights()[weightIdx], texcoords, &meshData, vertexData, boneMap, weights, false, weightIdx);
                         }
                         meshData.weightsCount = weightIdx;
                         meshVertexData->AddWeights(nullptr, meshData.weightsCount);
@@ -1117,7 +1117,9 @@ static void ParseModelVertexData_v19_2(CPakAsset* const asset, ModelAsset* const
                         {
                             char* const vertexData = rawVertexData + (vertIdx * mesh->vertCacheSize);
                             Vector2D* const texcoords = meshData.texcoordCount > 1 ? &meshVertexData->GetTexcoords()[vertIdx * (meshData.texcoordCount - 1)] : nullptr;
-                            Vertex_t::ParseVertexFromVG(&meshVertexData->GetVertices()[vertIdx], &meshVertexData->GetWeights()[weightIdx], texcoords, &meshData, vertexData, boneMap, weights, weightIdx);
+
+                            // 19.2 has big bones
+                            Vertex_t::ParseVertexFromVG(&meshVertexData->GetVertices()[vertIdx], &meshVertexData->GetWeights()[weightIdx], texcoords, &meshData, vertexData, boneMap, weights, true, weightIdx);
                         }
                         meshData.weightsCount = weightIdx;
                         meshVertexData->AddWeights(nullptr, meshData.weightsCount);
