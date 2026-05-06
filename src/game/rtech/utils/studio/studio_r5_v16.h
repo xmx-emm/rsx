@@ -1300,22 +1300,22 @@ namespace r5
 		// hw data lookup from rmdl
 		uint16_t meshCount; // number of meshes per lod
 
-		uint16_t bonetablebynameindex;
+		uint16_t bonetablebynameindex; // bonetable is u16[] since v19.2
 
 		uint16_t boneStateOffset;
 		uint16_t boneStateCount;
-		inline const uint8_t* pBoneStates() const { return boneStateCount > 0 ? reinterpret_cast<uint8_t*>((char*)this + offsetof(studiohdr_v16_t, boneStateOffset) + FIX_OFFSET(boneStateOffset)) : nullptr; }
+		inline const uint16_t* pBoneStates() const { return boneStateCount > 0 ? reinterpret_cast<uint16_t*>((char*)this + offsetof(studiohdr_v19_2_t, boneStateOffset) + FIX_OFFSET(boneStateOffset)) : nullptr; }
 
 		char unk[16]; // idk if the gap actually goes here but this seems to make the floats below line up
 
 		// sets of lods
 		uint16_t groupHeaderOffset;
 		uint16_t groupHeaderCount;
-		const studio_hw_groupdata_v16_t* const pLODGroup(const uint16_t i) const { return reinterpret_cast<const studio_hw_groupdata_v16_t* const>((char*)this + offsetof(studiohdr_v16_t, groupHeaderOffset) + FIX_OFFSET(groupHeaderOffset)) + i; }
+		const studio_hw_groupdata_v16_t* const pLODGroup(const uint16_t i) const { return reinterpret_cast<const studio_hw_groupdata_v16_t* const>((char*)this + offsetof(studiohdr_v19_2_t, groupHeaderOffset) + FIX_OFFSET(groupHeaderOffset)) + i; }
 
 		uint16_t lodOffset;
 		uint16_t lodCount;
-		const float* const pLODThreshold(const uint16_t i) const { return reinterpret_cast<const float* const>((char*)this + offsetof(studiohdr_v16_t, lodOffset) + FIX_OFFSET(lodOffset)) + i; }
+		const float* const pLODThreshold(const uint16_t i) const { return reinterpret_cast<const float* const>((char*)this + offsetof(studiohdr_v19_2_t, lodOffset) + FIX_OFFSET(lodOffset)) + i; }
 		const float LODThreshold(const uint16_t i) const { return *pLODThreshold(i); }
 
 		// 
@@ -1353,5 +1353,7 @@ namespace r5
 
 		int unk_E0;
 	};
+
+	static_assert(offsetof(studiohdr_v19_2_t, groupHeaderOffset) == 0xC4);
 }
 #pragma pack(pop)

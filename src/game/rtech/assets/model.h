@@ -274,6 +274,10 @@ inline const eMDLVersion GetModelVersionFromAsset(CPakAsset* const asset, CPakFi
 	}
 	case eMDLVersion::VERSION_19:
 	{
+		const r5::studiohdr_v19_2_t* const pHdr = reinterpret_cast<const r5::studiohdr_v19_2_t* const>(pMDL);
+		if (pHdr->sourceFilenameOffset == sizeof(r5::studiohdr_v19_2_t))
+			return eMDLVersion::VERSION_19_2;
+
 		if (pak->header()->createdTime >= s_MdlTimeStamp_V19_1)
 			return eMDLVersion::VERSION_19_1;
 
