@@ -93,7 +93,7 @@ bool Vertex_t::ParseVertexFromVG(Vertex_t* const vert, VertexWeight_t* const wei
 			assertm(blendIndices->boneCount < 16, "model had more than 16 bones on complex weights");
 
 			// first weight, we will always have this
-			weights[curIdx].bone = boneMap[blendIndices->bone[0]];
+			const int16_t firstBoneIndex = bigBones ? static_cast<uint16_t>(blendIndices->Packed()->firstBone) : blendIndices->bone[0];
 			weights[curIdx].bone = MAP_BONE(firstBoneIndex);
 			weights[curIdx].weight = blendWeights->Weight(0);
 			remaining -= blendWeights->weight[0];
