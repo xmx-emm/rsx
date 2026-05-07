@@ -337,6 +337,7 @@ namespace vg
 
 	struct BlendWeightIndicesPacked_s
 	{
+		// (1 << 10) bones! (1024)
 		uint32_t firstBone : 10;
 		uint32_t lastBone : 10;
 		uint32_t unk : 4;
