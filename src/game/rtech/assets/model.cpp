@@ -1119,7 +1119,10 @@ static void ParseModelVertexData_v19_2(CPakAsset* const asset, ModelAsset* const
                             Vector2D* const texcoords = meshData.texcoordCount > 1 ? &meshVertexData->GetTexcoords()[vertIdx * (meshData.texcoordCount - 1)] : nullptr;
 
                             // 19.2 has big bones
-                            Vertex_t::ParseVertexFromVG(&meshVertexData->GetVertices()[vertIdx], &meshVertexData->GetWeights()[weightIdx], texcoords, &meshData, vertexData, boneMap, weights, true, weightIdx);
+                            bool b = Vertex_t::ParseVertexFromVG(&meshVertexData->GetVertices()[vertIdx], &meshVertexData->GetWeights()[weightIdx], texcoords, &meshData, vertexData, boneMap, weights, true, weightIdx);
+                        
+                            if (!b)
+                                Log("huh %s\n", modelAsset->name);
                         }
                         meshData.weightsCount = weightIdx;
                         meshVertexData->AddWeights(nullptr, meshData.weightsCount);
@@ -1516,13 +1519,9 @@ void PostLoadModelAsset(CAssetContainer* const pak, CAsset* const asset)
         break;
     }
     case eMDLVersion::VERSION_19_1:
-    {
-        ParseModelSequenceData_Stall_V19_1(modelAsset->GetParsedData(), reinterpret_cast<char* const>(modelAsset->data));
-        break;
-    }
     case eMDLVersion::VERSION_19_2:
     {
-        //ParseModelSequenceData_Stall_V19_1(modelAsset->GetParsedData(), reinterpret_cast<char* const>(modelAsset->data));
+        ParseModelSequenceData_Stall_V19_1(modelAsset->GetParsedData(), reinterpret_cast<char* const>(modelAsset->data));
         break;
     }
     default:
@@ -1536,6 +1535,7 @@ void PostLoadModelAsset(CAssetContainer* const pak, CAsset* const asset)
 void* PreviewModelAsset(CAsset* const asset, const bool firstFrameForAsset)
 {
     CPakAsset* const pakAsset = static_cast<CPakAsset*>(asset);
+
     assertm(pakAsset, "Asset should be valid.");
 
     ModelAsset* const modelAsset = reinterpret_cast<ModelAsset*>(pakAsset->extraData());
