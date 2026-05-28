@@ -115,14 +115,21 @@ void PostLoadWrapAsset(CAssetContainer* const pak, CAsset* const asset)
 
     WrapAsset* const wrapAsset = reinterpret_cast<WrapAsset*>(pakAsset->extraData());
 
-    wrapAsset->parsedDataType = eWrapAssetParsedDataType::NONE;
+    // Default wrap asset type is "unknown"; basically if the file's extension isn't registered against a file type, it's previewed as binary data
+    wrapAsset->type = WrapAssetType_e::UNKNOWN;
 
-#if defined(HAS_BSP_SUPPORT)
     std::filesystem::path assetPath = std::filesystem::path(asset->GetAssetName());
     std::string extension = assetPath.extension().string();
 
-    if (extension == ".bsp")
+    if (auto it = s_wrapAssetExtensions.find(extension); it != s_wrapAssetExtensions.end())
+        wrapAsset->type = it->second;
+
+
+    switch (wrapAsset->type)
     {
+    case WrapAssetType_e::BSP:
+    {
+#if defined(HAS_BSP_SUPPORT)
         wrapAsset->parsedDataType = eWrapAssetParsedDataType::BSP;
 
         std::unique_ptr<char[]> wrapData = GetWrapAssetData(asset, nullptr);
@@ -131,8 +138,11 @@ void PostLoadWrapAsset(CAssetContainer* const pak, CAsset* const asset)
         bspData->PopulateFromPakAsset(pakAsset, wrapData.get());
 
         wrapAsset->parsedData = bspData;
-    }
 #endif
+        break;
+    }
+    }
+
 }
 
 bool ExportWrapAsset(CAsset* const asset, const int setting)
@@ -157,9 +167,9 @@ bool ExportWrapAsset(CAsset* const asset, const int setting)
         return false;
     }
 
-    switch (wrapAsset->parsedDataType)
+    switch (wrapAsset->type)
     {
-    case eWrapAssetParsedDataType::NONE:
+    case WrapAssetType_e::UNKNOWN:
     default:
     {
         StreamIO wrapOut;
@@ -219,12 +229,13 @@ void* PreviewWrapAsset(CAsset* const asset, const bool firstFrameForAsset)
     ImGui::Text("WRAP asset preview is unsupported on this build");
 #endif
 
-    if (!wrapAsset || wrapAsset->parsedDataType == eWrapAssetParsedDataType::NONE)
+    if (!wrapAsset || wrapAsset->type == WrapAssetType_e::UNKNOWN)
         return nullptr;
 
-    // No need to include a preprocessor flag here. This data type isn't set unless the flag is defined
-    if (wrapAsset->parsedDataType == eWrapAssetParsedDataType::BSP)
+#if defined(HAS_BSP_SUPPORT)
+    if (wrapAsset->type == WrapAssetType_e::BSP)
         return reinterpret_cast<CBSPData*>(wrapAsset->parsedData)->ConstructPreviewData();
+#endif
 
     return nullptr;
 
