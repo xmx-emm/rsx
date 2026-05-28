@@ -8,7 +8,7 @@ enum class WrapAssetType_e
 {
 	UNKNOWN = 0, // if there's no special parsed data
 	BSP,      // wrap asset is a base BSP file and contains a CBSPData pointer
-	TXT,
+	TEXT,
 };
 
 struct WrapAssetHeader_v1_t
@@ -38,10 +38,10 @@ struct WrapAssetHeader_v7_t
 
 const static std::unordered_map<std::string, WrapAssetType_e> s_wrapAssetExtensions = {
 	{".bsp", WrapAssetType_e::BSP},
-	{".txt", WrapAssetType_e::TXT},
-	{".nut", WrapAssetType_e::TXT},
-	{".gnut", WrapAssetType_e::TXT},
-	{".res", WrapAssetType_e::TXT},
+	{".txt", WrapAssetType_e::TEXT},
+	{".nut", WrapAssetType_e::TEXT},
+	{".gnut", WrapAssetType_e::TEXT},
+	{".res", WrapAssetType_e::TEXT},
 };
 
 class WrapAsset

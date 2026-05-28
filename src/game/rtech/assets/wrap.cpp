@@ -118,12 +118,20 @@ void PostLoadWrapAsset(CAssetContainer* const pak, CAsset* const asset)
     // Default wrap asset type is "unknown"; basically if the file's extension isn't registered against a file type, it's previewed as binary data
     wrapAsset->type = WrapAssetType_e::UNKNOWN;
 
-    std::filesystem::path assetPath = std::filesystem::path(asset->GetAssetName());
+    std::string assetName = asset->GetAssetName();
+
+    // if there is a VM extension at the end of the file name, cut it off
+    // 
+    // usually, wrapAsset->pathSize will equal everything up until ".ui" or ".client"
+    // but the asset name already has the first folder cut off by this point, so we have to account for that in this check
+    if (assetName.length() != (wrapAsset->pathSize - wrapAsset->skipFirstFolderPos))
+        assetName = assetName.substr(0, wrapAsset->pathSize - wrapAsset->skipFirstFolderPos);
+
+    std::filesystem::path assetPath = std::filesystem::path(assetName);
     std::string extension = assetPath.extension().string();
 
     if (auto it = s_wrapAssetExtensions.find(extension); it != s_wrapAssetExtensions.end())
         wrapAsset->type = it->second;
-
 
     switch (wrapAsset->type)
     {
@@ -170,6 +178,7 @@ bool ExportWrapAsset(CAsset* const asset, const int setting)
     switch (wrapAsset->type)
     {
     case WrapAssetType_e::UNKNOWN:
+    case WrapAssetType_e::TEXT:
     default:
     {
         StreamIO wrapOut;
@@ -185,6 +194,10 @@ bool ExportWrapAsset(CAsset* const asset, const int setting)
 
         if (!wrapData)
             return false;
+
+        // If the file has been detected as a text file and the last byte of the data is a null terminator, adjust the file size so we don't write it
+        if (wrapAsset->type == WrapAssetType_e::TEXT && wrapData[wrapOutSize - 1] == '\0')
+            wrapOutSize--;
 
         wrapOut.write(wrapData.get(), wrapOutSize);
         wrapOut.close();
