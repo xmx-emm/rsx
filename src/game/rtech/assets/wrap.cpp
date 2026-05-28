@@ -192,10 +192,11 @@ bool ExportWrapAsset(CAsset* const asset, const int setting)
         uint64_t wrapOutSize = 0;
         std::unique_ptr<char[]> wrapData = GetWrapAssetData(asset, &wrapOutSize);
 
-        if (!wrapData)
+        if (!wrapData || wrapOutSize == 0)
             return false;
 
         // If the file has been detected as a text file and the last byte of the data is a null terminator, adjust the file size so we don't write it
+        // In theory, the last byte will ALWAYS be a null byte, but it doesn't hurt to double check
         if (wrapAsset->type == WrapAssetType_e::TEXT && wrapData[wrapOutSize - 1] == '\0')
             wrapOutSize--;
 
