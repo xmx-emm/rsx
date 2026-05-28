@@ -509,11 +509,9 @@ const bool CPakFile::LoadAndPatchPakFileData()
 
 const bool CPakFile::ParseFromFile(const std::string& filePath, std::shared_ptr<char[]>& buf)
 {
-
 #if (PAKLOAD_DEBUG == PAKLOAD_DEBUG_LOG)
     const std::filesystem::path fsPath(filePath);
     Log("RPAK: Decompressing pak file: %s\n", fsPath.filename().string().c_str());
-    TIME_SCOPE(__FUNCTION__);
 #endif // #if (PAKLOAD_DEBUG >= PAKLOAD_DEBUG_LOG)
 
     if (!FileSystem::ReadFileData(filePath, &buf))
