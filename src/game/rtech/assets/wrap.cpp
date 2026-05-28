@@ -229,30 +229,69 @@ bool ExportWrapAsset(CAsset* const asset, const int setting)
     return true;
 }
 
+static WrapAsset* lastPreviewedWrapAsset = nullptr;
+void* Wrap_PreviewText(CAsset* const asset, WrapAsset* const wrapAsset, const bool firstFrameForAsset)
+{
+    if (firstFrameForAsset)
+    {
+        // someone please delete VS off my pc
+        if (lastPreviewedWrapAsset && lastPreviewedWrapAsset != wrapAsset)
+        {
+            delete[] lastPreviewedWrapAsset->parsedData;
+            lastPreviewedWrapAsset->parsedData = nullptr;
+        }
+
+        uint64_t wrapOutSize = 0;
+        std::unique_ptr<char[]> wrapData = GetWrapAssetData(asset, &wrapOutSize);
+
+        if (!wrapData || wrapOutSize == 0)
+        {
+            assert(0);
+            return nullptr;
+        }
+
+        // i really hate this
+        wrapAsset->parsedData = wrapData.release();
+
+        lastPreviewedWrapAsset = wrapAsset;
+    }
+
+    if (ImGui::BeginChild("Text Preview", ImVec2(-1, -1), true, ImGuiWindowFlags_HorizontalScrollbar))
+    {
+        ImGui::TextUnformatted(reinterpret_cast<const char*>(wrapAsset->parsedData));
+    }
+    ImGui::EndChild();
+
+    // there's nothing to put in the main scene window
+    return nullptr;
+}
+
 void* PreviewWrapAsset(CAsset* const asset, const bool firstFrameForAsset)
 {
-    UNUSED(firstFrameForAsset);
     CPakAsset* const pakAsset = static_cast<CPakAsset*>(asset);
-    assertm(pakAsset, "Asset should be valid.");
 
     WrapAsset* const wrapAsset = reinterpret_cast<WrapAsset*>(pakAsset->extraData());
 
-#if defined(HAS_BSP_SUPPORT)
-    ImGui::Text("WRAP asset preview is currently only available for .bsp files");
-#else
-    ImGui::Text("WRAP asset preview is unsupported on this build");
-#endif
-
-    if (!wrapAsset || wrapAsset->type == WrapAssetType_e::UNKNOWN)
+    if (!wrapAsset) UNLIKELY
         return nullptr;
 
+    switch (wrapAsset->type)
+    {
+    case WrapAssetType_e::TEXT:
+        return Wrap_PreviewText(asset, wrapAsset, firstFrameForAsset);
 #if defined(HAS_BSP_SUPPORT)
-    if (wrapAsset->type == WrapAssetType_e::BSP)
+    case WrapAssetType_e::BSP:
         return reinterpret_cast<CBSPData*>(wrapAsset->parsedData)->ConstructPreviewData();
 #endif
+    case WrapAssetType_e::UNKNOWN:
+    default:
+    {
+        ImGui::Text("Preview for WRAP assets is currently only supported for text files");
+        return nullptr;
+    }
+    }
 
-    return nullptr;
-
+    unreachable();
 }
 
 void InitWrapAssetType()
