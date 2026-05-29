@@ -75,6 +75,15 @@ public:
 		isStreamed = (flags & WRAP_FLAG_FILE_IS_STREAMED);
 	};
 
+	~WrapAsset()
+	{
+		if (type == WrapAssetType_e::BSP && parsedData)
+		{
+			delete parsedData;
+			parsedData = nullptr;
+		}
+	}
+
 	char* path;
 	void* data;
 
