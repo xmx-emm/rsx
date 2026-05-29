@@ -4,6 +4,7 @@
 #include <game/rtech/utils/utils.h>
 #include <game/bsp/bsp.h>
 #include <thirdparty/imgui/imgui.h>
+#include <thirdparty/imgui/misc/imgui_memory_editor.h>
 
 void LoadWrapAsset(CAssetContainer* const pak, CAsset* const asset)
 {
@@ -229,18 +230,11 @@ bool ExportWrapAsset(CAsset* const asset, const int setting)
     return true;
 }
 
-static WrapAsset* lastPreviewedWrapAsset = nullptr;
-void* Wrap_PreviewText(CAsset* const asset, WrapAsset* const wrapAsset, const bool firstFrameForAsset)
+void* Wrap_PreviewTextOrBinary(CAsset* const asset, WrapAsset* const wrapAsset, const bool firstFrameForAsset)
 {
-    if (firstFrameForAsset)
+    // this leaks memory
+    if (firstFrameForAsset && !wrapAsset->rawData)
     {
-        // someone please delete VS off my pc
-        if (lastPreviewedWrapAsset && lastPreviewedWrapAsset != wrapAsset)
-        {
-            delete[] lastPreviewedWrapAsset->parsedData;
-            lastPreviewedWrapAsset->parsedData = nullptr;
-        }
-
         uint64_t wrapOutSize = 0;
         std::unique_ptr<char[]> wrapData = GetWrapAssetData(asset, &wrapOutSize);
 
@@ -250,15 +244,24 @@ void* Wrap_PreviewText(CAsset* const asset, WrapAsset* const wrapAsset, const bo
             return nullptr;
         }
 
-        // i really hate this
-        wrapAsset->parsedData = wrapData.release();
-
-        lastPreviewedWrapAsset = wrapAsset;
+        wrapAsset->rawData = std::move(wrapData);
     }
 
-    if (ImGui::BeginChild("Text Preview", ImVec2(-1, -1), true, ImGuiWindowFlags_HorizontalScrollbar))
+    if (ImGui::BeginChild("Wrap Preview", ImVec2(-1, -1), true, ImGuiWindowFlags_HorizontalScrollbar))
     {
-        ImGui::TextUnformatted(reinterpret_cast<const char*>(wrapAsset->parsedData));
+        if(wrapAsset->type == WrapAssetType_e::TEXT)
+            ImGui::TextUnformatted(reinterpret_cast<const char*>(wrapAsset->rawData.get()));
+        else
+        {
+            static MemoryEditor wrapPreview;
+
+            wrapPreview.ReadOnly = true;
+            wrapPreview.OptShowDataPreview = true;
+            //wrapPreview.UserData = &previewData;
+            //wrapPreview.BgColorFn = UIArgData_BGColorCallback;
+
+            wrapPreview.DrawContents(wrapAsset->rawData.get(), wrapAsset->dcmpSize);
+        }
     }
     ImGui::EndChild();
 
@@ -277,16 +280,19 @@ void* PreviewWrapAsset(CAsset* const asset, const bool firstFrameForAsset)
 
     switch (wrapAsset->type)
     {
+#if !defined(HAS_BSP_SUPPORT) // if no bsp-specific support, just show it as a binary file
+    case WrapAssetType_e::BSP:
+#endif
     case WrapAssetType_e::TEXT:
-        return Wrap_PreviewText(asset, wrapAsset, firstFrameForAsset);
+    case WrapAssetType_e::UNKNOWN:
+        return Wrap_PreviewTextOrBinary(asset, wrapAsset, firstFrameForAsset);
 #if defined(HAS_BSP_SUPPORT)
     case WrapAssetType_e::BSP:
         return reinterpret_cast<CBSPData*>(wrapAsset->parsedData)->ConstructPreviewData();
 #endif
-    case WrapAssetType_e::UNKNOWN:
     default:
     {
-        ImGui::Text("Preview for WRAP assets is currently only supported for text files");
+        ImGui::Text("Preview for WRAP assets is currently not supported for BSP files");
         return nullptr;
     }
     }

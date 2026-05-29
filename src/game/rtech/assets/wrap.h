@@ -42,6 +42,7 @@ const static std::unordered_map<std::string, WrapAssetType_e> s_wrapAssetExtensi
 	{".nut", WrapAssetType_e::TEXT},
 	{".gnut", WrapAssetType_e::TEXT},
 	{".res", WrapAssetType_e::TEXT},
+	{".ent", WrapAssetType_e::TEXT},
 };
 
 class WrapAsset
@@ -94,4 +95,7 @@ public:
 	WrapAssetType_e type;
 
 	void* parsedData; // data class for something like 
+
+
+	std::unique_ptr<char[]> rawData;
 };
