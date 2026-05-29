@@ -108,6 +108,38 @@ std::unique_ptr<char[]> GetWrapAssetData(CAsset* const asset, uint64_t* outSize)
     return wrapData;
 }
 
+// eugh
+std::string Wrap_GetPathWithSwappedExtensions(const WrapAsset* const wrapAsset, const std::string& origAssetName)
+{
+    // size of the asset path excluding the first folder and the VM extension (ui, client, server)
+    const uint64_t realPathSize = static_cast<uint64_t>(wrapAsset->pathSize) - wrapAsset->skipFirstFolderPos;
+
+    if (origAssetName.length() == realPathSize)
+        return origAssetName;
+
+    const std::string vmExtension = origAssetName.substr(realPathSize);
+
+    const std::string assetPathWithoutVMExt = origAssetName.substr(0, realPathSize);
+
+    std::filesystem::path fsPath(assetPathWithoutVMExt);
+
+    const std::string realExtension = fsPath.extension().string();
+
+    fsPath.replace_extension(vmExtension);
+    fsPath += realExtension;
+
+    return fsPath.string();
+}
+
+// if there is a VM extension at the end of the file name, cut it off
+// 
+// usually, wrapAsset->pathSize will equal everything up until ".ui" or ".client"
+// but the asset name already has the first folder cut off by this point, so we have to account for that in this check
+inline void Wrap_StripVMExtensionFromPath(WrapAsset* const wrapAsset, std::string& assetPath)
+{
+    if (assetPath.length() != (wrapAsset->pathSize - wrapAsset->skipFirstFolderPos))
+        assetPath = assetPath.substr(0, wrapAsset->pathSize - wrapAsset->skipFirstFolderPos);
+}
 
 void PostLoadWrapAsset(CAssetContainer* const pak, CAsset* const asset)
 {
@@ -120,16 +152,11 @@ void PostLoadWrapAsset(CAssetContainer* const pak, CAsset* const asset)
     wrapAsset->type = WrapAssetType_e::UNKNOWN;
 
     std::string assetName = asset->GetAssetName();
-
-    // if there is a VM extension at the end of the file name, cut it off
-    // 
-    // usually, wrapAsset->pathSize will equal everything up until ".ui" or ".client"
-    // but the asset name already has the first folder cut off by this point, so we have to account for that in this check
-    if (assetName.length() != (wrapAsset->pathSize - wrapAsset->skipFirstFolderPos))
-        assetName = assetName.substr(0, wrapAsset->pathSize - wrapAsset->skipFirstFolderPos);
+    
+    Wrap_StripVMExtensionFromPath(wrapAsset, assetName);
 
     std::filesystem::path assetPath = std::filesystem::path(assetName);
-    std::string extension = assetPath.extension().string();
+    const std::string extension = assetPath.extension().string();
 
     if (auto it = s_wrapAssetExtensions.find(extension); it != s_wrapAssetExtensions.end())
         wrapAsset->type = it->second;
@@ -151,7 +178,6 @@ void PostLoadWrapAsset(CAssetContainer* const pak, CAsset* const asset)
         break;
     }
     }
-
 }
 
 bool ExportWrapAsset(CAsset* const asset, const int setting)
@@ -168,7 +194,11 @@ bool ExportWrapAsset(CAsset* const asset, const int setting)
         assertm(false, "Failed to create asset type directory.");
         return false;
     }
-    exportPath.append(asset->GetAssetName());
+
+    if (g_ExportSettings.useOrigScriptExportExtensions)
+        exportPath.append(asset->GetAssetName());
+    else
+        exportPath.append(Wrap_GetPathWithSwappedExtensions(wrapAsset, asset->GetAssetName()));
 
     if (!CreateDirectories(exportPath.parent_path()))
     {
