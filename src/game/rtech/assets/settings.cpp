@@ -59,13 +59,11 @@ SettingsKVValue_t::~SettingsKVValue_t()
 		case eSettingsFieldType::ST_ARRAY:
 		case eSettingsFieldType::ST_DYN_ARRAY:
 		{
-			printf("Deleting settings array\n");
 			delete[] getValue<SettingsKVValue_t*>();
 			break;
 		}
 		case eSettingsFieldType::_ST_OBJECT:
 		{
-			printf("Deleting settings object\n");
 			delete[] getValue<SettingsKVField_t*>();
 			break;
 		}
