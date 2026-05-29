@@ -35,7 +35,7 @@ CBufferManager g_BufferManager; // called constructor on init.
 ExportSettings_t g_ExportSettings{ .exportNormalRecalcSetting = eNormalExportRecalc::NML_RECALC_NONE, .exportTextureNameSetting = eTextureExportName::TXTR_NAME_TEXT,
     .exportMaterialTextures = true, .exportPathsFull = false, .exportAssetDeps = false, .disableCachedNames = false, .previewedSkinIndex = 0,
     .qcMajorVersion = 49, .qcMinorVersion = 0, .exportRigSequences = true, .exportModelSkin = false, .exportModelMatsTruncated = false,
-    .exportQCIFiles = false, .exportPhysicsContentsFilter = static_cast<uint32_t>(TRACE_MASK_ALL), .exportDirectory = ""
+    .exportQCIFiles = false, .useOrigScriptExportExtensions = false, .exportPhysicsContentsFilter = static_cast<uint32_t>(TRACE_MASK_ALL), .exportDirectory = ""
 };
 
 // Handle CLI to only init certain asset types.

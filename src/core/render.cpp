@@ -300,6 +300,13 @@ void SettingsWnd_Draw(CUIState* uiState)
         ImGui::SameLine();
         ImGuiExt::HelpMarker("QC file will be split into multiple include files.");
 
+        // hidden for now
+        //ImGui::SeparatorText("Export (Wrapped Files)");
+
+        //ImGui::Checkbox("Use original script extensions", &g_ExportSettings.useOrigScriptExportExtensions);
+        //ImGui::SameLine();
+        //ImGuiExt::HelpMarker("Enables the usage of the game's original script file extensions. e.g., .nut.ui instead of .ui.nut");
+
         ImGui::PushItemWidth(48.0f);
         ImGui::InputScalar("##QCTargetMajor", ImGuiDataType_U16, reinterpret_cast<uint16_t*>(&g_ExportSettings.qcMajorVersion), nullptr, nullptr, "%u", ImGuiInputTextFlags_CharsDecimal);
         ImGui::SameLine();

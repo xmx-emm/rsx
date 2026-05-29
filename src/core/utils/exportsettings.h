@@ -26,6 +26,7 @@ struct ExportSettings_t
     bool exportModelSkin;           // export the selected skin for a model
     bool exportModelMatsTruncated;  // truncate material names in model files
     bool exportQCIFiles;            // qc will split into multiple include files
+    bool useOrigScriptExportExtensions; // export wrap asset script files as .nut.ui instead of .ui.nut (for example)
 
     // model physics settings
     uint32_t exportPhysicsContentsFilter;

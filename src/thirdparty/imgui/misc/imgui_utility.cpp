@@ -133,6 +133,8 @@ static void ExportSettings_ReadLine(ImGuiContext* const ctx, ImGuiSettingsHandle
         ImGuiReadSetting("ExportModelSkin=%i",              settings->exportModelSkin, i, int);
         ImGuiReadSetting("ExportTruncatedMaterials=%i",     settings->exportModelMatsTruncated, i, int);
         ImGuiReadSetting("ExportQCIFiles=%i",               settings->exportQCIFiles, i, int);
+
+        ImGuiReadSetting("UseOrigScriptExportExtensions=%i", settings->useOrigScriptExportExtensions, i, int);
     }
 }
 
@@ -140,7 +142,7 @@ static void ExportSettings_WriteAll(ImGuiContext* const ctx, ImGuiSettingsHandle
 {
     UNUSED(ctx);
 
-    buf->reserve(buf->size() + (48 * 11));
+    buf->reserve(buf->size() + (48 * 12));
     buf->appendf("[%s][general]\n", handler->TypeName);
     
     buf->appendf("ExportPathsFull=%i\n",            g_ExportSettings.exportPathsFull);
@@ -158,6 +160,8 @@ static void ExportSettings_WriteAll(ImGuiContext* const ctx, ImGuiSettingsHandle
     buf->appendf("ExportModelSkin=%i\n",            g_ExportSettings.exportModelSkin);
     buf->appendf("ExportTruncatedMaterials=%i\n",   g_ExportSettings.exportModelMatsTruncated);
     buf->appendf("ExportQCIFiles=%i\n",             g_ExportSettings.exportQCIFiles);
+
+    buf->appendf("UseOrigScriptExportExtensions=%i\n", g_ExportSettings.useOrigScriptExportExtensions);
 
     buf->appendf("\n");
 }

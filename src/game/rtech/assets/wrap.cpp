@@ -180,7 +180,6 @@ bool ExportWrapAsset(CAsset* const asset, const int setting)
     {
     case WrapAssetType_e::UNKNOWN:
     case WrapAssetType_e::TEXT:
-    default:
     {
         StreamIO wrapOut;
 
@@ -225,6 +224,11 @@ bool ExportWrapAsset(CAsset* const asset, const int setting)
         break;
     }
 #endif
+    default:
+    {
+        unreachable();
+        break;
+    }
     }
 
     return true;
