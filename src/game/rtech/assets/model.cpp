@@ -15,7 +15,7 @@
 #include <immintrin.h>
 
 extern CBufferManager g_BufferManager;
-extern ExportSettings_t g_ExportSettings;
+extern RSXSettings_t g_rsxSettings;
 
 static void ParseModelVertexData_v8(CPakAsset* const asset, ModelAsset* const modelAsset)
 {
@@ -1745,10 +1745,10 @@ static bool ExportPhysicsModelPhy(const ModelAsset* const modelAsset, std::files
     if (!hdr.phySize)
         return false;
 
-    const int mask = (hdr.contents & g_ExportSettings.exportPhysicsContentsFilter);
-    const bool inFilter = g_ExportSettings.exportPhysicsFilterAND ? mask == static_cast<int>(g_ExportSettings.exportPhysicsContentsFilter) : mask != 0;
+    const int mask = (hdr.contents & g_rsxSettings.exportPhysicsContentsFilter);
+    const bool inFilter = g_rsxSettings.exportPhysicsFilterAND ? mask == static_cast<int>(g_rsxSettings.exportPhysicsContentsFilter) : mask != 0;
 
-    const bool skip = g_ExportSettings.exportPhysicsFilterExclusive ? inFilter : !inFilter;
+    const bool skip = g_rsxSettings.exportPhysicsFilterExclusive ? inFilter : !inFilter;
 
     if (skip)
         return false; // Filtered out.
@@ -1839,9 +1839,9 @@ static bool ExportPhysicsModelBVH(const ModelAsset* const modelAsset, std::files
         data.masks = reinterpret_cast<const uint32_t*>(maskData);
         data.origin = reinterpret_cast<const Vector*>(&collHeader.origin);
         data.scale = collHeader.scale;
-        data.maskFilter = g_ExportSettings.exportPhysicsContentsFilter;
-        data.filterExclusive = g_ExportSettings.exportPhysicsFilterExclusive;
-        data.filterAND = g_ExportSettings.exportPhysicsFilterAND;
+        data.maskFilter = g_rsxSettings.exportPhysicsContentsFilter;
+        data.filterExclusive = g_rsxSettings.exportPhysicsFilterExclusive;
+        data.filterAND = g_rsxSettings.exportPhysicsFilterAND;
 
         const dbvhnode_t* startNode = reinterpret_cast<const dbvhnode_t*>(bvhNodes);
         const uint32_t contents = maskData[startNode->cmIndex];
@@ -1930,12 +1930,12 @@ bool ExportModelAsset(CAsset* const asset, const int setting)
     assertm(modelAsset->name, "No name for model.");
 
     // Create exported path + asset path.
-    std::filesystem::path exportPath = g_ExportSettings.GetExportDirectory();
+    std::filesystem::path exportPath = g_rsxSettings.GetExportDirectory();
     const std::filesystem::path modelPath(modelAsset->name);
     const std::string modelStem(modelPath.stem().string());
 
     // truncate paths?
-    if (g_ExportSettings.exportPathsFull)
+    if (g_rsxSettings.exportPathsFull)
         exportPath.append(modelPath.parent_path().string());
     else
         exportPath.append(std::format("{}/{}", s_PathPrefixMDL, modelStem));
@@ -1948,13 +1948,13 @@ bool ExportModelAsset(CAsset* const asset, const int setting)
 
     const ModelParsedData_t* const parsedData = &modelAsset->parsedData;
 
-    if (g_ExportSettings.exportRigSequences && modelAsset->numAnimSeqs > 0)
+    if (g_rsxSettings.exportRigSequences && modelAsset->numAnimSeqs > 0)
     {
         if (!ExportAnimSeqFromAsset(exportPath, modelStem, modelAsset->name, modelAsset->numAnimSeqs, modelAsset->animSeqs, modelAsset->GetRig()))
             return false;
     }
 
-    if (g_ExportSettings.exportRigSequences && parsedData->NumLocalSeq() > 0)
+    if (g_rsxSettings.exportRigSequences && parsedData->NumLocalSeq() > 0)
     {
         std::filesystem::path outputPath(exportPath);
         outputPath.append(std::format("anims_{}/temp", modelStem));

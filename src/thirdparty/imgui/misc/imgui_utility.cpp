@@ -9,7 +9,7 @@
 
 #define ImGuiReadSetting(str, var, a, type)  if (sscanf_s(line, str, &a) == 1) { var = static_cast<type>(a); }
 
-extern ExportSettings_t g_ExportSettings;
+extern RSXSettings_t g_rsxSettings;
 extern PreviewSettings_t g_PreviewSettings;
 
 // asset settings
@@ -104,7 +104,7 @@ static void* ExportSettings_ReadOpen(ImGuiContext* const ctx, ImGuiSettingsHandl
     UNUSED(ctx);
     UNUSED(name);
 
-    return &g_ExportSettings;
+    return &g_rsxSettings;
 }
 
 static void ExportSettings_ReadLine(ImGuiContext* const ctx, ImGuiSettingsHandler* const handler, void* const entry, const char* const line)
@@ -114,7 +114,7 @@ static void ExportSettings_ReadLine(ImGuiContext* const ctx, ImGuiSettingsHandle
 
     if (entry)
     {
-        ExportSettings_t* const settings = static_cast<ExportSettings_t*>(entry);
+        RSXSettings_t* const settings = static_cast<RSXSettings_t*>(entry);
 
         int i;
         ImGuiReadSetting("ExportPathsFull=%i",              settings->exportPathsFull, i, int);
@@ -146,23 +146,23 @@ static void ExportSettings_WriteAll(ImGuiContext* const ctx, ImGuiSettingsHandle
     buf->reserve(buf->size() + (48 * 12));
     buf->appendf("[%s][general]\n", handler->TypeName);
     
-    buf->appendf("ExportPathsFull=%i\n",            g_ExportSettings.exportPathsFull);
-    buf->appendf("ExportAssetDeps=%i\n",            g_ExportSettings.exportAssetDeps);
-    buf->appendf("DisableCacheNames=%i\n",          g_ExportSettings.disableCachedNames);
+    buf->appendf("ExportPathsFull=%i\n",            g_rsxSettings.exportPathsFull);
+    buf->appendf("ExportAssetDeps=%i\n",            g_rsxSettings.exportAssetDeps);
+    buf->appendf("DisableCacheNames=%i\n",          g_rsxSettings.disableCachedNames);
 
-    buf->appendf("ExportTextureNameSetting=%u\n",   g_ExportSettings.exportTextureNameSetting);
-    buf->appendf("ExportNormalRecalcSetting=%u\n",  g_ExportSettings.exportNormalRecalcSetting);
-    buf->appendf("ExportMaterialTextures=%i\n",     g_ExportSettings.exportMaterialTextures);
+    buf->appendf("ExportTextureNameSetting=%u\n",   g_rsxSettings.exportTextureNameSetting);
+    buf->appendf("ExportNormalRecalcSetting=%u\n",  g_rsxSettings.exportNormalRecalcSetting);
+    buf->appendf("ExportMaterialTextures=%i\n",     g_rsxSettings.exportMaterialTextures);
 
-    buf->appendf("QCMajorVersion=%u\n",             g_ExportSettings.qcMajorVersion);
-    buf->appendf("QCMinorVersion=%u\n",             g_ExportSettings.qcMinorVersion);
+    buf->appendf("QCMajorVersion=%u\n",             g_rsxSettings.qcMajorVersion);
+    buf->appendf("QCMinorVersion=%u\n",             g_rsxSettings.qcMinorVersion);
 
-    buf->appendf("ExportRigSequences=%i\n",         g_ExportSettings.exportRigSequences);
-    buf->appendf("ExportModelSkin=%i\n",            g_ExportSettings.exportModelSkin);
-    buf->appendf("ExportTruncatedMaterials=%i\n",   g_ExportSettings.exportModelMatsTruncated);
-    buf->appendf("ExportQCIFiles=%i\n",             g_ExportSettings.exportQCIFiles);
+    buf->appendf("ExportRigSequences=%i\n",         g_rsxSettings.exportRigSequences);
+    buf->appendf("ExportModelSkin=%i\n",            g_rsxSettings.exportModelSkin);
+    buf->appendf("ExportTruncatedMaterials=%i\n",   g_rsxSettings.exportModelMatsTruncated);
+    buf->appendf("ExportQCIFiles=%i\n",             g_rsxSettings.exportQCIFiles);
 
-    buf->appendf("UseOrigScriptExportExtensions=%i\n", g_ExportSettings.useOrigScriptExportExtensions);
+    buf->appendf("UseOrigScriptExportExtensions=%i\n", g_rsxSettings.useOrigScriptExportExtensions);
 
     buf->appendf("\n");
 }

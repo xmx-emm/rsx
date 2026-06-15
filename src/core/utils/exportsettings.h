@@ -2,7 +2,34 @@
 
 #include <core/utils/cli_parser.h>
 
-struct ExportSettings_t
+enum UISettingType_e
+{
+    TYPE_BOOL,
+    TYPE_U32,
+    TYPE_FLOAT32
+};
+
+union UISettingValue_u
+{
+    bool boolVal;
+    uint32_t u32Val;
+    float flVal;
+};
+
+struct UISetting_t
+{
+    const char* settingName;
+    const char* displayName;
+
+    UISettingValue_u rawValue;
+    UISettingType_e valueType;
+
+    UISetting_t(const char* cfgName, const char* displayName, bool bVal) : settingName(cfgName), displayName(displayName), rawValue(bVal), valueType(UISettingType_e::TYPE_BOOL) {};
+    UISetting_t(const char* cfgName, const char* displayName, uint32_t u32Val) : settingName(cfgName), displayName(displayName), rawValue(u32Val), valueType(UISettingType_e::TYPE_U32) {};
+    UISetting_t(const char* cfgName, const char* displayName, float flVal) : settingName(cfgName), displayName(displayName), rawValue(flVal), valueType(UISettingType_e::TYPE_FLOAT32) {};
+};
+
+struct RSXSettings_t
 {
     // texture
     uint32_t exportNormalRecalcSetting;
@@ -34,6 +61,8 @@ struct ExportSettings_t
     bool exportPhysicsFilterAND;
 
     std::filesystem::path exportDirectory;
+
+    std::unordered_map<uint32_t, std::vector<UISetting_t>> assetSettings;
 
     void SetDefaultValues(const CCommandLine* cli)
     {
@@ -124,3 +153,6 @@ struct PreviewSettings_t
     float previewCullDistance;
     float previewMovementSpeed;
 };
+
+extern RSXSettings_t g_rsxSettings;
+

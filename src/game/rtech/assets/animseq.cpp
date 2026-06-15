@@ -12,7 +12,7 @@
 #include <thirdparty/imgui/misc/imgui_utility.h>
 
 extern CBufferManager g_BufferManager;
-extern ExportSettings_t g_ExportSettings;
+extern RSXSettings_t g_rsxSettings;
 
 void LoadAnimSeqAsset(CAssetContainer* const container, CAsset* const asset)
 {
@@ -320,12 +320,12 @@ bool ExportAnimSeqAsset(CAsset* const asset, const int setting)
 	}
 
 	// Create exported path + asset path.
-	std::filesystem::path exportPath = g_ExportSettings.GetExportDirectory();
+	std::filesystem::path exportPath = g_rsxSettings.GetExportDirectory();
 	const std::filesystem::path seqPath(animSeqAsset->name);
 	const std::string seqStem(seqPath.stem().string());
 
 	// truncate paths?
-	if (g_ExportSettings.exportPathsFull)
+	if (g_rsxSettings.exportPathsFull)
 		exportPath.append(seqPath.parent_path().string());
 	else
 		exportPath.append(std::format("{}/{}", s_PathPrefixASEQ, seqStem));

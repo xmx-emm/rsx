@@ -5,7 +5,7 @@
 #include <core/render/ui/styles.h>
 
 extern CDXParentHandler* g_dxHandler;
-extern ExportSettings_t g_ExportSettings;
+extern RSXSettings_t g_rsxSettings;
 
 inline std::string FormatTextureAssetName(const char* const str)
 {
@@ -683,7 +683,7 @@ inline void NormalRecalc(const bool isNormal, CTexture* texture)
     if (!isNormal)
         return;
 
-    switch (g_ExportSettings.exportNormalRecalcSetting)
+    switch (g_rsxSettings.exportNormalRecalcSetting)
     {
     case eNormalExportRecalc::NML_RECALC_DX:
     {
@@ -947,7 +947,7 @@ bool ExportTextureAsset(CAsset* const asset, const int setting)
     const TextureAsset* const txtrAsset = pakAsset->extraData<const TextureAsset* const>();
 
     // Create exported path + asset path.
-    std::filesystem::path exportPath = g_ExportSettings.GetExportDirectory();
+    std::filesystem::path exportPath = g_rsxSettings.GetExportDirectory();
     const std::filesystem::path texturePath(asset->GetAssetName());
 
     const bool hasFullPath =
@@ -955,7 +955,7 @@ bool ExportTextureAsset(CAsset* const asset, const int setting)
         g_cacheDBManager.TryGetEntry(pakAsset->GetAssetGUID()).has_value();
 
     // [rika]: there is no point to add the parent path if we don't have a proper name (it will just end up in 's_PathPrefixTXTR' anyway)
-    if (hasFullPath && g_ExportSettings.exportPathsFull)
+    if (hasFullPath && g_rsxSettings.exportPathsFull)
         exportPath.append(texturePath.parent_path().string());
     else
         exportPath.append(s_PathPrefixTXTR);

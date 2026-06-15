@@ -6,7 +6,7 @@
 #include <core/render/ui/styles.h>
 
 extern CDXParentHandler* g_dxHandler;
-extern ExportSettings_t g_ExportSettings;
+extern RSXSettings_t g_rsxSettings;
 
 void LoadUIImageAsset(CAssetContainer* const pak, CAsset* const asset)
 {
@@ -743,7 +743,7 @@ bool ExportUIImageAsset(CAsset* const asset, const int setting)
     UIImageAsset* const uiAsset = reinterpret_cast<UIImageAsset*>(pakAsset->extraData());
 
     // Create exported path + asset path.
-    std::filesystem::path exportPath = g_ExportSettings.GetExportDirectory() / fourCCToString(asset->GetAssetType());
+    std::filesystem::path exportPath = g_rsxSettings.GetExportDirectory() / fourCCToString(asset->GetAssetType());
 
     if (!CreateDirectories(exportPath))
     {

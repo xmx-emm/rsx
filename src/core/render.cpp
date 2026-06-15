@@ -25,7 +25,7 @@
 
 extern CDXParentHandler* g_dxHandler;
 extern std::atomic<uint32_t> g_maxConcurrentThreadCount;
-extern ExportSettings_t g_ExportSettings;
+extern RSXSettings_t g_rsxSettings;
 
 PreviewSettings_t g_PreviewSettings { .previewCullDistance = PREVIEW_CULL_DEFAULT, .previewMovementSpeed = PREVIEW_SPEED_DEFAULT };
 
@@ -219,7 +219,7 @@ void PreviewWnd_AssetDepsTbl(CAsset* asset)
                         ImGui::BeginDisabled();
 
                     if (ImGui::Button("Export"))
-                        CThread(HandleExportBindingForAsset, depAsset, g_ExportSettings.exportAssetDeps).detach();
+                        CThread(HandleExportBindingForAsset, depAsset, g_rsxSettings.exportAssetDeps).detach();
 
                     if (!depAsset)
                         ImGui::EndDisabled();
@@ -254,63 +254,63 @@ void SettingsWnd_Draw(CUIState* uiState)
         // ===============================================================================================================
         ImGui::SeparatorText("Export");
 
-        ImGui::Checkbox("Export full asset paths", &g_ExportSettings.exportPathsFull);
+        ImGui::Checkbox("Export full asset paths", &g_rsxSettings.exportPathsFull);
         ImGui::SameLine();
         ImGuiExt::HelpMarker("Enables exporting of assets to their full path within the export directory, as shown by the listed asset names.\nWhen disabled, assets will be exported into the root-level of a folder named after the asset's type (e.g. \"material/\",\"ui_image/\").");
 
-        ImGui::Checkbox("Export asset dependencies", &g_ExportSettings.exportAssetDeps);
+        ImGui::Checkbox("Export asset dependencies", &g_rsxSettings.exportAssetDeps);
         ImGui::SameLine();
         ImGuiExt::HelpMarker("Enables exporting of all dependencies that are associated with any asset that is being exported.");
 
-        ImGui::Checkbox("Disable CacheDB loading", &g_ExportSettings.disableCachedNames);
+        ImGui::Checkbox("Disable CacheDB loading", &g_rsxSettings.disableCachedNames);
         ImGui::SameLine();
         ImGuiExt::HelpMarker("Disables loading names from the cache file. The cache will still be updated, but RSX will not display any cached data");
 
         // texture settings
         ImGui::SeparatorText("Export (Textures)");
 
-        ImGui::Combo("Material Texture Naming", reinterpret_cast<int*>(&g_ExportSettings.exportTextureNameSetting), s_TextureExportNameSetting, static_cast<int>(ARRAYSIZE(s_TextureExportNameSetting)));
+        ImGui::Combo("Material Texture Naming", reinterpret_cast<int*>(&g_rsxSettings.exportTextureNameSetting), s_TextureExportNameSetting, static_cast<int>(ARRAYSIZE(s_TextureExportNameSetting)));
         ImGui::SameLine();
         ImGuiExt::HelpMarker("Naming scheme for exporting textures via materials options are as follows:\nGUID: exports only using the asset's GUID as a name.\nReal: exports texture using a real name (asset name or guid if no name).\nText: exports the texture with a text name always, generating one if there is none provided.\nSemantic: exports with a generated name all the time, useful for models.");
 
-        ImGui::Combo("Normal Recalculation", reinterpret_cast<int*>(&g_ExportSettings.exportNormalRecalcSetting), s_NormalExportRecalcSetting, static_cast<int>(ARRAYSIZE(s_NormalExportRecalcSetting)));
+        ImGui::Combo("Normal Recalculation", reinterpret_cast<int*>(&g_rsxSettings.exportNormalRecalcSetting), s_NormalExportRecalcSetting, static_cast<int>(ARRAYSIZE(s_NormalExportRecalcSetting)));
         ImGui::SameLine();
         ImGuiExt::HelpMarker("None: exports the normal as it is stored.\nDirectX: exports with a generated blue channel.\nOpenGL: exports with a generated blue channel and inverts the green channel.");
 
-        ImGui::Checkbox("Export Material Textures", &g_ExportSettings.exportMaterialTextures);
+        ImGui::Checkbox("Export Material Textures", &g_rsxSettings.exportMaterialTextures);
         ImGui::SameLine();
         ImGuiExt::HelpMarker("Enables exporting of all textures that are associated with any material asset that is being exported.");
 
         // model settings
         ImGui::SeparatorText("Export (Models)");
 
-        ImGui::Checkbox("Export Sequences", &g_ExportSettings.exportRigSequences);
+        ImGui::Checkbox("Export Sequences", &g_rsxSettings.exportRigSequences);
         ImGui::SameLine();
         ImGuiExt::HelpMarker("Enables exporting of all animation sequences that are associated with any rig or model asset that is being exported.");
 
-        ImGui::Checkbox("Export Skin", &g_ExportSettings.exportModelSkin);
+        ImGui::Checkbox("Export Skin", &g_rsxSettings.exportModelSkin);
         ImGui::SameLine();
         ImGuiExt::HelpMarker("Enables exporting a model with the previewed skin.");
 
-        ImGui::Checkbox("Truncate Materials", &g_ExportSettings.exportModelMatsTruncated);
+        ImGui::Checkbox("Truncate Materials", &g_rsxSettings.exportModelMatsTruncated);
         ImGui::SameLine();
         ImGuiExt::HelpMarker("Truncates material names on SMD.");
 
-        ImGui::Checkbox("Enable QCI Files", &g_ExportSettings.exportQCIFiles);
+        ImGui::Checkbox("Enable QCI Files", &g_rsxSettings.exportQCIFiles);
         ImGui::SameLine();
         ImGuiExt::HelpMarker("QC file will be split into multiple include files.");
 
         // hidden for now
         //ImGui::SeparatorText("Export (Wrapped Files)");
 
-        //ImGui::Checkbox("Use original script extensions", &g_ExportSettings.useOrigScriptExportExtensions);
+        //ImGui::Checkbox("Use original script extensions", &g_rsxSettings.useOrigScriptExportExtensions);
         //ImGui::SameLine();
         //ImGuiExt::HelpMarker("Enables the usage of the game's original script file extensions. e.g., .nut.ui instead of .ui.nut");
 
         ImGui::PushItemWidth(48.0f);
-        ImGui::InputScalar("##QCTargetMajor", ImGuiDataType_U16, reinterpret_cast<uint16_t*>(&g_ExportSettings.qcMajorVersion), nullptr, nullptr, "%u", ImGuiInputTextFlags_CharsDecimal);
+        ImGui::InputScalar("##QCTargetMajor", ImGuiDataType_U16, reinterpret_cast<uint16_t*>(&g_rsxSettings.qcMajorVersion), nullptr, nullptr, "%u", ImGuiInputTextFlags_CharsDecimal);
         ImGui::SameLine();
-        ImGui::InputScalar("##QCTargetMinor", ImGuiDataType_U16, reinterpret_cast<uint16_t*>(&g_ExportSettings.qcMinorVersion), nullptr, nullptr, "%u", ImGuiInputTextFlags_CharsDecimal);
+        ImGui::InputScalar("##QCTargetMinor", ImGuiDataType_U16, reinterpret_cast<uint16_t*>(&g_rsxSettings.qcMinorVersion), nullptr, nullptr, "%u", ImGuiInputTextFlags_CharsDecimal);
         ImGui::PopItemWidth();
         ImGui::SameLine();
         ImGui::Text("QC Target Version");
@@ -318,15 +318,15 @@ void SettingsWnd_Draw(CUIState* uiState)
         ImGuiExt::HelpMarker("Desired version for QC files to be compatible with.");
 
         // physics settings
-        ImGui::InputInt("Physics contents filter", reinterpret_cast<int*>(&g_ExportSettings.exportPhysicsContentsFilter), 1, 100, ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::InputInt("Physics contents filter", reinterpret_cast<int*>(&g_rsxSettings.exportPhysicsContentsFilter), 1, 100, ImGuiInputTextFlags_CharsHexadecimal);
         ImGui::SameLine();
         ImGuiExt::HelpMarker("Filter physics meshes in or out based on selected contents.");
 
-        ImGui::Checkbox("Physics contents filter exclusive", &g_ExportSettings.exportPhysicsFilterExclusive);
+        ImGui::Checkbox("Physics contents filter exclusive", &g_rsxSettings.exportPhysicsFilterExclusive);
         ImGui::SameLine();
         ImGuiExt::HelpMarker("Exclude physics meshes containing any of the specified contents.");
 
-        ImGui::Checkbox("Physics contents filter require all", &g_ExportSettings.exportPhysicsFilterAND);
+        ImGui::Checkbox("Physics contents filter require all", &g_rsxSettings.exportPhysicsFilterAND);
         ImGui::SameLine();
         ImGuiExt::HelpMarker("Filter only physics meshes containing all specified contents.");
 
@@ -355,13 +355,30 @@ void SettingsWnd_Draw(CUIState* uiState)
         ImGuiExt::HelpMarker("Distance at which render of 3D objects will stop.");
 
         // ===============================================================================================================
-        ImGui::SeparatorText("Export Formats");
+        ImGui::SeparatorText("Asset Settings");
 
         for (auto& [fourCC, binding] : g_assetData.m_assetTypeBindings)
         {
             if (binding.e.exportSettingArr)
             {
-                ImGui::Combo(fourCCToString(fourCC).c_str(), &binding.e.exportSetting, binding.e.exportSettingArr, static_cast<int>(binding.e.exportSettingArrSize));
+                bool colouredText = false;
+                const AssetType_t assetType = static_cast<AssetType_t>(fourCC);
+                if (s_AssetTypeColours.contains(assetType))
+                {
+                    colouredText = true;
+
+                    const Color4& col = s_AssetTypeColours.at(assetType);
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(col.r, col.g, col.b, col.a));
+                }
+                ImGui::SeparatorText(std::format("{} ({})", binding.name, fourCCToString(fourCC, true)).c_str());
+
+                if (colouredText) ImGui::PopStyleColor();
+
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 25.f);
+                ImGui::TextUnformatted("Format"); ImGui::SameLine();
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 25.f);
+
+                ImGui::Combo(std::format("##ExportFormat_{}", binding.name).c_str(), &binding.e.exportSetting, binding.e.exportSettingArr, static_cast<int>(binding.e.exportSettingArrSize));
             }
         }
     }
@@ -590,7 +607,7 @@ void HandleRenderFrame()
                     {
                         std::deque<CAsset*> cpyAssets;
                         cpyAssets.insert(cpyAssets.end(), s_selectedAssets.begin(), s_selectedAssets.end());
-                        CThread(HandlePakAssetExportList, std::move(cpyAssets), g_ExportSettings.exportAssetDeps).detach();
+                        CThread(HandlePakAssetExportList, std::move(cpyAssets), g_rsxSettings.exportAssetDeps).detach();
                         s_selectedAssets.clear();
                     }
                 }
@@ -606,7 +623,7 @@ void HandleRenderFrame()
                             });
 
                         std::vector<CGlobalAssetData::AssetLookup_t> allAssets(allAssetsOfDesiredType.begin(), allAssetsOfDesiredType.end());
-                        CThread(HandleExportSelectedAssetType, std::move(allAssets), g_ExportSettings.exportAssetDeps).detach();
+                        CThread(HandleExportSelectedAssetType, std::move(allAssets), g_rsxSettings.exportAssetDeps).detach();
                         s_selectedAssets.clear();
                     }
                 }
@@ -622,7 +639,7 @@ void HandleRenderFrame()
                             });
 
                         std::vector<CGlobalAssetData::AssetLookup_t> allAssets(allAssetsOfDesiredType.begin(), allAssetsOfDesiredType.end());
-                        CThread(HandleExportSelectedAssetType, std::move(allAssets), g_ExportSettings.exportAssetDeps).detach();
+                        CThread(HandleExportSelectedAssetType, std::move(allAssets), g_rsxSettings.exportAssetDeps).detach();
                         s_selectedAssets.clear();
                     }
                 }
@@ -641,13 +658,13 @@ void HandleRenderFrame()
                             });
 
                         std::vector<CGlobalAssetData::AssetLookup_t> allAssets(allAssetsOfDesiredType.begin(), allAssetsOfDesiredType.end());
-                        CThread(HandleExportSelectedAssetType, std::move(allAssets), g_ExportSettings.exportAssetDeps).detach();
+                        CThread(HandleExportSelectedAssetType, std::move(allAssets), g_rsxSettings.exportAssetDeps).detach();
                         s_selectedAssets.clear();
                     }
                 }
 
                 if (ImGui::Selectable("Export all"))
-                    CThread(HandleExportAllPakAssets, &pakAssets, g_ExportSettings.exportAssetDeps).detach();
+                    CThread(HandleExportAllPakAssets, &pakAssets, g_rsxSettings.exportAssetDeps).detach();
 
                 // Exports the names of all assets in the currently shown filtered asset list (i.e., search results)
                 if (ImGui::Selectable("Export list of asset names..."))
@@ -751,7 +768,7 @@ void HandleRenderFrame()
                                 if (!isSelected)
                                     s_selectedAssets.insert(s_selectedAssets.end(), asset);
 
-                                CThread(HandlePakAssetExportList, std::move(s_selectedAssets), g_ExportSettings.exportAssetDeps).detach();
+                                CThread(HandlePakAssetExportList, std::move(s_selectedAssets), g_rsxSettings.exportAssetDeps).detach();
 
                                 s_selectedAssets.clear();
                             }
@@ -790,7 +807,7 @@ void HandleRenderFrame()
                     // Option to "quickly" export the asset to the exported_files directory
                     // in the format defined by the "Export Options" menu.
                     if (ImGui::MenuItem("Quick Export"))
-                        CThread(HandleExportBindingForAsset, std::move(firstAsset), g_ExportSettings.exportAssetDeps).detach();
+                        CThread(HandleExportBindingForAsset, std::move(firstAsset), g_rsxSettings.exportAssetDeps).detach();
 
                     ImGui::EndMenu();
                 }

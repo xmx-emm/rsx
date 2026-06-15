@@ -4,7 +4,7 @@
 #include <core/mdl/animdata.h>
 
 extern CBufferManager g_BufferManager;
-extern ExportSettings_t g_ExportSettings;
+extern RSXSettings_t g_rsxSettings;
 
 
 //

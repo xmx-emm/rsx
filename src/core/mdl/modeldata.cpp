@@ -12,7 +12,7 @@
 
 extern CDXParentHandler* g_dxHandler;
 extern CBufferManager g_BufferManager;
-extern ExportSettings_t g_ExportSettings;
+extern RSXSettings_t g_rsxSettings;
 extern CPreviewDrawData g_currentPreviewDrawData;
 
 //
@@ -836,13 +836,13 @@ void HandleModelMaterials(const ModelParsedData_t* const parsedData, std::unorde
 	materials.reserve(parsedData->materials.size());
 
 	// [rika]: pick a skin !
-	if (g_ExportSettings.exportModelSkin && g_ExportSettings.previewedSkinIndex >= static_cast<int>(parsedData->skins.size()))
+	if (g_rsxSettings.exportModelSkin && g_rsxSettings.previewedSkinIndex >= static_cast<int>(parsedData->skins.size()))
 	{
 		assertm(false, "skin index out of range");
-		g_ExportSettings.previewedSkinIndex = 0;
+		g_rsxSettings.previewedSkinIndex = 0;
 	}
 
-	const int skin = g_ExportSettings.exportModelSkin ? g_ExportSettings.previewedSkinIndex : 0;
+	const int skin = g_rsxSettings.exportModelSkin ? g_rsxSettings.previewedSkinIndex : 0;
 
 	const ModelSkinData_t* const skinData = &parsedData->skins.at(skin);
 
@@ -876,7 +876,7 @@ void HandleModelMaterials(const ModelParsedData_t* const parsedData, std::unorde
 	}
 
 	// [rika]: don't export material textures if it's not enabled
-	if (!g_ExportSettings.exportMaterialTextures)
+	if (!g_rsxSettings.exportMaterialTextures)
 		return;
 
 	// [rika]: export material textures
@@ -1432,7 +1432,7 @@ bool ExportModelSMD(const ModelParsedData_t* const parsedData, std::filesystem::
 				const char* material = materialData->GetName(true);
 				assertm(material, "material name should always be valid");
 
-				material = g_ExportSettings.exportModelMatsTruncated ? material : GetStringAfterLastSlash(material);
+				material = g_rsxSettings.exportModelMatsTruncated ? material : GetStringAfterLastSlash(material);
 
 				for (uint32_t vertexIdx = 0; vertexIdx < meshData.vertCount; vertexIdx++)
 				{
@@ -2064,7 +2064,7 @@ void* PreviewParsedData(ModelPreviewInfo_t* const info, ModelParsedData_t* const
 		if (info->selectedLODLevel >= parsedData->lods.size())
 			info->selectedLODLevel = 0;
 
-		g_ExportSettings.previewedSkinIndex = static_cast<int>(info->selectedSkinIndex);
+		g_rsxSettings.previewedSkinIndex = static_cast<int>(info->selectedSkinIndex);
 
 		if (parsedData->bodyParts.at(info->selectedBodypartIndex).numModels > 1)
 		{

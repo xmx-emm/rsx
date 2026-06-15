@@ -7,7 +7,7 @@
 
 extern CDXParentHandler* g_dxHandler;
 
-extern ExportSettings_t g_ExportSettings;
+extern RSXSettings_t g_rsxSettings;
 
 void LoadShaderAsset(CAssetContainer* pak, CAsset* asset)
 {
@@ -707,10 +707,10 @@ bool ExportShaderAsset(CAsset* const asset, const int setting)
 	}
 
 	// Create exported path + asset path.
-	std::filesystem::path exportPath = g_ExportSettings.GetExportDirectory();
+	std::filesystem::path exportPath = g_rsxSettings.GetExportDirectory();
 	const std::filesystem::path shaderPath(asset->GetAssetName());
 
-	if (g_ExportSettings.exportPathsFull)
+	if (g_rsxSettings.exportPathsFull)
 		exportPath.append(shaderPath.parent_path().string());
 	else
 		exportPath.append(s_PathPrefixSHDR);

@@ -272,7 +272,7 @@ const bool CMilesAudioBank::ParseFile(const std::string& path)
 	}
 }
 
-extern ExportSettings_t g_ExportSettings;
+extern RSXSettings_t g_rsxSettings;
 
 constexpr const char* PATH_PREFIX_ASRC = "audio";
 
@@ -531,11 +531,11 @@ bool ExportAudioSourceAsset(CAsset* const asset, const int setting)
 	CMilesAudioBank* audioBank = asset->GetContainerFile<CMilesAudioBank>();
 
 	// Create exported path + asset path.
-	std::filesystem::path exportPath = g_ExportSettings.GetExportDirectory();
+	std::filesystem::path exportPath = g_rsxSettings.GetExportDirectory();
 	const std::filesystem::path asrcPath(audioAsset->GetAssetName());
 
 	// truncate paths?
-	if (g_ExportSettings.exportPathsFull)
+	if (g_rsxSettings.exportPathsFull)
 		exportPath.append(asrcPath.parent_path().string());
 	else
 		exportPath.append(PATH_PREFIX_ASRC);

@@ -460,7 +460,7 @@ bool ExportSettingsAsset(CAsset* const asset, const int setting)
 	if (!RenderSettingsAsset(pakAsset, stringStream))
 		return false;
 
-	std::filesystem::path exportPath = g_ExportSettings.GetExportDirectory();
+	std::filesystem::path exportPath = g_rsxSettings.GetExportDirectory();
 	std::filesystem::path stgsPath = asset->GetAssetName();
 
 	exportPath.append(stgsPath.parent_path().string());

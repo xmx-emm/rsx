@@ -5,7 +5,7 @@
 #include <game/rtech/utils/utils.h>
 #include <thirdparty/imgui/imgui.h>
 
-extern ExportSettings_t g_ExportSettings;
+extern RSXSettings_t g_rsxSettings;
 
 void LoadTextureAnimationAsset(CAssetContainer* const container, CAsset* const asset)
 {
@@ -48,11 +48,11 @@ bool ExportTextureAnimationAsset(CAsset* const asset, const int setting)
 
     TextureAnimAssetHeader_v1_t* const hdr = reinterpret_cast<TextureAnimAssetHeader_v1_t*>(pakAsset->header());
 
-    std::filesystem::path exportPath = g_ExportSettings.GetExportDirectory();
+    std::filesystem::path exportPath = g_rsxSettings.GetExportDirectory();
     const std::filesystem::path txanPath(asset->GetAssetName());
 
     // truncate paths?
-    if (g_ExportSettings.exportPathsFull)
+    if (g_rsxSettings.exportPathsFull)
         exportPath.append(txanPath.parent_path().string());
     else
         exportPath.append(s_PathPrefixTXAN);

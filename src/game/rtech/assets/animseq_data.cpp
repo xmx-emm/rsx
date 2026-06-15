@@ -47,12 +47,12 @@ bool ExportAnimSeqDataAsset(CAsset* const asset, const int setting)
 	}
 
 	// Create exported path + asset path.
-	std::filesystem::path exportPath = g_ExportSettings.GetExportDirectory();
+	std::filesystem::path exportPath = g_rsxSettings.GetExportDirectory();
 	const std::filesystem::path animPath(pakAsset->GetAssetName());
 	const std::string animStem(animPath.stem().string());
 
 	// truncate paths?
-	if (g_ExportSettings.exportPathsFull)
+	if (g_rsxSettings.exportPathsFull)
 		exportPath.append(animPath.parent_path().string());
 	else
 		exportPath.append(std::format("{}/{}", s_PathPrefixASQD, animStem));

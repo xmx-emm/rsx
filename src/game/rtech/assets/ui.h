@@ -76,6 +76,26 @@ static const char* const s_typeNamesRUI[] = {
     "array"
 };
 
+// just one more array bro i promise it'll fix everything
+static const char* const s_typeNamesCPP[] = {
+    "",
+    "const char*",
+    "Asset_t",
+    "Bool_t",
+    "int",
+    "float",
+    "float2",
+    "float3",
+    "Color_t", // float4
+    "GameTime_t",
+    "WallTime_t",
+    "UIHandle_t",
+    "Image_t",
+    "FontFace_t",
+    "FontHash_t",
+    "Array_t"
+};
+
 // terrifying pred datamap flashbacks
 static uint8_t s_typeSizes[] = {
     0,

@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <time.h>
 
-extern ExportSettings_t g_ExportSettings;
+extern RSXSettings_t g_rsxSettings;
 
 enum class AssetType_t
 {
@@ -354,7 +354,7 @@ public:
 
 	void SetAssetNameFromCache()
 	{
-		if (g_ExportSettings.disableCachedNames)
+		if (g_rsxSettings.disableCachedNames)
 			return;
 
 		if (auto entry = g_cacheDBManager.TryGetEntry(GetAssetGUID()))
@@ -469,6 +469,8 @@ struct AssetTypeBinding_t
 
 	int _latestFoundVersion;
 	uint32_t _foundHeaderSize;
+
+	std::vector<UISetting_t> rsxSettings;
 };
 
 class CGlobalAssetData

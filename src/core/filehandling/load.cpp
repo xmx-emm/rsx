@@ -186,7 +186,7 @@ void OnCLILoadComplete(const CCommandLine* const cli)
             assets = filteredAssets;
 
         if (!assets.empty())
-            CThread(HandleExportAllPakAssets, &assets, g_ExportSettings.exportAssetDeps).join();
+            CThread(HandleExportAllPakAssets, &assets, g_rsxSettings.exportAssetDeps).join();
         else
             Log("No assets to export!\n");
     }

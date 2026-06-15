@@ -188,14 +188,14 @@ bool ExportWrapAsset(CAsset* const asset, const int setting)
     const WrapAsset* const wrapAsset = reinterpret_cast<WrapAsset*>(pakAsset->extraData());
 
     // Create exported path + asset path.
-    std::filesystem::path exportPath = g_ExportSettings.GetExportDirectory() / fourCCToString(asset->GetAssetType());
+    std::filesystem::path exportPath = g_rsxSettings.GetExportDirectory() / fourCCToString(asset->GetAssetType());
     if (!CreateDirectories(exportPath))
     {
         assertm(false, "Failed to create asset type directory.");
         return false;
     }
 
-    if (g_ExportSettings.useOrigScriptExportExtensions)
+    if (g_rsxSettings.useOrigScriptExportExtensions)
         exportPath.append(asset->GetAssetName());
     else
         exportPath.append(Wrap_GetPathWithSwappedExtensions(wrapAsset, asset->GetAssetName()));

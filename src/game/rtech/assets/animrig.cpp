@@ -10,7 +10,7 @@
 #include <thirdparty/imgui/imgui.h>
 #include <thirdparty/imgui/misc/imgui_utility.h>
 
-extern ExportSettings_t g_ExportSettings;
+extern RSXSettings_t g_rsxSettings;
 
 void LoadAnimRigAsset(CAssetContainer* const container, CAsset* const asset)
 {
@@ -270,12 +270,12 @@ bool ExportAnimRigAsset(CAsset* const asset, const int setting)
     assertm(animRigAsset->name, "No name for anim rig.");
 
     // Create exported path + asset path.
-    std::filesystem::path exportPath = g_ExportSettings.GetExportDirectory();
+    std::filesystem::path exportPath = g_rsxSettings.GetExportDirectory();
     const std::filesystem::path rigPath(animRigAsset->name);
     const std::string rigStem(rigPath.stem().string());
 
     // truncate paths?
-    if (g_ExportSettings.exportPathsFull)
+    if (g_rsxSettings.exportPathsFull)
         exportPath.append(rigPath.parent_path().string());
     else
         exportPath.append(std::format("{}/{}", s_PathPrefixARIG, rigStem));
@@ -288,13 +288,13 @@ bool ExportAnimRigAsset(CAsset* const asset, const int setting)
 
     const ModelParsedData_t* const parsedData = &animRigAsset->parsedData;
 
-    if (g_ExportSettings.exportRigSequences && animRigAsset->numAnimSeqs > 0)
+    if (g_rsxSettings.exportRigSequences && animRigAsset->numAnimSeqs > 0)
     {
         if (!ExportAnimSeqFromAsset(exportPath, rigStem, animRigAsset->name, animRigAsset->numAnimSeqs, animRigAsset->animSeqs, animRigAsset->GetRig()))
             return false;
     }
 
-    if (g_ExportSettings.exportRigSequences && parsedData->NumLocalSeq() > 0)
+    if (g_rsxSettings.exportRigSequences && parsedData->NumLocalSeq() > 0)
     {
         std::filesystem::path outputPath(exportPath);
         outputPath.append(std::format("anims_{}/temp", rigStem));
