@@ -23,7 +23,7 @@ static void* AssetSettings_ReadOpen(ImGuiContext* const ctx, ImGuiSettingsHandle
         std::string asset = fourCCToString(it.first);
         if (strcmp(asset.c_str(), name) == NULL)
         {
-            return &it.second.e.exportSetting;
+            return &it.second;
         }
     }
 
@@ -37,10 +37,30 @@ static void AssetSettings_ReadLine(ImGuiContext* const ctx, ImGuiSettingsHandler
 
     if (entry)
     {
-        int* const exportSetting = static_cast<int*>(entry);
+        AssetTypeBinding_t* const typeBinding = static_cast<AssetTypeBinding_t*>(entry);
 
         int i;
-        ImGuiReadSetting("Setting=%i", *exportSetting, i, int);
+        ImGuiReadSetting("Setting=%i", typeBinding->e.exportSetting, i, int);
+
+        if (auto assetSettings = g_rsxSettings.assetSettings.find(typeBinding->type); assetSettings != g_rsxSettings.assetSettings.end())
+        {
+            for (auto& setting : assetSettings->second)
+            {
+                switch (setting.valueType)
+                {
+                case UISettingType_e::TYPE_BOOL:
+                    ImGuiReadSetting(setting.cfgName, setting.rawValue.boolVal, i, int);
+                    break;
+                case UISettingType_e::TYPE_U32:
+                    ImGuiReadSetting(setting.cfgName, setting.rawValue.u32Val, i, uint32_t);
+                    break;
+                case UISettingType_e::TYPE_FLOAT32:
+                    ImGuiReadSetting(setting.cfgName, setting.rawValue.flVal, i, float);
+                    break;
+
+                }
+            }
+        }
     }
 }
 
@@ -53,6 +73,17 @@ static void AssetSettings_WriteAll(ImGuiContext* const ctx, ImGuiSettingsHandler
     {
         buf->appendf("[%s][%s]\n", handler->TypeName, fourCCToString(it.first).c_str());
         buf->appendf("Setting=%d\n", it.second.e.exportSetting);
+
+        if (auto assetSettings = g_rsxSettings.assetSettings.find(it.first); assetSettings != g_rsxSettings.assetSettings.end())
+        {
+            for (auto& setting : assetSettings->second)
+            {
+                // this is bad, but the compiler won't throw a warning because of mismatched fmt vars to types since it's a runtime
+                // format string
+                buf->appendf(setting.cfgName, setting.rawValue.u32Val);
+            }
+        }
+
         buf->append("\n");
     }
 }
@@ -133,6 +164,11 @@ static void ExportSettings_ReadLine(ImGuiContext* const ctx, ImGuiSettingsHandle
         ImGuiReadSetting("ExportModelSkin=%i",              settings->exportModelSkin, i, int);
         ImGuiReadSetting("ExportTruncatedMaterials=%i",     settings->exportModelMatsTruncated, i, int);
         ImGuiReadSetting("ExportQCIFiles=%i",               settings->exportQCIFiles, i, int);
+
+        for (auto& assetType : settings->assetSettings)
+        {
+
+        }
 
         //ImGuiReadSetting("UseOrigScriptExportExtensions=%i", settings->useOrigScriptExportExtensions, i, int);
         settings->useOrigScriptExportExtensions = true; // cant decide if i wanna keep this setting or not so let's just force it to true for now

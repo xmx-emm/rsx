@@ -379,6 +379,23 @@ void SettingsWnd_Draw(CUIState* uiState)
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 25.f);
 
                 ImGui::Combo(std::format("##ExportFormat_{}", binding.name).c_str(), &binding.e.exportSetting, binding.e.exportSettingArr, static_cast<int>(binding.e.exportSettingArrSize));
+            
+                if (auto settingsIt = g_rsxSettings.assetSettings.find(fourCC); settingsIt != g_rsxSettings.assetSettings.end())
+                {
+                    std::vector<UISetting_t>& vec = settingsIt->second;
+
+                    for (auto& setting : vec)
+                    {
+                        switch (setting.valueType)
+                        {
+                        case UISettingType_e::TYPE_BOOL:
+                        {
+                            ImGui::Checkbox(setting.displayName, &setting.rawValue.boolVal);
+                            break;
+                        }
+                        }
+                    }
+                }
             }
         }
     }

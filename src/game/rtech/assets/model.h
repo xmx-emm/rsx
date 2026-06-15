@@ -8,6 +8,11 @@
 
 class CDXDrawData;
 
+enum RSXSettings_RMDL_e
+{
+	SET_EXPORT_SEQUENCES = 0,
+};
+
 // pak data
 struct ModelAssetHeader_v8_t
 {

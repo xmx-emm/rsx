@@ -18,15 +18,15 @@ union UISettingValue_u
 
 struct UISetting_t
 {
-    const char* settingName;
+    const char* cfgName;
     const char* displayName;
 
     UISettingValue_u rawValue;
     UISettingType_e valueType;
 
-    UISetting_t(const char* cfgName, const char* displayName, bool bVal) : settingName(cfgName), displayName(displayName), rawValue(bVal), valueType(UISettingType_e::TYPE_BOOL) {};
-    UISetting_t(const char* cfgName, const char* displayName, uint32_t u32Val) : settingName(cfgName), displayName(displayName), rawValue(u32Val), valueType(UISettingType_e::TYPE_U32) {};
-    UISetting_t(const char* cfgName, const char* displayName, float flVal) : settingName(cfgName), displayName(displayName), rawValue(flVal), valueType(UISettingType_e::TYPE_FLOAT32) {};
+    UISetting_t(const char* cfgName, const char* displayName, bool bVal) : cfgName(cfgName), displayName(displayName), rawValue(bVal), valueType(UISettingType_e::TYPE_BOOL) {};
+    UISetting_t(const char* cfgName, const char* displayName, uint32_t u32Val) : cfgName(cfgName), displayName(displayName), rawValue(u32Val), valueType(UISettingType_e::TYPE_U32) {};
+    UISetting_t(const char* cfgName, const char* displayName, float flVal) : cfgName(cfgName), displayName(displayName), rawValue(flVal), valueType(UISettingType_e::TYPE_FLOAT32) {};
 };
 
 struct RSXSettings_t
@@ -81,6 +81,12 @@ struct RSXSettings_t
     const std::filesystem::path& GetExportDirectory() const
     {
         return this->exportDirectory;
+    }
+
+    const UISetting_t& GetAssetSetting(uint32_t type, size_t idx) const
+    {
+        assert(assetSettings.contains(type) && assetSettings.size() > idx);
+        return assetSettings.at(type).at(idx);
     }
 };
 

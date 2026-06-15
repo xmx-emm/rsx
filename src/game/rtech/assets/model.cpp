@@ -2043,4 +2043,6 @@ void InitModelAssetType()
     };
 
     REGISTER_TYPE(type);
+
+    //g_rsxSettings.assetSettings[type.type][RSXSettings_RMDL_e::SET_EXPORT_SEQUENCES] = UISetting_t("ExportSequences=%i", "Export associated sequences", true);
 }
