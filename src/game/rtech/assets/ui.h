@@ -101,7 +101,7 @@ static uint8_t s_typeSizes[] = {
     0,
     sizeof(char*),   // string
     sizeof(char*),   // asset
-    sizeof(int8_t),  // boolean
+    sizeof(BOOL),    // boolean - actually a 4 byte type? thanks guys
     sizeof(int32_t), // int
     sizeof(float),   // float
     2 * sizeof(float), // float2
