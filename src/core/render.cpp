@@ -23,6 +23,8 @@
 #include "render/ui/styles.h"
 #include <core/fonts/codicons.h>
 
+#include <core/utils/gamefinder.hpp>
+
 extern CDXParentHandler* g_dxHandler;
 extern std::atomic<uint32_t> g_maxConcurrentThreadCount;
 extern RSXSettings_t g_rsxSettings;
@@ -386,6 +388,7 @@ void SettingsWnd_Draw(CUIState* uiState)
 
                     for (auto& setting : vec)
                     {
+                        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 25.f);
                         switch (setting.valueType)
                         {
                         case UISettingType_e::TYPE_BOOL:
@@ -510,10 +513,16 @@ void MainWnd_MenuBar()
     }
 }
 
+
 void MainWnd_WelcomeBox()
 {
+    static bool firstTimeWelcoming = true;
+    static std::vector<std::filesystem::path> foundGameDirectories = {};
     if (!inJobAction && g_assetData.v_assetContainers.empty())
     {
+        if (firstTimeWelcoming)
+            foundGameDirectories = GameFinder_FindAllCompatibleSteamGames();
+
         ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
         ImGui::SetNextWindowSize(ImVec2(600, 0), ImGuiCond_Always);
@@ -537,6 +546,45 @@ void MainWnd_WelcomeBox()
 
                 // We kinda leak the thread here but it's okay, we want it to keep executing.
                 CThread(HandleOpenFileDialog, g_dxHandler->GetWindowHandle()).detach();
+            }
+
+            if (foundGameDirectories.size() > 0)
+            {
+                ImGui::Separator();
+                ImGui::TextUnformatted("Compatible Game Installations");
+
+                if (ImGui::BeginTable("Assets", 2, ImGuiTableFlags_BordersOuter))
+                {
+                    ImGui::TableSetupColumn("Path", ImGuiTableColumnFlags_WidthFixed, 0, 0);
+                    ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultSort, 0, 1);
+
+                    ImGui::TableSetupScrollFreeze(0, 1);
+                    ImGui::TableHeadersRow();
+
+                    int i = 0;
+                    for (auto& path : foundGameDirectories)
+                    {
+                        ImGui::PushID(i);
+                        ImGui::TableNextRow();
+
+                        if(ImGui::TableSetColumnIndex(0))
+                            ImGui::TextUnformatted(path.string().c_str());
+
+                        if (ImGui::TableSetColumnIndex(1))
+                        {
+                            if (ImGui::Button("Open"))
+                            {
+
+                            }
+                        }
+
+                        ImGui::PopID();
+
+                        i++;
+                    }
+
+                    ImGui::EndTable();
+                };
             }
 
             CUIState& uiState = g_dxHandler->GetUIState();

@@ -103,6 +103,9 @@
     <Filter Include="core\audio">
       <UniqueIdentifier>{f862f8b4-f4d4-4035-b79f-05b904f551b5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="thirdparty\ValveFileVDF">
+      <UniqueIdentifier>{955a9656-f388-4f2e-893f-47097eb705bc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -476,6 +479,12 @@
     </ClInclude>
     <ClInclude Include="thirdparty\imgui\misc\imgui_memory_editor.h">
       <Filter>thirdparty\imgui\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="core\utils\gamefinder.hpp">
+      <Filter>core\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\valvefilevdf\vdf_parser.hpp">
+      <Filter>thirdparty\ValveFileVDF</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
