@@ -1147,6 +1147,9 @@ void CPakFile::HandleOwnPostLoad()
                     {
                         //it->second.postLoadFunc(pAssetLookup->m_asset->pak(), pAssetLookup->m_asset);
                         // temp
+                        if (!it->second._loadAssetType)
+                            continue;
+
                         it->second.postLoadFunc(pakAsset->GetContainerFile<CAssetContainer>(), pakAsset);
                     }
                     pakAsset->SetPostLoadStatus(true);
@@ -1219,11 +1222,10 @@ void CPakFile::ProcessAssets()
                 parallelLoadTask.addTask([this, pAsset, asset] {
                     if (auto it = g_assetData.m_assetTypeBindings.find(pAsset->type); it != g_assetData.m_assetTypeBindings.end())
                     {
-                        if (it->second.loadFunc)
+                        if (it->second._loadAssetType && it->second.loadFunc)
                             it->second.loadFunc(this, asset);
                     }
-
-                    }, 1u);
+                }, 1u);
             }
             
             // mutex so we can write to m_pakAssets safely.

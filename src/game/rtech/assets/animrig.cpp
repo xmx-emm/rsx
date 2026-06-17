@@ -162,9 +162,10 @@ void PostLoadAnimRigAsset(CAssetContainer* const pak, CAsset* const asset)
             CPakAsset* const animSeqAsset = g_assetData.FindAssetByGUID<CPakAsset>(guid);
 
             if (nullptr == animSeqAsset)
-            {
                 continue;
-            }
+
+            if (!animSeqAsset->GetPostLoadStatus())
+                continue;
 
             AnimSeqAsset* const animSeq = reinterpret_cast<AnimSeqAsset* const>(animSeqAsset->extraData());
 

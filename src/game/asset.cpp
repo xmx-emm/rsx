@@ -75,6 +75,9 @@ void CGlobalAssetData::ProcessAssetsPostLoad()
         // check if asset is registered and has post load function.
         if (auto it = m_assetTypeBindings.find(range.type); it != m_assetTypeBindings.end() && it->second.postLoadFunc)
         {
+            if (!it->second._loadAssetType)
+                continue;
+
             // to the start of the current asset range.
             assetIdx = static_cast<uint32_t>(range.start);
             parallelTask.addTask([this, range, it, &assetIdx]

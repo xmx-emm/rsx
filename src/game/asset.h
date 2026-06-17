@@ -455,8 +455,8 @@ struct AssetTypeBinding_t
 	const char* name;
 	uint32_t type;
 	uint32_t headerAlignment;
-	AssetLoadFunc_t loadFunc; // void(*AssetLoadFunc_t)(CAssetContainer* container, CAsset* asset);
-	AssetLoadFunc_t postLoadFunc; // void(*AssetLoadFunc_t)(CAssetContainer* container, CAsset* asset);
+	AssetLoadFunc_t loadFunc;       // void  (*AssetLoadFunc_t)(CAssetContainer* container, CAsset* asset);
+	AssetLoadFunc_t postLoadFunc;   // void  (*AssetLoadFunc_t)(CAssetContainer* container, CAsset* asset);
 	AssetPreviewFunc_t previewFunc; // void* (*AssetPreviewFunc_t)(CAsset* const asset, const bool firstFrameForAsset);
 
 	struct
@@ -467,10 +467,13 @@ struct AssetTypeBinding_t
 		size_t exportSettingArrSize;
 	} e;
 
+	std::vector<UISetting_t> rsxSettings;
+
 	int _latestFoundVersion;
 	uint32_t _foundHeaderSize;
 
-	std::vector<UISetting_t> rsxSettings;
+	// cry about it please and thanks
+	bool _loadAssetType = true;
 };
 
 class CGlobalAssetData

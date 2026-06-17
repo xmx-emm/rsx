@@ -66,21 +66,13 @@ void LoadAnimSeqAsset(CAssetContainer* const container, CAsset* const asset)
 	pakAsset->setExtraData(seqAsset);
 }
 
-void PostLoadAnimSeqAsset(CAssetContainer* const container, CAsset* const asset)
+bool AnimSeq_ParseExtraData(CPakAsset* pakAsset)
 {
-	UNUSED(container);
-
-	CPakAsset* pakAsset = static_cast<CPakAsset*>(asset);
-
-	if (!pakAsset->hasExtraData())
-		return;
-
-#ifndef DEBUG_NO_ASEQ_POSTLOAD
 	AnimSeqAsset* const seqAsset = pakAsset->extraData<AnimSeqAsset*>();
 	// do not parse this animation if there is no skeleton, if we go to export a sequence from a model/rig that has not been parsed, we will have to parse on export.
 	// this also means this sequence will not export data when exported standalone
 	if (nullptr == seqAsset->parentRig && nullptr == seqAsset->parentModel)
-		return;
+		return false;
 
 	const std::vector<ModelBone_t>* bones = nullptr;
 
@@ -122,7 +114,8 @@ void PostLoadAnimSeqAsset(CAssetContainer* const container, CAsset* const asset)
 		break;
 	}
 	case eSeqVersion::VERSION_12_1:
-	{// [rika]: parse the animseq's raw data size in post load if we couldn't determine a bone count before.
+	{
+		// [rika]: parse the animseq's raw data size in post load if we couldn't determine a bone count before.
 		if (seqAsset->dataSize == 0)
 			seqAsset->UpdateDataSize_V12_1(static_cast<int>(bones->size()));
 
@@ -138,6 +131,21 @@ void PostLoadAnimSeqAsset(CAssetContainer* const container, CAsset* const asset)
 
 	// the sequence has been parsed for exporting
 	seqAsset->animationParsed = true;
+	return true;
+}
+
+void PostLoadAnimSeqAsset(CAssetContainer* const container, CAsset* const asset)
+{
+	UNUSED(container);
+	//UNUSED(asset);
+
+	CPakAsset* pakAsset = static_cast<CPakAsset*>(asset);
+
+	if (!pakAsset->hasExtraData())
+		return;
+
+#ifndef DEBUG_NO_ASEQ_POSTLOAD
+	AnimSeq_ParseExtraData(pakAsset);
 #endif
 }
 
@@ -276,7 +284,12 @@ bool ExportAnimSeqFromAsset(const std::filesystem::path& exportPath, const std::
 			if (nullptr == animSeq)
 			{
 				Log("RSEQ DEP: animseq asset 0x%llX was not loaded, skipping...\n", guid);
+				continue;
+			}
 
+			if (!animSeq->GetPostLoadStatus())
+			{
+				Log("RSEQ DEP: animseq assets were not loaded when this pak was loaded. skipping...\n");
 				continue;
 			}
 

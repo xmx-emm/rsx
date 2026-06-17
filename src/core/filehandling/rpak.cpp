@@ -133,7 +133,7 @@ static void HandleExportBindingForAssetEx(CAsset* const asset)
 {
     if (auto it = g_assetData.m_assetTypeBindings.find(asset->GetAssetType()); it != g_assetData.m_assetTypeBindings.end())
     {
-        if (it->second.e.exportFunc)
+        if (it->second._loadAssetType && it->second.e.exportFunc)
         {
             const bool exported = it->second.e.exportFunc(asset, it->second.e.exportSetting);
             asset->SetExportedStatus(exported);

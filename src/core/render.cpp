@@ -377,9 +377,15 @@ void SettingsWnd_Draw(CUIState* uiState)
                 if (colouredText) ImGui::PopStyleColor();
 
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 25.f);
-                ImGui::TextUnformatted("Format"); ImGui::SameLine();
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 25.f);
+                ImGui::Checkbox(std::format("Load Asset Type##_{}", binding.name).c_str(), &binding._loadAssetType);
+                ImGui::SameLine();
+                ImGuiExt::HelpMarker("This setting determines whether this asset type should be processed by RSX when loading asset files");
 
+
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 25.f);
+                ImGui::TextUnformatted("Format"); ImGui::SameLine();
+
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 25.f);
                 ImGui::Combo(std::format("##ExportFormat_{}", binding.name).c_str(), &binding.e.exportSetting, binding.e.exportSettingArr, static_cast<int>(binding.e.exportSettingArrSize));
             
                 if (auto settingsIt = g_rsxSettings.assetSettings.find(fourCC); settingsIt != g_rsxSettings.assetSettings.end())
@@ -810,11 +816,13 @@ void HandleRenderFrame()
 
                     ImGui::TableNextRow();
 
+                    auto typeBinding = g_assetData.m_assetTypeBindings.find(asset->GetAssetType());
+                    const bool knownAssetType = typeBinding != g_assetData.m_assetTypeBindings.end();
+
                     if (ImGui::TableSetColumnIndex(AssetColumn_t::AC_Type))
                     {
                         ColouredTextForAssetType(asset);
 
-                        auto typeBinding = g_assetData.m_assetTypeBindings.find(asset->GetAssetType());
                         if (typeBinding != g_assetData.m_assetTypeBindings.end())
                             ImGuiExt::Tooltip(typeBinding->second.name);
                     }
@@ -823,6 +831,10 @@ void HandleRenderFrame()
                     {
                         const bool isSelected = std::find(s_selectedAssets.begin(), s_selectedAssets.end(), asset) != s_selectedAssets.end();
                         ImGui::SetNextItemSelectionUserData(rowNum);
+
+                        if(knownAssetType && !typeBinding->second._loadAssetType)
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.f, 0.f, 1.f));
+
                         if (ImGui::Selectable(asset->GetAssetName().c_str(), isSelected, ImGuiSelectableFlags_AllowDoubleClick))
                         {
                             if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
@@ -838,6 +850,8 @@ void HandleRenderFrame()
                                 s_selectedAssets.clear();
                             }
                         }
+                        if (knownAssetType && !typeBinding->second._loadAssetType)
+                            ImGui::PopStyleColor();
                     }
 
                     if (ImGui::TableSetColumnIndex(AssetColumn_t::AC_GUID))
@@ -914,16 +928,20 @@ void HandleRenderFrame()
             const uint32_t type = firstAsset->GetAssetType();
             if (auto it = g_assetData.m_assetTypeBindings.find(type); it != g_assetData.m_assetTypeBindings.end())
             {
-                if (it->second.previewFunc)
+                if (it->second._loadAssetType)
                 {
-                    // First frame is a special case, we wanna reset some settings for the preview function.
-                    const bool firstFrameForAsset = firstAsset != s_prevRenderInfoAsset;
+                    if (it->second.previewFunc)
+                    {
+                        // First frame is a special case, we wanna reset some settings for the preview function.
+                        const bool firstFrameForAsset = firstAsset != s_prevRenderInfoAsset;
 
-                    previewDrawData = reinterpret_cast<CDXDrawData*>(it->second.previewFunc(static_cast<CPakAsset*>(firstAsset), firstFrameForAsset));
-                    s_prevRenderInfoAsset = firstAsset;
+                        previewDrawData = reinterpret_cast<CDXDrawData*>(it->second.previewFunc(static_cast<CPakAsset*>(firstAsset), firstFrameForAsset));
+                        s_prevRenderInfoAsset = firstAsset;
 
+                    }
+                    else ImGui::Text("Asset type '%s' does not currently support Asset Preview.", fourCCToString(type).c_str());
                 }
-                else ImGui::Text("Asset type '%s' does not currently support Asset Preview.", fourCCToString(type).c_str());
+                else ImGui::Text("This asset type was not loaded because of your current settings.\nYou can change this by visiting Settings > %s (%s) > Load Asset Type", it->second.name, fourCCToString(type, true).c_str());
             }
             else ImGui::Text("Asset type '%s' is not currently supported.", fourCCToString(type).c_str());
         }

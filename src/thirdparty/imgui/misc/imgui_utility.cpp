@@ -41,6 +41,7 @@ static void AssetSettings_ReadLine(ImGuiContext* const ctx, ImGuiSettingsHandler
 
         int i;
         ImGuiReadSetting("Setting=%i", typeBinding->e.exportSetting, i, int);
+        ImGuiReadSetting("LoadAssetType=%i", typeBinding->_loadAssetType, i, int);
 
         if (auto assetSettings = g_rsxSettings.assetSettings.find(typeBinding->type); assetSettings != g_rsxSettings.assetSettings.end())
         {
@@ -73,6 +74,7 @@ static void AssetSettings_WriteAll(ImGuiContext* const ctx, ImGuiSettingsHandler
     {
         buf->appendf("[%s][%s]\n", handler->TypeName, fourCCToString(it.first).c_str());
         buf->appendf("Setting=%d\n", it.second.e.exportSetting);
+        buf->appendf("LoadAssetType=%d\n", it.second._loadAssetType);
 
         if (auto assetSettings = g_rsxSettings.assetSettings.find(it.first); assetSettings != g_rsxSettings.assetSettings.end())
         {
