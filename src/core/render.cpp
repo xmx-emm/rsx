@@ -518,16 +518,59 @@ void MainWnd_MenuBar()
         ImGui::EndMainMenuBar();
     }
 }
+typedef void(HandleFileLoadCallback_t)(const CCommandLine* const);
 
+// handlefileload currently causes issues when non-static. investigating!
+extern void HandleFileLoad(std::vector<std::string> filePaths, HandleFileLoadCallback_t cb = nullptr, const CCommandLine* const cli = nullptr);
+
+void MainWnd_LaunchSkinFinderForGame(const std::filesystem::path& dirPath, int8_t gameType)
+{
+    if (gameType == 2) // apex
+    {
+        std::vector<std::string> filePaths = {
+            (dirPath / "paks/Win64/common.rpak").string(),
+            (dirPath / "paks/Win64/common_early.rpak").string(),
+            (dirPath / "paks/Win64/localization_english.rpak").string(),
+        };
+
+        CThread([](std::vector<std::string> filePaths) {
+            inJobAction = true;
+            HandleFileLoad(filePaths, nullptr, nullptr);
+            inJobAction = false;
+            }, std::move(filePaths)).detach();
+    }
+};
+
+#define SHOW_WELCOME_BOX (!inJobAction && g_assetData.v_assetContainers.empty())
 
 void MainWnd_WelcomeBox()
 {
     static bool firstTimeWelcoming = true;
     static std::vector<std::filesystem::path> foundGameDirectories = {};
-    if (!inJobAction && g_assetData.v_assetContainers.empty())
+    static std::vector<int8_t> gameDirectoryTypes = {};
+    static int64_t selectedGameDirectoryIdx = -1;
+    if (SHOW_WELCOME_BOX)
     {
         if (firstTimeWelcoming)
+        {
             foundGameDirectories = GameFinder_FindAllCompatibleSteamGames();
+            gameDirectoryTypes.resize(foundGameDirectories.size());
+
+            size_t i = 0;
+            for (auto& gameDir : foundGameDirectories)
+            {
+                if (std::filesystem::exists(gameDir / "r5apexdata.bin"))
+                    gameDirectoryTypes[i] = 2; // apex
+                else if (std::filesystem::exists(gameDir / "Titanfall2.exe"))
+                    gameDirectoryTypes[i] = 1; // titanfall 2
+                else if (std::filesystem::exists(gameDir / "Titanfall.exe"))
+                    gameDirectoryTypes[i] = 0;
+
+                i++;
+            }
+
+            firstTimeWelcoming = false;
+        }
 
         ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
@@ -561,8 +604,8 @@ void MainWnd_WelcomeBox()
 
                 if (ImGui::BeginTable("Assets", 2, ImGuiTableFlags_BordersOuter))
                 {
-                    ImGui::TableSetupColumn("Path", ImGuiTableColumnFlags_WidthFixed, 0, 0);
-                    ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch | ImGuiTableColumnFlags_DefaultSort, 0, 1);
+                    ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 0, 0);
+                    ImGui::TableSetupColumn("Path", ImGuiTableColumnFlags_WidthFixed, 0, 1);
 
                     ImGui::TableSetupScrollFreeze(0, 1);
                     ImGui::TableHeadersRow();
@@ -573,15 +616,16 @@ void MainWnd_WelcomeBox()
                         ImGui::PushID(i);
                         ImGui::TableNextRow();
 
-                        if(ImGui::TableSetColumnIndex(0))
-                            ImGui::TextUnformatted(path.string().c_str());
+                        if (ImGui::TableSetColumnIndex(0))
+                        {
+                            ImGui::TextUnformatted("Steam");
+                        }
 
                         if (ImGui::TableSetColumnIndex(1))
                         {
-                            if (ImGui::Button("Open"))
-                            {
-
-                            }
+                            const bool selected = selectedGameDirectoryIdx == i;
+                            if (ImGui::Selectable(path.string().c_str(), selected, ImGuiSelectableFlags_SpanAllColumns))
+                                selectedGameDirectoryIdx = i;
                         }
 
                         ImGui::PopID();
@@ -591,6 +635,33 @@ void MainWnd_WelcomeBox()
 
                     ImGui::EndTable();
                 };
+
+                if (selectedGameDirectoryIdx != -1)
+                {
+                    const char* buttonLabel = "Open";
+                    switch (gameDirectoryTypes[selectedGameDirectoryIdx])
+                    {
+                    case 0: // wait r1 doesn't have rpaks... good thing the gamefinder doesn't search for r1 yet!
+                    case 1: // titanfall 2
+                        buttonLabel = "Open common.rpak";
+                        break;
+                    case 2:
+                        buttonLabel = "Open skin finder";
+                        break;
+                    }
+
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.f);
+                    if (ImGui::Button(buttonLabel))
+                    {
+                        g_assetData.AddPostLoadFinishedCallback([]() {
+                            g_dxHandler->GetUIState().itemflavWindowVisible = true;
+                            }, true);
+
+                        MainWnd_LaunchSkinFinderForGame(foundGameDirectories[selectedGameDirectoryIdx], gameDirectoryTypes[selectedGameDirectoryIdx]);
+                    }
+                }
+
+
             }
 
             CUIState& uiState = g_dxHandler->GetUIState();
@@ -661,7 +732,7 @@ void HandleRenderFrame()
 
     const bool shouldPopulateAssetWindows = !inJobAction && !g_assetData.v_assetContainers.empty();
 
-    if (ImGui::Begin("Asset List", nullptr, ImGuiWindowFlags_MenuBar) && shouldPopulateAssetWindows)
+    if (!SHOW_WELCOME_BOX && ImGui::Begin("Asset List", nullptr, ImGuiWindowFlags_MenuBar) && shouldPopulateAssetWindows)
     {
 
         std::vector<CGlobalAssetData::AssetLookup_t>& pakAssets = FilterConfig->textFilter.IsActive() ? s_filteredAssets : g_assetData.v_assets;
@@ -870,10 +941,10 @@ void HandleRenderFrame()
             ImGui::EndTable();
         }
     }
-    ImGui::End();
+    if (!SHOW_WELCOME_BOX) ImGui::End();
 
     // This window must be drawn before "Scene", as the scene relies on previewDrawData already being set from here
-    if (ImGui::Begin("Asset Info", nullptr, ImGuiWindowFlags_MenuBar) && shouldPopulateAssetWindows)
+    if (!SHOW_WELCOME_BOX && ImGui::Begin("Asset Info", nullptr, ImGuiWindowFlags_MenuBar) && shouldPopulateAssetWindows)
     {
         CAsset* const firstAsset = s_selectedAssets.empty() ? nullptr : *s_selectedAssets.begin();
         if (ImGui::BeginMenuBar())
@@ -947,11 +1018,11 @@ void HandleRenderFrame()
         }
         else ImGui::TextUnformatted("No asset selected.");
     }
-    ImGui::End();
+    if(!SHOW_WELCOME_BOX) ImGui::End();
 
     // The "scene" preview window must always be in the center.
     // Setting NoMove seems to be the best way to stop it from being undocked
-    if (ImGui::Begin("Scene", nullptr, ImGuiWindowFlags_NoMove))
+    if (!SHOW_WELCOME_BOX && ImGui::Begin("Scene", nullptr, ImGuiWindowFlags_NoMove))
     {
         const ImVec2 avail = ImGui::GetContentRegionAvail();
 
@@ -981,7 +1052,7 @@ void HandleRenderFrame()
             }
         }
     }
-    ImGui::End();
+    if (!SHOW_WELCOME_BOX) ImGui::End();
 
     if (uiState.settingsWindowVisible)
         SettingsWnd_Draw(&uiState);

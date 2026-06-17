@@ -138,6 +138,19 @@ void CGlobalAssetData::ProcessAssetsPostLoad()
         g_pImGuiHandler->FinishProgressBarEvent(processingAssetsEvent);
 
         this->m_donePostLoad = true; // Record that we've finished post-load so that ODL paks can handle their own post-loading later on
+
+
+        auto it = g_assetData.m_postLoadFinishCallbacks.begin();
+        while (it != g_assetData.m_postLoadFinishCallbacks.end())
+        {
+            it->first();
+
+            // If the callback is marked as single use, erase it after call
+            if (it->second)
+                g_assetData.m_postLoadFinishCallbacks.erase(it);
+            else it++;
+        }
+
     }
 }
 

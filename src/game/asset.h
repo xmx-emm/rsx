@@ -496,6 +496,7 @@ public:
 	std::unordered_map<std::string, uint8_t> m_patchMasterEntries;
 
 	std::unordered_map<uint64_t, std::unordered_set<AssetLoadCallback_t>> m_assetPostLoadCallbacks;
+	std::unordered_map<void(*)(), bool> m_postLoadFinishCallbacks; // set to true to remove after call
 
 	CAssetContainer* m_pakPatchMaster;
 
@@ -519,6 +520,11 @@ public:
 			m_assetPostLoadCallbacks.emplace(guid, std::unordered_set<AssetLoadCallback_t>());
 
 		m_assetPostLoadCallbacks[guid].insert(callback);
+	}
+
+	void AddPostLoadFinishedCallback(void(*callback)(), bool singleUse)
+	{
+		m_postLoadFinishCallbacks.emplace(callback, singleUse);
 	}
 
 	CAsset* const FindAssetByGUID(const uint64_t guid)
