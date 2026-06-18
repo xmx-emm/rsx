@@ -82,7 +82,7 @@ bool SettingsAsset::ParseSettingsData()
 	// If the layout asset wasn't available when the load function was called, try again here.
 	// If there still isn't a valid layout asset, return early
 	if (!this->layoutAsset && !(this->layoutAsset = g_assetData.FindAssetByGUID<CPakAsset>(this->layoutGuid)))
-			return false;
+		return false;
 
 	if (_fields)
 	{

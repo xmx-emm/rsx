@@ -521,21 +521,30 @@ void MainWnd_MenuBar()
 typedef void(HandleFileLoadCallback_t)(const CCommandLine* const);
 
 // handlefileload currently causes issues when non-static. investigating!
-extern void HandleFileLoad(std::vector<std::string> filePaths, HandleFileLoadCallback_t cb = nullptr, const CCommandLine* const cli = nullptr);
+extern void HandlePakLoad(std::vector<std::string> filePaths);// , HandleFileLoadCallback_t cb = nullptr, const CCommandLine* const cli = nullptr);
 
 void MainWnd_LaunchSkinFinderForGame(const std::filesystem::path& dirPath, int8_t gameType)
 {
     if (gameType == 2) // apex
     {
         std::vector<std::string> filePaths = {
-            (dirPath / "paks/Win64/common.rpak").string(),
-            (dirPath / "paks/Win64/common_early.rpak").string(),
             (dirPath / "paks/Win64/localization_english.rpak").string(),
+            (dirPath / "paks/Win64/common_early.rpak").string(),
+            (dirPath / "paks/Win64/common.rpak").string(),
         };
 
         CThread([](std::vector<std::string> filePaths) {
             inJobAction = true;
-            HandleFileLoad(filePaths, nullptr, nullptr);
+
+            // Reset selected asset to avoid crash.
+            s_selectedAssets.clear();
+            s_filteredAssets.clear();
+            s_prevRenderInfoAsset = nullptr;
+            g_assetData.ClearAssetData();
+
+            HandlePakLoad(filePaths);
+            g_assetData.ProcessAssetsPostLoad();
+
             inJobAction = false;
             }, std::move(filePaths)).detach();
     }
@@ -654,14 +663,14 @@ void MainWnd_WelcomeBox()
                     if (ImGui::Button(buttonLabel))
                     {
                         g_assetData.AddPostLoadFinishedCallback([]() {
-                            g_dxHandler->GetUIState().itemflavWindowVisible = true;
+                            CThread([]() {
+                                g_dxHandler->GetUIState().itemflavWindowVisible = true;
+                                }).detach();
                             }, true);
 
                         MainWnd_LaunchSkinFinderForGame(foundGameDirectories[selectedGameDirectoryIdx], gameDirectoryTypes[selectedGameDirectoryIdx]);
                     }
                 }
-
-
             }
 
             CUIState& uiState = g_dxHandler->GetUIState();
@@ -677,6 +686,89 @@ void MainWnd_WelcomeBox()
 
             ImGui::End();
         }
+    }
+}
+
+static void MainWnd_AssetListMenuBar(std::vector<CGlobalAssetData::AssetLookup_t>& pakAssets)
+{
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("Export"))
+        {
+            const bool multipleAssetsSelected = s_selectedAssets.size() > 1;
+
+            if (ImGui::Selectable(multipleAssetsSelected ? "Export selected assets" : "Export selected asset"))
+            {
+                if (!s_selectedAssets.empty())
+                {
+                    std::deque<CAsset*> cpyAssets;
+                    cpyAssets.insert(cpyAssets.end(), s_selectedAssets.begin(), s_selectedAssets.end());
+                    CThread(HandlePakAssetExportList, std::move(cpyAssets), g_rsxSettings.exportAssetDeps).detach();
+                    s_selectedAssets.clear();
+                }
+            }
+
+            if (ImGui::Selectable("Export all for selected type", false, multipleAssetsSelected ? ImGuiSelectableFlags_Disabled : 0))
+            {
+                if (s_selectedAssets.size() == 1)
+                {
+                    const uint32_t desiredType = s_selectedAssets[0]->GetAssetType();
+                    auto allAssetsOfDesiredType = pakAssets | std::ranges::views::filter([desiredType](const CGlobalAssetData::AssetLookup_t& a)
+                        {
+                            return a.m_asset->GetAssetType() == desiredType;
+                        });
+
+                    std::vector<CGlobalAssetData::AssetLookup_t> allAssets(allAssetsOfDesiredType.begin(), allAssetsOfDesiredType.end());
+                    CThread(HandleExportSelectedAssetType, std::move(allAssets), g_rsxSettings.exportAssetDeps).detach();
+                    s_selectedAssets.clear();
+                }
+            }
+
+            if (ImGui::Selectable("Export all for selected pak", false, multipleAssetsSelected ? ImGuiSelectableFlags_Disabled : 0))
+            {
+                if (s_selectedAssets.size() == 1 && s_selectedAssets[0]->GetAssetContainerType() == CAsset::ContainerType::PAK)
+                {
+                    const CPakFile* desiredPak = s_selectedAssets[0]->GetContainerFile<const CPakFile>();
+                    auto allAssetsOfDesiredType = pakAssets | std::ranges::views::filter([desiredPak](const CGlobalAssetData::AssetLookup_t& a)
+                        {
+                            return a.m_asset->GetAssetContainerType() == CAsset::ContainerType::PAK && a.m_asset->GetContainerFile<const CPakFile>() == desiredPak;
+                        });
+
+                    std::vector<CGlobalAssetData::AssetLookup_t> allAssets(allAssetsOfDesiredType.begin(), allAssetsOfDesiredType.end());
+                    CThread(HandleExportSelectedAssetType, std::move(allAssets), g_rsxSettings.exportAssetDeps).detach();
+                    s_selectedAssets.clear();
+                }
+            }
+
+            if (ImGui::Selectable("Export all for selected pak and type", false, multipleAssetsSelected ? ImGuiSelectableFlags_Disabled : 0))
+            {
+                if (s_selectedAssets.size() == 1 && s_selectedAssets[0]->GetAssetContainerType() == CAsset::ContainerType::PAK)
+                {
+                    const CPakFile* desiredPak = s_selectedAssets[0]->GetContainerFile<const CPakFile>();
+                    const uint32_t desiredType = s_selectedAssets[0]->GetAssetType();
+                    auto allAssetsOfDesiredType = pakAssets | std::ranges::views::filter([desiredPak, desiredType](const CGlobalAssetData::AssetLookup_t& a)
+                        {
+                            return a.m_asset->GetAssetContainerType() == CAsset::ContainerType::PAK
+                                && a.m_asset->GetContainerFile<CPakFile>() == desiredPak
+                                && a.m_asset->GetAssetType() == desiredType;
+                        });
+
+                    std::vector<CGlobalAssetData::AssetLookup_t> allAssets(allAssetsOfDesiredType.begin(), allAssetsOfDesiredType.end());
+                    CThread(HandleExportSelectedAssetType, std::move(allAssets), g_rsxSettings.exportAssetDeps).detach();
+                    s_selectedAssets.clear();
+                }
+            }
+
+            if (ImGui::Selectable("Export all"))
+                CThread(HandleExportAllPakAssets, &pakAssets, g_rsxSettings.exportAssetDeps).detach();
+
+            // Exports the names of all assets in the currently shown filtered asset list (i.e., search results)
+            if (ImGui::Selectable("Export list of asset names..."))
+                CThread(HandleListExportPakAssets, g_dxHandler->GetWindowHandle(), &pakAssets).detach();
+
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
     }
 }
 
@@ -698,13 +790,14 @@ void HandleRenderFrame()
         {
             DockBuilder(dockspaceId)
                 .Window("Scene", true)
+                .Window("Skin Finder", true)
                 .DockLeft(0.25f)
                     .Window("Asset List")
                     .Done()
                 .DockRight(0.25f)
                     .Window("Asset Info");
         }
-        //ImGui::SetNextWindowBgAlpha(0.f);
+
         ImGui::DockSpaceOverViewport(dockspaceId, NULL, ImGuiDockNodeFlags_PassthruCentralNode, 0);
     }
 
@@ -734,88 +827,9 @@ void HandleRenderFrame()
 
     if (!SHOW_WELCOME_BOX && ImGui::Begin("Asset List", nullptr, ImGuiWindowFlags_MenuBar) && shouldPopulateAssetWindows)
     {
-
         std::vector<CGlobalAssetData::AssetLookup_t>& pakAssets = FilterConfig->textFilter.IsActive() ? s_filteredAssets : g_assetData.v_assets;
 
-        if (ImGui::BeginMenuBar())
-        {
-            if (ImGui::BeginMenu("Export"))
-            {
-                const bool multipleAssetsSelected = s_selectedAssets.size() > 1;
-
-                if (ImGui::Selectable(multipleAssetsSelected ? "Export selected assets" : "Export selected asset"))
-                {
-                    if (!s_selectedAssets.empty())
-                    {
-                        std::deque<CAsset*> cpyAssets;
-                        cpyAssets.insert(cpyAssets.end(), s_selectedAssets.begin(), s_selectedAssets.end());
-                        CThread(HandlePakAssetExportList, std::move(cpyAssets), g_rsxSettings.exportAssetDeps).detach();
-                        s_selectedAssets.clear();
-                    }
-                }
-
-                if (ImGui::Selectable("Export all for selected type", false, multipleAssetsSelected ? ImGuiSelectableFlags_Disabled : 0))
-                {
-                    if (s_selectedAssets.size() == 1)
-                    {
-                        const uint32_t desiredType = s_selectedAssets[0]->GetAssetType();
-                        auto allAssetsOfDesiredType = pakAssets | std::ranges::views::filter([desiredType](const CGlobalAssetData::AssetLookup_t& a)
-                            {
-                                return a.m_asset->GetAssetType() == desiredType;
-                            });
-
-                        std::vector<CGlobalAssetData::AssetLookup_t> allAssets(allAssetsOfDesiredType.begin(), allAssetsOfDesiredType.end());
-                        CThread(HandleExportSelectedAssetType, std::move(allAssets), g_rsxSettings.exportAssetDeps).detach();
-                        s_selectedAssets.clear();
-                    }
-                }
-
-                if (ImGui::Selectable("Export all for selected pak", false, multipleAssetsSelected ? ImGuiSelectableFlags_Disabled : 0))
-                {
-                    if (s_selectedAssets.size() == 1 && s_selectedAssets[0]->GetAssetContainerType() == CAsset::ContainerType::PAK)
-                    {
-                        const CPakFile* desiredPak = s_selectedAssets[0]->GetContainerFile<const CPakFile>();
-                        auto allAssetsOfDesiredType = pakAssets | std::ranges::views::filter([desiredPak](const CGlobalAssetData::AssetLookup_t& a)
-                            {
-                                return a.m_asset->GetAssetContainerType() == CAsset::ContainerType::PAK && a.m_asset->GetContainerFile<const CPakFile>() == desiredPak;
-                            });
-
-                        std::vector<CGlobalAssetData::AssetLookup_t> allAssets(allAssetsOfDesiredType.begin(), allAssetsOfDesiredType.end());
-                        CThread(HandleExportSelectedAssetType, std::move(allAssets), g_rsxSettings.exportAssetDeps).detach();
-                        s_selectedAssets.clear();
-                    }
-                }
-
-                if (ImGui::Selectable("Export all for selected pak and type", false, multipleAssetsSelected ? ImGuiSelectableFlags_Disabled : 0))
-                {
-                    if (s_selectedAssets.size() == 1 && s_selectedAssets[0]->GetAssetContainerType() == CAsset::ContainerType::PAK)
-                    {
-                        const CPakFile* desiredPak = s_selectedAssets[0]->GetContainerFile<const CPakFile>();
-                        const uint32_t desiredType = s_selectedAssets[0]->GetAssetType();
-                        auto allAssetsOfDesiredType = pakAssets | std::ranges::views::filter([desiredPak, desiredType](const CGlobalAssetData::AssetLookup_t& a)
-                            {
-                                return a.m_asset->GetAssetContainerType() == CAsset::ContainerType::PAK
-                                    && a.m_asset->GetContainerFile<CPakFile>() == desiredPak
-                                    && a.m_asset->GetAssetType() == desiredType;
-                            });
-
-                        std::vector<CGlobalAssetData::AssetLookup_t> allAssets(allAssetsOfDesiredType.begin(), allAssetsOfDesiredType.end());
-                        CThread(HandleExportSelectedAssetType, std::move(allAssets), g_rsxSettings.exportAssetDeps).detach();
-                        s_selectedAssets.clear();
-                    }
-                }
-
-                if (ImGui::Selectable("Export all"))
-                    CThread(HandleExportAllPakAssets, &pakAssets, g_rsxSettings.exportAssetDeps).detach();
-
-                // Exports the names of all assets in the currently shown filtered asset list (i.e., search results)
-                if (ImGui::Selectable("Export list of asset names..."))
-                    CThread(HandleListExportPakAssets, g_dxHandler->GetWindowHandle(), &pakAssets).detach();
-
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenuBar();
-        }
+        MainWnd_AssetListMenuBar(pakAssets);
 
         // OR case if we load a pak and the filter is not cleared yet.
         if (FilterConfig->textFilter.Draw("##Filter", -1.f) || (s_filteredAssets.empty() && FilterConfig->textFilter.IsActive()))

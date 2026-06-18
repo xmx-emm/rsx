@@ -347,4 +347,32 @@ namespace ImGuiExt {
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2.f);
         ImGui::PopStyleColor();
     }
+
+    inline float TableFullRowBegin()
+    {
+        ImGuiTable* table = ImGui::GetCurrentTable();
+
+        // Set to the first visible column, so that all contents starts from the leftmost point
+        for (ImGuiTableColumnIdx* clmn_idx = table->DisplayOrderToIndex.Data,
+            *end = table->DisplayOrderToIndex.DataEnd;
+            clmn_idx < end; ++clmn_idx)
+        {
+            if (ImGui::TableSetColumnIndex(*clmn_idx)) break;
+        }
+
+        ImRect* work_rect = &ImGui::GetCurrentWindow()->WorkRect;
+        float   restore_x = work_rect->Max.x;
+        ImRect  bg_clip_rect = table->BgClipRect; // NOTE: this accounts for header column & scrollbar
+
+        ImGui::PushClipRect(bg_clip_rect.Min, bg_clip_rect.Max, 0); // ensure that both our own drawing...
+        work_rect->Max.x = bg_clip_rect.Max.x;                 // ...and Dear ImGui drawing will be visible across the entire row
+
+        return restore_x;
+    }
+
+    inline void TableFullRowEnd(float restore_x)
+    {
+        ImGui::GetCurrentWindow()->WorkRect.Max.x = restore_x;
+        ImGui::PopClipRect();
+    }
 };

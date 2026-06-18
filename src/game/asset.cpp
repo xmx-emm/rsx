@@ -139,15 +139,15 @@ void CGlobalAssetData::ProcessAssetsPostLoad()
 
         this->m_donePostLoad = true; // Record that we've finished post-load so that ODL paks can handle their own post-loading later on
 
-
-        auto it = g_assetData.m_postLoadFinishCallbacks.begin();
-        while (it != g_assetData.m_postLoadFinishCallbacks.end())
+        auto& postLoadFinishCallbacks = g_assetData.m_postLoadFinishCallbacks;
+        std::unordered_map<void(*)(), bool>::iterator it = postLoadFinishCallbacks.begin();
+        while (it != postLoadFinishCallbacks.end())
         {
             it->first();
 
             // If the callback is marked as single use, erase it after call
             if (it->second)
-                g_assetData.m_postLoadFinishCallbacks.erase(it);
+                it = postLoadFinishCallbacks.erase(it);
             else it++;
         }
 

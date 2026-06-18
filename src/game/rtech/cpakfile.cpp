@@ -1029,6 +1029,9 @@ static std::vector<uint32_t> postLoadOrder =
     '_ldm', // Model after
     'qesa', // Aseq last
 
+    'tlts', // settings layout first
+    'sgts', // settings
+
 };
 
 static std::unordered_map<AssetType_t, std::string> s_ParsedPrefixes(63);

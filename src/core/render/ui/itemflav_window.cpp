@@ -8,8 +8,20 @@
 #include <game/rtech/assets/settings.h>
 #include <core/render/dx.h>
 #include <game/rtech/assets/localization.h>
+#include <game/rtech/assets/odl_asset.h>
+#include <imgui_internal.h>
+#include <misc/imgui_utility.h>
 
 extern CDXParentHandler* g_dxHandler;
+
+const std::unordered_map<char, uint32_t> qualityInts = {
+    {'C', 0u}, // COMMON
+    {'R', 1u}, // RARE
+    {'E', 2u}, // EPIC
+    {'L', 3u}, // LEGENDARY
+    {'M', 4u}, // MYTHIC
+    {'I', 5u}, // ICONIC
+};
 
 void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
 {
@@ -52,19 +64,70 @@ void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
     {
         assert(value->type == eSettingsFieldType::ST_ARRAY);
 
-        character->numSkins = value->numChildren;
-        character->skins = new CUI_ItemflavCharacterSkin[character->numSkins];
+        character->skins.resize(value->numChildren);
 
-        for (uint32_t j = 0; j < character->numSkins; ++j)
+        size_t j = 0;
+        for (auto& skin : character->skins)
         {
             SettingsKVValue_t* const skinObj = &value->getValue<SettingsKVValue_t*>()[j];
 
-            CUI_ItemflavCharacterSkin* const skin = &character->skins[j];
-
             // first field in the object is always the settings asset path
-            skin->assetPath = skinObj->getValue<SettingsKVField_t*>()[0].getValue<const char*>();
-            skin->settingsAsset = g_assetData.FindAssetByGUID(RTech::StringToGuid(skin->assetPath));
+            skin.assetPath = skinObj->getValue<SettingsKVField_t*>()[0].getValue<const char*>();
+            skin.settingsAsset = g_assetData.FindAssetByGUID(RTech::StringToGuid(skin.assetPath));
+
+            SettingsAsset* skinAsset = reinterpret_cast<SettingsAsset*>(reinterpret_cast<CPakAsset*>(skin.settingsAsset)->extraData());
+
+            j++; // increment before we could possibly continue
+
+            // _shared_favorites
+            if (skinAsset->uniqueId == 0x053a2537)
+                continue;
+
+            if (skinAsset->_numFields == 0)
+                skinAsset->ParseSettingsData();
+
+            SettingsKVValue_t* skinNameValue = nullptr;
+            assertm(skinAsset->GetSettingValue("localizationKey_NAME", &skinNameValue), "Failed to get skin name");
+
+            SettingsKVValue_t* qualityValue = nullptr;
+            assertm(skinAsset->GetSettingValue("quality", &qualityValue), "Failed to get skin quality");
+
+            SettingsKVValue_t* armsModelValue = nullptr;
+            assertm(skinAsset->GetSettingValue("armsModel", &armsModelValue), "Failed to get arms model");
+
+            SettingsKVValue_t* bodyModelValue = nullptr;
+            assertm(skinAsset->GetSettingValue("bodyModel", &bodyModelValue), "Failed to get body model");
+
+            SettingsKVValue_t* armsModelOdlValue = nullptr;
+            assertm(skinAsset->GetSettingValue("armsModel_odlBlob", &armsModelOdlValue), "Failed to get arms model odlBlob");
+
+            SettingsKVValue_t* bodyModelOdlValue = nullptr;
+            assertm(skinAsset->GetSettingValue("bodyModel_odlBlob", &bodyModelOdlValue), "Failed to get body model odlBlob");
+
+            skin.localizationKey_NAME = skinNameValue->getValue<const char*>();
+            skin.quality = qualityValue->getValue<const char*>();
+            skin.qualityIndex = qualityInts.at(skin.quality[0]);
+            skin.armsModel = armsModelValue->getValue<const char*>();
+            skin.bodyModel = bodyModelValue->getValue<const char*>();
+
+            CPakAsset* armsModelOdlAsset = reinterpret_cast<CPakAsset*>(g_assetData.FindAssetByGUID(RTech::StringToGuid(armsModelOdlValue->getValue<const char*>())));
+            CPakAsset* bodyModelOdlAsset = reinterpret_cast<CPakAsset*>(g_assetData.FindAssetByGUID(RTech::StringToGuid(bodyModelOdlValue->getValue<const char*>())));
+
+            if (armsModelOdlAsset)
+                skin.armsModelPak = armsModelOdlAsset->extraData<ODLAsset*>()->GetPakName();
+            if (bodyModelOdlAsset)
+                skin.bodyModelPak = bodyModelOdlAsset->extraData<ODLAsset*>()->GetPakName();
         }
+
+        std::sort(character->skins.begin(), character->skins.end(),
+            [](const CUI_ItemflavCharacterSkin& a, const CUI_ItemflavCharacterSkin& b)
+            {
+                if (a.armsModelPak < b.armsModelPak) return true;
+                if (b.armsModelPak < a.armsModelPak) return false;
+
+                return a.qualityIndex < b.qualityIndex;
+            }
+        );
     }
 }
 
@@ -161,8 +224,8 @@ void ItemflavWindow_RefreshData(CUIState* uiState)
 
 void ItemflavWnd_Draw(CUIState* uiState)
 {
-    ImGui::SetNextWindowSize(ImVec2(0.f, 0.f), ImGuiCond_Always);
-    if (ImGui::Begin("Itemflavors", &uiState->itemflavWindowVisible, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+    ImGui::SetNextWindowSize(ImVec2(0.f, 500.f), ImGuiCond_Always);
+    if (ImGui::Begin("Skin Finder", &uiState->itemflavWindowVisible, ImGuiWindowFlags_NoCollapse))
     {
         ImGui::Text("This menu contains a list of all registered cosmetic items associated with each game character.\n"
             "For all features to work properly, RSX must load common.rpak, common_early.rpak, and your chosen localization rpak.");
@@ -204,31 +267,92 @@ void ItemflavWnd_Draw(CUIState* uiState)
             if (flavData->selectedCharacterIdx != -1)
             {
                 CUI_ItemflavCharacter* character = &flavData->characterData[flavData->selectedCharacterIdx];
-                ImGui::Text("%s", Localize(character->characterDesc).c_str());
+                ImGui::TextUnformatted(Localize(character->characterDesc).c_str());
 
                 ImGui::Text("Skins:");
-                for (uint32_t i = 0; i < character->numSkins; ++i)
+
+                if (ImGui::BeginTable("SkinsTable", 4, ImGuiTableFlags_BordersOuter))
                 {
-                    SettingsAsset* const skinSettings = reinterpret_cast<CPakAsset*>(character->skins[i].settingsAsset)->extraData<SettingsAsset*>();
+                    ImGui::TableSetupColumn("Quality", ImGuiTableColumnFlags_WidthFixed, 100.f, 0);
+                    ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 0, 1);
+                    ImGui::TableSetupColumn("Arms Model", ImGuiTableColumnFlags_WidthFixed, 0, 2);
+                    ImGui::TableSetupColumn("Body Model", ImGuiTableColumnFlags_WidthFixed, 0, 3);
+                    //ImGui::TableSetupColumn("RPak File", 0, 0, 4);
 
-                    SettingsKVValue_t* skinNameValue = nullptr;
-                    assertm(skinSettings->GetSettingValue("localizationKey_NAME", &skinNameValue), "Failed to get skin name");
+                    ImGui::TableSetupScrollFreeze(0, 1);
+                    ImGui::TableHeadersRow();
 
-                    SettingsKVValue_t* qualityValue = nullptr;
-                    assertm(skinSettings->GetSettingValue("quality", &qualityValue), "Failed to get skin quality");
+                    const char* prevPakName = nullptr;
 
-                    SettingsKVValue_t* bodyModelValue = nullptr;
-                    assertm(skinSettings->GetSettingValue("bodyModel", &bodyModelValue), "Failed to get skin quality");
+                    size_t i = 0;
+                    for (auto& skin : character->skins)
+                    {
+                        SettingsAsset* const skinSettings = reinterpret_cast<CPakAsset*>(skin.settingsAsset)->extraData<SettingsAsset*>();
 
-                    SettingsKVValue_t* bodyModelOdlValue = nullptr;
-                    assertm(skinSettings->GetSettingValue("bodyModel_odlBlob", &bodyModelOdlValue), "Failed to get skin quality");
+                        // _shared_favorites
+                        if (skinSettings->uniqueId == 0x053a2537)
+                            continue;
 
-                    const std::string skinName = Localize(skinNameValue->getValue<const char*>());
-                    ImGui::Text("\t%s: %s\n\t%s (%s)", qualityValue->getValue<const char*>(), skinName.c_str(), bodyModelValue->getValue<const char*>(), bodyModelOdlValue->getValue<const char*>());
-                }
+                        ImGui::PushID(static_cast<int>(i));
+
+                        ImGui::TableNextRow();
+
+                        if (!prevPakName || _stricmp(skin.armsModelPak, prevPakName))
+                        {
+                            const float x = ImGuiExt::TableFullRowBegin();
+
+                            //ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 25.f);
+                            //if(prevPakName) ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetTextLineHeight());
+                            ImGui::SeparatorText(skin.armsModelPak);
+
+                            ImGuiExt::TableFullRowEnd(x);
+
+                            ImGui::TableNextRow();
+                        }
+
+                        const std::unordered_map<char, ImVec4> qualityColours = {
+                            {'C', ImVec4(0.765f, 0.847f, 0.851f, 1.f)}, // COMMON:    <195,216,217>
+                            {'R', ImVec4(0.384f, 0.784f, 1.f, 1.f)},    // RARE:      <98,200,255>
+                            {'E', ImVec4(0.784f, 0.302f, 1.f, 1.f)},    // EPIC:      <200,77,255>
+                            {'L', ImVec4(1.f, 0.804f, 0.235f, 1.f)},    // LEGENDARY: <255,205,60>
+                            {'M', ImVec4(1.f, 0.231f, 0.263f, 1.f)},    // MYTHIC:    <255,59,67>
+                            {'I', ImVec4(0.f, 1.f, 0.8f, 1.f)},         // ICONIC:    <0, 255, 204>
+                        };
+
+                        const std::string skinName = Localize(skin.localizationKey_NAME);
+
+                        if (ImGui::TableSetColumnIndex(0))
+                        {
+                            assert(qualityColours.contains(skin.quality[0]));
+                            ImGui::PushStyleColor(ImGuiCol_Text, qualityColours.at(skin.quality[0]));
+                            
+                            ImGui::TextUnformatted(skin.quality);
+
+                            ImGui::PopStyleColor();
+                        }
+
+                        if (ImGui::TableSetColumnIndex(1))
+                            ImGui::Selectable(skinName.c_str(), false, ImGuiSelectableFlags_SpanAllColumns);
+
+                        if (ImGui::TableSetColumnIndex(2))
+                            ImGui::TextUnformatted(GetStringAfterLastSlash(skin.armsModel));
+
+                        if (ImGui::TableSetColumnIndex(3))
+                            ImGui::TextUnformatted(GetStringAfterLastSlash(skin.bodyModel));
+
+                        //if (ImGui::TableSetColumnIndex(4))
+                        //    ImGui::TextUnformatted(skin.armsModelPak);
+
+                        ImGui::PopID();
+
+                        i++;
+
+                        prevPakName = skin.armsModelPak;
+                    }
+                    ImGui::EndTable();
+                };
             }
         }
-
-        ImGui::End();
     }
+    ImGui::End();
 }

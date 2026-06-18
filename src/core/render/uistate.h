@@ -5,7 +5,18 @@ struct CUI_ItemflavCharacterSkin
 {
 	const char* assetPath;
 
+	const char* localizationKey_NAME;
+	const char* quality;
+
+	const char* armsModel;
+	const char* bodyModel;
+
+	const char* armsModelPak;
+	const char* bodyModelPak;
+
 	void* settingsAsset;
+
+	uint32_t qualityIndex;
 };
 
 struct CUI_ItemflavCharacter
@@ -19,9 +30,7 @@ struct CUI_ItemflavCharacter
 	const char* characterDesc;
 	const char* shippingStatus;
 
-	uint32_t numSkins;
-	CUI_ItemflavCharacterSkin* skins;
-
+	std::vector<CUI_ItemflavCharacterSkin> skins;
 };
 
 struct CUI_ItemflavWindowData
