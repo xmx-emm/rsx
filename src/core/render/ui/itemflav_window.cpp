@@ -279,10 +279,10 @@ void ItemflavWnd_Draw(CUIState* uiState)
 
                 ImGui::TextUnformatted("Search"); ImGui::SameLine();
 
-                ImGuiCustomTextFilter skinFilter;
+                static ImGuiCustomTextFilter skinFilter;
 
                 // OR case if we load a pak and the filter is not cleared yet.
-                if (skinFilter.Draw("##Filter", -1.f))
+                if (skinFilter.Draw("##SkinFilter", -1.f))
                 {
                     for (auto& skin : character->skins)
                     {
@@ -291,64 +291,69 @@ void ItemflavWnd_Draw(CUIState* uiState)
                     }
                 }
 
-                if (ImGui::BeginTable("SkinsTable", 4, ImGuiTableFlags_BordersOuter))
+                const char* prevPakName = nullptr;
+
+                bool headerOpen = false;
+                bool lastTableRet = false;
+
+                size_t i = 0;
+                for (auto& skin : character->skins)
                 {
-                    ImGui::TableSetupColumn("Quality", ImGuiTableColumnFlags_WidthFixed, 100.f, 0);
-                    ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 0, 1);
-                    ImGui::TableSetupColumn("Arms Model", ImGuiTableColumnFlags_WidthFixed, 0, 2);
-                    ImGui::TableSetupColumn("Body Model", ImGuiTableColumnFlags_WidthFixed, 0, 3);
-                    //ImGui::TableSetupColumn("RPak File", 0, 0, 4);
+                    i++; // increment here so we don't have to do it in every continue branch
 
-                    ImGui::TableSetupScrollFreeze(0, 1);
-                    ImGui::TableHeadersRow();
+                    SettingsAsset* const skinSettings = reinterpret_cast<CPakAsset*>(skin.settingsAsset)->extraData<SettingsAsset*>();
 
-                    const char* prevPakName = nullptr;
+                    // _shared_favorites is not an actual character skin. fuck bakery
+                    if (skinSettings->uniqueId == 0x053a2537)
+                        continue;
 
-                    bool headerOpen = true;
+                    if (!skin.includeInList && skinFilter.IsActive())
+                        continue;
 
-                    size_t i = 0;
-                    for (auto& skin : character->skins)
+                    // If this skin's arms model pak name is different to the one before it, split the following skins into a new group
+                    if (!prevPakName || _stricmp(skin.armsModelPak, prevPakName))
                     {
-                        SettingsAsset* const skinSettings = reinterpret_cast<CPakAsset*>(skin.settingsAsset)->extraData<SettingsAsset*>();
-
-                        // _shared_favorites
-                        if (skinSettings->uniqueId == 0x053a2537)
-                            continue;
-
-                        if (!skin.includeInList && skinFilter.IsActive())
+                        // If we aren't the first table, and the last table returned true (and was open), we need to end the previous table
+                        if (prevPakName && lastTableRet && headerOpen)
                         {
-                            i++;
-                            continue;
+                            ImGui::EndTable();
+
+                            // Reset LTR to false so that we don't hit the EndTable call at the end of the loop
+                            lastTableRet = false;
                         }
 
-                        ImGui::PushID(static_cast<int>(i));
+                        // If we aren't the first table, and the previous header was open, add padding before this header 
+                        if(prevPakName != nullptr && headerOpen)
+                            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.f);
 
-                        if (!prevPakName || _stricmp(skin.armsModelPak, prevPakName))
+                        headerOpen = ImGui::CollapsingHeader(skin.armsModelPak);
+
+                        // If the user has opened the header, setup the table for this group
+                        if (headerOpen)
                         {
-                            ImGui::TableNextRow();
+                            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.f);
 
-                            const float x = ImGuiExt::TableFullRowBegin();
+                            ImGui::Text("These skins can be found by opening file '%s':", skin.armsModelPak);
 
-                            //ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 25.f);
+                            lastTableRet = ImGui::BeginTableEx("SkinsTable", static_cast<ImGuiID>(i | 0x8000), 4, ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersInner);
+                            if (lastTableRet)
+                            {
+                                ImGui::TableSetupColumn("Quality", ImGuiTableColumnFlags_WidthFixed, 100.f, 0);
+                                ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 0, 1);
+                                ImGui::TableSetupColumn("Arms Model", ImGuiTableColumnFlags_WidthFixed, 0, 2);
+                                ImGui::TableSetupColumn("Body Model", ImGuiTableColumnFlags_WidthFixed, 0, 3);
 
-                            // For all headers except the first, add 1em of padding to the top of the header so it's less cluttered
-                            if(prevPakName && headerOpen) ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (0.5f*ImGui::GetTextLineHeight()));
-                            //ImGui::SeparatorText();
-
-                            headerOpen = ImGui::CollapsingHeader(skin.armsModelPak, ImGuiTreeNodeFlags_DefaultOpen);
-
-                            ImGuiExt::TableFullRowEnd(x);
+                                ImGui::TableSetupScrollFreeze(0, 1);
+                                ImGui::TableHeadersRow();
+                            }
                         }
+                    }
 
-                        if (!headerOpen)
-                        {
-                            prevPakName = skin.armsModelPak;
-                            ImGui::PopID();
+                    ImGui::PushID(static_cast<int>(i));
 
-                            i++;
-                            continue;
-                        }
-                        else ImGui::TableNextRow();
+                    if (headerOpen)
+                    {
+                        ImGui::TableNextRow();
 
                         const std::unordered_map<char, ImVec4> qualityColours = {
                             {'C', ImVec4(0.765f, 0.847f, 0.851f, 1.f)}, // COMMON:    <195,216,217>
@@ -365,7 +370,7 @@ void ItemflavWnd_Draw(CUIState* uiState)
                         {
                             assert(qualityColours.contains(skin.quality[0]));
                             ImGui::PushStyleColor(ImGuiCol_Text, qualityColours.at(skin.quality[0]));
-                            
+
                             ImGui::TextUnformatted(skin.quality);
 
                             ImGui::PopStyleColor();
@@ -379,18 +384,15 @@ void ItemflavWnd_Draw(CUIState* uiState)
 
                         if (ImGui::TableSetColumnIndex(3))
                             ImGui::TextUnformatted(GetStringAfterLastSlash(skin.bodyModel));
-
-                        //if (ImGui::TableSetColumnIndex(4))
-                        //    ImGui::TextUnformatted(skin.armsModelPak);
-
-                        ImGui::PopID();
-
-                        i++;
-
-                        prevPakName = skin.armsModelPak;
                     }
-                    ImGui::EndTable();
-                };
+
+                    ImGui::PopID();
+
+                    prevPakName = skin.armsModelPak;
+                }
+
+                // If the last table was opened successfully, end it!
+                if (lastTableRet && headerOpen) ImGui::EndTable();
             }
         }
     }
