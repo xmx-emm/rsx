@@ -368,7 +368,6 @@ void ItemflavWnd_Draw(CUIState* uiState)
 
                         if (ImGui::TableSetColumnIndex(0))
                         {
-                            assert(qualityColours.contains(skin.quality[0]));
                             ImGui::PushStyleColor(ImGuiCol_Text, qualityColours.at(skin.quality[0]));
 
                             ImGui::TextUnformatted(skin.quality);
