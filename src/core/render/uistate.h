@@ -17,6 +17,7 @@ struct CUI_ItemflavCharacterSkin
 	void* settingsAsset;
 
 	uint32_t qualityIndex;
+	bool includeInList;
 };
 
 struct CUI_ItemflavCharacter

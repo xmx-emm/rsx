@@ -89,6 +89,12 @@ void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
             SettingsKVValue_t* skinNameValue = nullptr;
             assertm(skinAsset->GetSettingValue("localizationKey_NAME", &skinNameValue), "Failed to get skin name");
 
+            // If there's no localization key for this skin, fall back on the "skin name" field.
+            // This should really only be applicable for DUMMIE's colour skins, since they are never shown in the regular cosmetics menu
+            // and therefore don't need a localized name.
+            if (skinNameValue->getValue<const char*>()[0] == '\0')
+                skinAsset->GetSettingValue("skinName", &skinNameValue);
+
             SettingsKVValue_t* qualityValue = nullptr;
             assertm(skinAsset->GetSettingValue("quality", &qualityValue), "Failed to get skin quality");
 
@@ -109,6 +115,7 @@ void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
             skin.qualityIndex = qualityInts.at(skin.quality[0]);
             skin.armsModel = armsModelValue->getValue<const char*>();
             skin.bodyModel = bodyModelValue->getValue<const char*>();
+            skin.includeInList = true;
 
             CPakAsset* armsModelOdlAsset = reinterpret_cast<CPakAsset*>(g_assetData.FindAssetByGUID(RTech::StringToGuid(armsModelOdlValue->getValue<const char*>())));
             CPakAsset* bodyModelOdlAsset = reinterpret_cast<CPakAsset*>(g_assetData.FindAssetByGUID(RTech::StringToGuid(bodyModelOdlValue->getValue<const char*>())));
@@ -242,7 +249,7 @@ void ItemflavWnd_Draw(CUIState* uiState)
 
         if (flavData->localizationAsset)
         {
-            if (ImGui::BeginCombo("##characters", flavData->selectedCharacterName.c_str()))
+            if (ImGui::BeginCombo("##characters", flavData->selectedCharacterName.c_str(), ImGuiComboFlags_WidthFitPreview))
             {
                 for (int i = 0; i < flavData->numCharacters; ++i)
                 {
@@ -267,9 +274,22 @@ void ItemflavWnd_Draw(CUIState* uiState)
             if (flavData->selectedCharacterIdx != -1)
             {
                 CUI_ItemflavCharacter* character = &flavData->characterData[flavData->selectedCharacterIdx];
+                ImGui::SameLine();
                 ImGui::TextUnformatted(Localize(character->characterDesc).c_str());
 
-                ImGui::Text("Skins:");
+                ImGui::TextUnformatted("Search"); ImGui::SameLine();
+
+                ImGuiCustomTextFilter skinFilter;
+
+                // OR case if we load a pak and the filter is not cleared yet.
+                if (skinFilter.Draw("##Filter", -1.f))
+                {
+                    for (auto& skin : character->skins)
+                    {
+                        if (!skin.localizationKey_NAME) continue;
+                        skin.includeInList = (!skinFilter.IsActive()) || skinFilter.PassFilter(Localize(skin.localizationKey_NAME).c_str()) || skinFilter.PassFilter(skin.armsModel) || skinFilter.PassFilter(skin.bodyModel);
+                    }
+                }
 
                 if (ImGui::BeginTable("SkinsTable", 4, ImGuiTableFlags_BordersOuter))
                 {
@@ -284,6 +304,8 @@ void ItemflavWnd_Draw(CUIState* uiState)
 
                     const char* prevPakName = nullptr;
 
+                    bool headerOpen = true;
+
                     size_t i = 0;
                     for (auto& skin : character->skins)
                     {
@@ -293,22 +315,40 @@ void ItemflavWnd_Draw(CUIState* uiState)
                         if (skinSettings->uniqueId == 0x053a2537)
                             continue;
 
-                        ImGui::PushID(static_cast<int>(i));
+                        if (!skin.includeInList && skinFilter.IsActive())
+                        {
+                            i++;
+                            continue;
+                        }
 
-                        ImGui::TableNextRow();
+                        ImGui::PushID(static_cast<int>(i));
 
                         if (!prevPakName || _stricmp(skin.armsModelPak, prevPakName))
                         {
+                            ImGui::TableNextRow();
+
                             const float x = ImGuiExt::TableFullRowBegin();
 
                             //ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 25.f);
-                            //if(prevPakName) ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetTextLineHeight());
-                            ImGui::SeparatorText(skin.armsModelPak);
+
+                            // For all headers except the first, add 1em of padding to the top of the header so it's less cluttered
+                            if(prevPakName && headerOpen) ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (0.5f*ImGui::GetTextLineHeight()));
+                            //ImGui::SeparatorText();
+
+                            headerOpen = ImGui::CollapsingHeader(skin.armsModelPak, ImGuiTreeNodeFlags_DefaultOpen);
 
                             ImGuiExt::TableFullRowEnd(x);
-
-                            ImGui::TableNextRow();
                         }
+
+                        if (!headerOpen)
+                        {
+                            prevPakName = skin.armsModelPak;
+                            ImGui::PopID();
+
+                            i++;
+                            continue;
+                        }
+                        else ImGui::TableNextRow();
 
                         const std::unordered_map<char, ImVec4> qualityColours = {
                             {'C', ImVec4(0.765f, 0.847f, 0.851f, 1.f)}, // COMMON:    <195,216,217>
