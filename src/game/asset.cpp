@@ -125,6 +125,9 @@ void CGlobalAssetData::ProcessAssetsPostLoad()
                     if (auto it = m_assetTypeBindings.find(pAssetLookup->m_asset->GetAssetType()); it != m_assetTypeBindings.end() && it->second.postLoadFunc)
                     {
                         //it->second.postLoadFunc(pAssetLookup->m_asset->pak(), pAssetLookup->m_asset);
+                        if (!it->second._loadAssetType)
+                            continue;
+                        
                         // temp
                         it->second.postLoadFunc(pAssetLookup->m_asset->GetContainerFile<CAssetContainer>(), pAssetLookup->m_asset);
                     }
@@ -132,7 +135,7 @@ void CGlobalAssetData::ProcessAssetsPostLoad()
                 }
             }, threadCount);
 
-        const ProgressBarEvent_t* const processingAssetsEvent = g_pImGuiHandler->AddProgressBarEvent("Processing Assets Post Load..", leftOverAssets, &assetIdx, true);
+        const ProgressBarEvent_t* const processingAssetsEvent = g_pImGuiHandler->AddProgressBarEvent("Processing Assets Post Load...", leftOverAssets, &assetIdx, true);
         parallelTask.execute();
         parallelTask.wait();
         g_pImGuiHandler->FinishProgressBarEvent(processingAssetsEvent);

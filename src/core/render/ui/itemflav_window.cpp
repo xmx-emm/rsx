@@ -220,6 +220,7 @@ void ItemflavWindow_RefreshData(CUIState* uiState)
                 character->settingsAssetGuid = RTech::StringToGuid(character->assetPath);
 
                 // If the settings asset is already loaded, try and populate the data now
+                // Otherwise set up a callback for when it does get loaded
                 if (CAsset* settingsAsset = g_assetData.FindAssetByGUID(character->settingsAssetGuid))
                     ItemflavWindow_GetCharacterDataFromSettings(settingsAsset);
                 else
@@ -235,7 +236,7 @@ void ItemflavWnd_Draw(CUIState* uiState)
     if (ImGui::Begin("Skin Finder", &uiState->itemflavWindowVisible, ImGuiWindowFlags_NoCollapse))
     {
         ImGui::Text("This menu contains a list of all registered cosmetic items associated with each game character.\n"
-            "For all features to work properly, RSX must load common.rpak, common_early.rpak, and your chosen localization rpak.");
+            "For all features to work properly, RSX must load common.rpak, common_early.rpak, and localization_english.rpak");
 
         CUI_ItemflavWindowData* flavData = &uiState->itemflavData;
 
@@ -254,11 +255,11 @@ void ItemflavWnd_Draw(CUIState* uiState)
                 for (int i = 0; i < flavData->numCharacters; ++i)
                 {
                     CUI_ItemflavCharacter* const character = &flavData->characterData[i];
-                    bool isSelected = i == uiState->itemflavData.selectedCharacterIdx;
+                    const bool isSelected = i == uiState->itemflavData.selectedCharacterIdx;
 
                     const std::string charName = Localize(character->characterName);
 
-                    if (ImGui::Selectable(charName.c_str(), &isSelected))
+                    if (ImGui::Selectable(charName.c_str(), isSelected))
                     {
                         flavData->selectedCharacterIdx = i;
                         flavData->selectedCharacterName = charName;
@@ -334,6 +335,17 @@ void ItemflavWnd_Draw(CUIState* uiState)
                             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.f);
 
                             ImGui::Text("These skins can be found by opening file '%s':", skin.armsModelPak);
+
+                            // currently disabled because HandlePakLoad dies if we are loading an ODL pak because of shitty postload code
+                            //if (ImGui::Button("Load Assets"))
+                            //{
+                            //    // Full pak path for the localization_english.rpak file in the same directory as common.rpak
+                            //    const std::filesystem::path fullPakPath = reinterpret_cast<CPakFile*>(reinterpret_cast<CPakAsset*>(uiState->itemFlavorListAsset)->GetContainerFile())->GetFilePath().parent_path() / skin.armsModelPak;
+
+                            //    extern void HandlePakLoad(std::vector<std::string> filePaths);
+
+                            //    CThread(HandlePakLoad, std::vector<std::string>{ fullPakPath.string() }).detach();
+                            //}
 
                             lastTableRet = ImGui::BeginTableEx("SkinsTable", static_cast<ImGuiID>(i | 0x8000), 4, ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersInner);
                             if (lastTableRet)
