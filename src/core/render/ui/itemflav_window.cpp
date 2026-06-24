@@ -23,6 +23,10 @@ const std::unordered_map<char, uint32_t> qualityInts = {
     {'I', 5u}, // ICONIC
 };
 
+// temporary macro to check if the stgs bug comes back
+// replace with assertm when found
+#define validate_stgs_kv(a,b) if(!(a)) { for(int i = 0; i < skinAsset->_numFields; ++i) { printf("%s\n", skinAsset->_fields[i].key); } }; assert(a);
+
 void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
 {
     CUIState& uiState = g_dxHandler->GetUIState();
@@ -87,7 +91,7 @@ void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
                 skinAsset->ParseSettingsData();
 
             SettingsKVValue_t* skinNameValue = nullptr;
-            assertm(skinAsset->GetSettingValue("localizationKey_NAME", &skinNameValue), "Failed to get skin name");
+            validate_stgs_kv(skinAsset->GetSettingValue("localizationKey_NAME", &skinNameValue), "Failed to get skin name");
 
             // If there's no localization key for this skin, fall back on the "skin name" field.
             // This should really only be applicable for DUMMIE's colour skins, since they are never shown in the regular cosmetics menu
@@ -96,19 +100,19 @@ void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
                 skinAsset->GetSettingValue("skinName", &skinNameValue);
 
             SettingsKVValue_t* qualityValue = nullptr;
-            assertm(skinAsset->GetSettingValue("quality", &qualityValue), "Failed to get skin quality");
+            validate_stgs_kv(skinAsset->GetSettingValue("quality", &qualityValue), "Failed to get skin quality");
 
             SettingsKVValue_t* armsModelValue = nullptr;
-            assertm(skinAsset->GetSettingValue("armsModel", &armsModelValue), "Failed to get arms model");
+            validate_stgs_kv(skinAsset->GetSettingValue("armsModel", &armsModelValue), "Failed to get arms model");
 
             SettingsKVValue_t* bodyModelValue = nullptr;
-            assertm(skinAsset->GetSettingValue("bodyModel", &bodyModelValue), "Failed to get body model");
+            validate_stgs_kv(skinAsset->GetSettingValue("bodyModel", &bodyModelValue), "Failed to get body model");
 
             SettingsKVValue_t* armsModelOdlValue = nullptr;
-            assertm(skinAsset->GetSettingValue("armsModel_odlBlob", &armsModelOdlValue), "Failed to get arms model odlBlob");
+            validate_stgs_kv(skinAsset->GetSettingValue("armsModel_odlBlob", &armsModelOdlValue), "Failed to get arms model odlBlob");
 
             SettingsKVValue_t* bodyModelOdlValue = nullptr;
-            assertm(skinAsset->GetSettingValue("bodyModel_odlBlob", &bodyModelOdlValue), "Failed to get body model odlBlob");
+            validate_stgs_kv(skinAsset->GetSettingValue("bodyModel_odlBlob", &bodyModelOdlValue), "Failed to get body model odlBlob");
 
             skin.localizationKey_NAME = skinNameValue->getValue<const char*>();
             skin.quality = qualityValue->getValue<const char*>();

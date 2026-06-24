@@ -490,10 +490,8 @@ void MainWnd_MenuBar()
             if (ImGui::MenuItem("Settings"))
                 uiState.ShowSettingsWindow(true);
 
-#if defined(HAS_ITEMFLAV_WINDOW)
-            if (ImGui::MenuItem("Itemflavors"))
+            if (ImGui::MenuItem("Skin Finder"))
                 uiState.ShowItemflavWindow(true);
-#endif
 
             if (ImGui::MenuItem("Logs"))
                 uiState.ShowLogWindow(true);
@@ -518,22 +516,20 @@ void MainWnd_MenuBar()
         ImGui::EndMainMenuBar();
     }
 }
-typedef void(HandleFileLoadCallback_t)(const CCommandLine* const);
 
-// handlefileload currently causes issues when non-static. investigating!
-extern void HandlePakLoad(std::vector<std::string> filePaths);// , HandleFileLoadCallback_t cb = nullptr, const CCommandLine* const cli = nullptr);
+extern void HandlePakLoad(std::vector<std::string> filePaths);
 
 void MainWnd_LaunchSkinFinderForGame(const std::filesystem::path& dirPath, int8_t gameType)
 {
     if (gameType == 2) // apex
     {
-        std::vector<std::string> filePaths = {
+        const std::vector<std::string> filePaths = {
             (dirPath / "paks/Win64/localization_english.rpak").string(),
             (dirPath / "paks/Win64/common_early.rpak").string(),
             (dirPath / "paks/Win64/common.rpak").string(),
         };
 
-        CThread([](std::vector<std::string> filePaths) {
+        CThread([](const std::vector<std::string> filePaths) {
             inJobAction = true;
 
             // Reset selected asset to avoid crash.
@@ -542,7 +538,7 @@ void MainWnd_LaunchSkinFinderForGame(const std::filesystem::path& dirPath, int8_
             s_prevRenderInfoAsset = nullptr;
             g_assetData.ClearAssetData();
 
-            HandlePakLoad(filePaths);
+            HandlePakLoad(std::move(filePaths));
             g_assetData.ProcessAssetsPostLoad();
 
             inJobAction = false;
@@ -664,7 +660,7 @@ void MainWnd_WelcomeBox()
                     {
                         g_assetData.AddPostLoadFinishedCallback([]() {
                             CThread([]() {
-                                g_dxHandler->GetUIState().itemflavWindowVisible = true;
+                                g_dxHandler->GetUIState().ShowItemflavWindow(true);
                                 }).detach();
                             }, true);
 
@@ -897,7 +893,7 @@ void HandleRenderFrame()
                     CAsset* const asset = pakAssets[rowNum].m_asset;
 
                     // previously this was GUID_pakCRC but realistically the pak filename also works instead of the crc (though it may be slower for lookup?)
-                    ImGui::PushID(std::format("{:X}_{}", asset->GetAssetGUID(), asset->GetContainerFileName()).c_str());
+                    ImGui::PushID(std::format("{:X}_{}", asset->GetAssetGUID(), rowNum).c_str());
 
                     ImGui::TableNextRow();
 
@@ -917,6 +913,8 @@ void HandleRenderFrame()
                         const bool isSelected = std::find(s_selectedAssets.begin(), s_selectedAssets.end(), asset) != s_selectedAssets.end();
                         ImGui::SetNextItemSelectionUserData(rowNum);
 
+                        // If this is a known asset type but the user has chosen not to load it, change the asset's name to red
+                        // so that they know the asset will not work correctly
                         if(knownAssetType && !typeBinding->second._loadAssetType)
                             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.f, 0.f, 1.f));
 
@@ -1071,10 +1069,8 @@ void HandleRenderFrame()
     if (uiState.settingsWindowVisible)
         SettingsWnd_Draw(&uiState);
 
-#if defined(HAS_ITEMFLAV_WINDOW)
     if (uiState.itemflavWindowVisible)
         ItemflavWnd_Draw(&uiState);
-#endif
 
     if (uiState.logWindowVisible)
         LogWnd_Draw(&uiState);

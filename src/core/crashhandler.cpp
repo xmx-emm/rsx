@@ -34,9 +34,6 @@ constexpr char ADDTL_CRASH_INFO[] = {
 #if defined(BUILD_NOGUI)
 	"// \tBUILD_NOGUI\n"
 #endif
-#if defined(HAS_ITEMFLAV_WINDOW)
-	"// \tHAS_ITEMFLAV_WINDOW\n"
-#endif
 #if defined(ADVANCED_MODEL_PREVIEW)
 	"// \tAMP\n"
 #endif

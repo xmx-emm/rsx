@@ -9,7 +9,6 @@
 
 #ifndef RTECH_STATIC_LIB
 #include <thirdparty/imgui/misc/imgui_utility.h>
-#include <misc/ImGuiNotify.hpp>
 
 #define PARSE_THREAD_COUNT UtilsConfig->parseThreadCount
 #else
