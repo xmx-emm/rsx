@@ -1016,22 +1016,24 @@ void CPakFile::SortAssetsByHeaderPointer()
 }
 #endif // #if defined(PAKLOAD_PATCHING_ANY)
 
-static std::vector<uint32_t> postLoadOrder =
+// This vector defines the order in which certain asset types should be processed post-load by RSX
+// We need this because some asset types frequently depend on others (e.g., material depends on textures, material depends on shaders, etc.)
+static std::vector<uint32_t> s_postLoadOrderOverrides =
 {
-    'rtxt', // Texture first.
-    'gmiu', // UI Atlas after.
+    'rtxt', // txtr - Texture first.
+    'gmiu', // uimg - UI Atlas
 
-    'rdhs', // Shader hdr first.
-    'sdhs', // Shader set after.
-    'ltam', // Material after.
+    'rdhs', // shdr - Shader
+    'sdhs', // shds - Shader Set
+    'ltam', // matl - Material
 
     // [rika]: aseq after arig/model that way the skeleton is set before parsing
-    'gira', // Arig first
-    '_ldm', // Model after
-    'qesa', // Aseq last
+    'gira', // arig - Animation Rig
+    '_ldm', // mdl_ - Model
+    'qesa', // aseq - Animation Sequence
 
-    'tlts', // settings layout first
-    'sgts', // settings
+    'tlts', // stlt - Settings Layout
+    'sgts', // stgs - Settings (.set)
 
 };
 
@@ -1042,17 +1044,17 @@ void CPakFile::SortProcessedAssets()
 {
     std::sort(m_pAssetsProcessed.begin(), m_pAssetsProcessed.end(), [](const CAsset* a, const CAsset* b)
         {
-            const auto itA = std::find(postLoadOrder.begin(), postLoadOrder.end(), a->GetAssetType());
-            const auto itB = std::find(postLoadOrder.begin(), postLoadOrder.end(), b->GetAssetType());
+            const auto itA = std::find(s_postLoadOrderOverrides.begin(), s_postLoadOrderOverrides.end(), a->GetAssetType());
+            const auto itB = std::find(s_postLoadOrderOverrides.begin(), s_postLoadOrderOverrides.end(), b->GetAssetType());
 
             // if both types are found in the custom order, compare their positions.
-            if (itA != postLoadOrder.end() && itB != postLoadOrder.end())
+            if (itA != s_postLoadOrderOverrides.end() && itB != s_postLoadOrderOverrides.end())
             {
-                return std::distance(postLoadOrder.begin(), itA) < std::distance(postLoadOrder.begin(), itB);
+                return std::distance(s_postLoadOrderOverrides.begin(), itA) < std::distance(s_postLoadOrderOverrides.begin(), itB);
             }
 
             // handle cases where types are not in the custom order.
-            if (itA == postLoadOrder.end())
+            if (itA == s_postLoadOrderOverrides.end())
             {
                 return false; // 'a' is placed after 'b'.
             }
@@ -1074,27 +1076,28 @@ void CPakFile::HandleOwnPostLoad()
         size_t end;
     };
 
-    // find if type is in custom order.
-    auto isInCustomOrder = [](const uint32_t type) -> bool
+    // check if the specified type is part of the postload order override
+    auto isTypeInPostLoadOrderOverrides = [](const uint32_t type) -> bool
         {
-            return std::ranges::find(postLoadOrder, type) != postLoadOrder.end();
+            return std::ranges::find(s_postLoadOrderOverrides, type) != s_postLoadOrderOverrides.end();
         };
 
     std::vector<TypeRange_t> typeRanges;
     size_t startIndex = 0;
     size_t currentIndex = 0;
 
-    // we will get the ranges now for each prioritized asset.
+    // Since the assets are now sorted according to their postload order, we can determine the start/end of each type range
+    // to allow for processing each of those types at once.
     while (currentIndex < m_pAssetsProcessed.size())
     {
         const uint32_t currentType = m_pAssetsProcessed[currentIndex]->GetAssetType();
-        if (!isInCustomOrder(currentType))
+        if (!isTypeInPostLoadOrderOverrides(currentType))
         {
             ++currentIndex;
             continue;
         }
 
-        // Count range.
+        // Find the end of the range by looping until we find an asset that isn't the same type
         while (currentIndex < m_pAssetsProcessed.size() && m_pAssetsProcessed[currentIndex]->GetAssetType() == currentType)
         {
             ++currentIndex;
@@ -1105,13 +1108,11 @@ void CPakFile::HandleOwnPostLoad()
         startIndex = currentIndex;
     }
 
-    // we only want half of the available threads.
     CParallelTask parallelTask(PARSE_THREAD_COUNT);
 
     std::atomic<uint32_t> assetIdx = 0;
     for (const auto& range : typeRanges)
     {
-        // check if asset is registered and has post load function.
         if (auto it = g_assetData.m_assetTypeBindings.find(range.type); it != g_assetData.m_assetTypeBindings.end() && it->second.postLoadFunc)
         {
             if (!it->second._loadAssetType)
@@ -1295,17 +1296,17 @@ void CPakFile::ProcessAssets()
     // we pre-sort each pak for post load callbacks by certain priority order.
     std::sort(g_assetData.v_assets.begin(), g_assetData.v_assets.end(), [](const CGlobalAssetData::AssetLookup_t& a, const CGlobalAssetData::AssetLookup_t& b)
     {
-        const auto itA = std::find(postLoadOrder.begin(), postLoadOrder.end(), a.m_asset->GetAssetType());
-        const auto itB = std::find(postLoadOrder.begin(), postLoadOrder.end(), b.m_asset->GetAssetType());
+        const auto itA = std::find(s_postLoadOrderOverrides.begin(), s_postLoadOrderOverrides.end(), a.m_asset->GetAssetType());
+        const auto itB = std::find(s_postLoadOrderOverrides.begin(), s_postLoadOrderOverrides.end(), b.m_asset->GetAssetType());
 
         // if both types are found in the custom order, compare their positions.
-        if (itA != postLoadOrder.end() && itB != postLoadOrder.end())
+        if (itA != s_postLoadOrderOverrides.end() && itB != s_postLoadOrderOverrides.end())
         {
-            return std::distance(postLoadOrder.begin(), itA) < std::distance(postLoadOrder.begin(), itB);
+            return std::distance(s_postLoadOrderOverrides.begin(), itA) < std::distance(s_postLoadOrderOverrides.begin(), itB);
         }
 
         // handle cases where types are not in the custom order.
-        if (itA == postLoadOrder.end())
+        if (itA == s_postLoadOrderOverrides.end())
         {
             return false; // 'a' is placed after 'b'.
         }

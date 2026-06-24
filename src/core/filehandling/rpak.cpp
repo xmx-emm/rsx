@@ -124,7 +124,7 @@ static void TraverseAssetDependencies(CPakAsset* const asset, std::deque<CPakAss
         TraverseAssetDependencies(depAsset, cpyAssets);
     }
 
-    // Add the root asset itself to the list.
+    // Add the root asset itself to the list, if it isn't already there
     if (std::find(cpyAssets.begin(), cpyAssets.end(), asset) == cpyAssets.end())
         cpyAssets.emplace_back(asset);
 }
