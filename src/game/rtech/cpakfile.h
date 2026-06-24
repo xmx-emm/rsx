@@ -848,6 +848,7 @@ private:
 
     void ProcessAssets();
 
+    void SortProcessedAssets();
     void HandleOwnPostLoad();
 
 public:

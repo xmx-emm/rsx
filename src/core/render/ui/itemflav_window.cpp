@@ -335,17 +335,18 @@ void ItemflavWnd_Draw(CUIState* uiState)
                             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.f);
 
                             ImGui::Text("These skins can be found by opening file '%s':", skin.armsModelPak);
+                            
+                            ImGui::PushID(static_cast<ImGuiID>(i | 0x10000));
+                            if (ImGui::Button("Load Assets"))
+                            {
+                                // Full pak path for the localization_english.rpak file in the same directory as common.rpak
+                                const std::filesystem::path fullPakPath = reinterpret_cast<CPakFile*>(reinterpret_cast<CPakAsset*>(uiState->itemFlavorListAsset)->GetContainerFile())->GetFilePath().parent_path() / skin.armsModelPak;
 
-                            // currently disabled because HandlePakLoad dies if we are loading an ODL pak because of shitty postload code
-                            //if (ImGui::Button("Load Assets"))
-                            //{
-                            //    // Full pak path for the localization_english.rpak file in the same directory as common.rpak
-                            //    const std::filesystem::path fullPakPath = reinterpret_cast<CPakFile*>(reinterpret_cast<CPakAsset*>(uiState->itemFlavorListAsset)->GetContainerFile())->GetFilePath().parent_path() / skin.armsModelPak;
+                                extern void HandlePakLoad(std::vector<std::string> filePaths);
 
-                            //    extern void HandlePakLoad(std::vector<std::string> filePaths);
-
-                            //    CThread(HandlePakLoad, std::vector<std::string>{ fullPakPath.string() }).detach();
-                            //}
+                                CThread(HandlePakLoad, std::vector<std::string>{ fullPakPath.string() }).detach();
+                            }
+                            ImGui::PopID();
 
                             lastTableRet = ImGui::BeginTableEx("SkinsTable", static_cast<ImGuiID>(i | 0x8000), 4, ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersInner);
                             if (lastTableRet)

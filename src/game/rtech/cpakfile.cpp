@@ -9,6 +9,7 @@
 
 #ifndef RTECH_STATIC_LIB
 #include <thirdparty/imgui/misc/imgui_utility.h>
+#include <misc/ImGuiNotify.hpp>
 
 #define PARSE_THREAD_COUNT UtilsConfig->parseThreadCount
 #else
@@ -1036,8 +1037,36 @@ static std::vector<uint32_t> postLoadOrder =
 
 static std::unordered_map<AssetType_t, std::string> s_ParsedPrefixes(63);
 
+// Sort this pak file's assets in the same way as the global assets. This must happen otherwise postload ranges will fail
+void CPakFile::SortProcessedAssets()
+{
+    std::sort(m_pAssetsProcessed.begin(), m_pAssetsProcessed.end(), [](const CAsset* a, const CAsset* b)
+        {
+            const auto itA = std::find(postLoadOrder.begin(), postLoadOrder.end(), a->GetAssetType());
+            const auto itB = std::find(postLoadOrder.begin(), postLoadOrder.end(), b->GetAssetType());
+
+            // if both types are found in the custom order, compare their positions.
+            if (itA != postLoadOrder.end() && itB != postLoadOrder.end())
+            {
+                return std::distance(postLoadOrder.begin(), itA) < std::distance(postLoadOrder.begin(), itB);
+            }
+
+            // handle cases where types are not in the custom order.
+            if (itA == postLoadOrder.end())
+            {
+                return false; // 'a' is placed after 'b'.
+            }
+            else
+            {
+                return true; // 'b' is placed after 'a'.
+            }
+        });
+}
+
 void CPakFile::HandleOwnPostLoad()
 {
+    this->SortProcessedAssets();
+
     struct TypeRange_t
     {
         uint32_t type;
@@ -1101,6 +1130,7 @@ void CPakFile::HandleOwnPostLoad()
                             continue;
 
                         CAsset* pakAsset = this->m_pAssetsProcessed[assetToProcess];
+
                         // temp
                         it->second.postLoadFunc(pakAsset->GetContainerFile<CAssetContainer>(), pakAsset);
                         pakAsset->SetPostLoadStatus(true);
@@ -1151,8 +1181,6 @@ void CPakFile::HandleOwnPostLoad()
                     CAsset* const pakAsset = this->m_pAssetsProcessed[assetToProcess];
                     if (auto it = g_assetData.m_assetTypeBindings.find(pakAsset->GetAssetType()); it != g_assetData.m_assetTypeBindings.end() && it->second.postLoadFunc)
                     {
-                        //it->second.postLoadFunc(pAssetLookup->m_asset->pak(), pAssetLookup->m_asset);
-                        // temp
                         if (!it->second._loadAssetType)
                             continue;
 
