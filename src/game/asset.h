@@ -229,6 +229,26 @@ static const std::map<AssetType_t, const char*> s_AssetTypePaths =
 	{ AssetType_t::ODLP, "odl_pak" },
 };
 
+// This vector defines the order in which certain asset types should be processed post-load by RSX
+// We need this because some asset types frequently depend on others (e.g., material depends on textures, material depends on shaders, etc.)
+const static std::vector<uint32_t> s_postLoadOrderOverrides =
+{
+	'rtxt', // txtr - Texture first.
+	'gmiu', // uimg - UI Atlas
+
+	'rdhs', // shdr - Shader
+	'sdhs', // shds - Shader Set
+	'ltam', // matl - Material
+
+	// [rika]: aseq after arig/model that way the skeleton is set before parsing
+	'gira', // arig - Animation Rig
+	'_ldm', // mdl_ - Model
+	'qesa', // aseq - Animation Sequence
+
+	'tlts', // stlt - Settings Layout
+	'sgts', // stgs - Settings (.set)
+};
+
 struct AssetVersion_t
 {
 	AssetVersion_t() : majorVer(0), minorVer(0) {};

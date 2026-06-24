@@ -84,6 +84,8 @@ bool SettingsAsset::ParseSettingsData()
 	if (!this->layoutAsset && !(this->layoutAsset = g_assetData.FindAssetByGUID<CPakAsset>(this->layoutGuid)))
 		return false;
 
+	assert(this->layoutAsset->GetPostLoadStatus());
+
 	if (_fields)
 	{
 		this->_numFields = 0;

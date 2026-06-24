@@ -1015,27 +1015,6 @@ void CPakFile::SortAssetsByHeaderPointer()
 }
 #endif // #if defined(PAKLOAD_PATCHING_ANY)
 
-// This vector defines the order in which certain asset types should be processed post-load by RSX
-// We need this because some asset types frequently depend on others (e.g., material depends on textures, material depends on shaders, etc.)
-static std::vector<uint32_t> s_postLoadOrderOverrides =
-{
-    'rtxt', // txtr - Texture first.
-    'gmiu', // uimg - UI Atlas
-
-    'rdhs', // shdr - Shader
-    'sdhs', // shds - Shader Set
-    'ltam', // matl - Material
-
-    // [rika]: aseq after arig/model that way the skeleton is set before parsing
-    'gira', // arig - Animation Rig
-    '_ldm', // mdl_ - Model
-    'qesa', // aseq - Animation Sequence
-
-    'tlts', // stlt - Settings Layout
-    'sgts', // stgs - Settings (.set)
-
-};
-
 static std::unordered_map<AssetType_t, std::string> s_ParsedPrefixes(63);
 
 // Sort this pak file's assets in the same way as the global assets. This must happen otherwise postload ranges will fail

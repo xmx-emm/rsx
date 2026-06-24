@@ -7,22 +7,6 @@
 #include <misc/imgui_utility.h>
 #include "rtech/utils/utils.h"
 
-static std::vector<uint32_t> postLoadOrder =
-{
-    'rtxt', // Texture first.
-    'gmiu', // UI Atlas after.
-
-    'rdhs', // Shader hdr first.
-    'sdhs', // Shader set after.
-    'ltam', // Material after.
-
-    // [rika]: aseq after arig/model that way the skeleton is set before parsing
-    'gira', // Arig first
-    '_ldm', // Model after
-    'qesa', // Aseq last
-
-};
-
 void CGlobalAssetData::ProcessAssetsPostLoad()
 {
     this->m_donePostLoad = false;
@@ -37,7 +21,7 @@ void CGlobalAssetData::ProcessAssetsPostLoad()
     // find if type is in custom order.
     auto isInCustomOrder = [](const uint32_t type) -> bool
         {
-            return std::ranges::find(postLoadOrder, type) != postLoadOrder.end();
+            return std::ranges::find(s_postLoadOrderOverrides, type) != s_postLoadOrderOverrides.end();
         };
 
     std::vector<TypeRange_t> typeRanges;
