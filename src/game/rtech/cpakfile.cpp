@@ -1245,8 +1245,7 @@ void CPakFile::ProcessAssets()
 
             const std::string prefix = s_AssetTypePaths.contains(type) ? s_AssetTypePaths.find(type)->second : fourCCToString(pAsset->type);
 
-            // note(amos): crashes rarely when s_ParsedPrefixes.find() == s_ParsedPrefixes.end().
-            // crashed on s3's mp_rr_desertlands_64k_x_64k.rpak in debug.
+            // For most asset types, this temporary name will be replaced in the load func call below
             const std::string tempName = std::format("{}/0x{:X}", prefix, pAsset->guid);
 
             CPakAsset* const asset = new CPakAsset(this, pAsset, tempName);
@@ -1263,7 +1262,6 @@ void CPakFile::ProcessAssets()
                 }, 1u);
             }
             
-            // mutex so we can write to m_pakAssets safely.
             std::lock_guard<std::mutex> lock(assetMutex);
             g_assetData.v_assets.push_back({ pAsset->guid, asset });
             m_pAssetsProcessed.push_back(asset);

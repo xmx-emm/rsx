@@ -98,7 +98,7 @@ void CGlobalAssetData::ProcessAssetsPostLoad()
 
                 }, threadCount);
 
-            std::string eventName = std::format("Processing Assets Prioritized Post Load.. ({})", fourCCToString(it->first)).c_str();
+            std::string eventName = std::format("Processing Assets Prioritized Post Load... ({})", fourCCToString(it->first)).c_str();
             const ProgressBarEvent_t* const processingAssetsEvent = g_pImGuiHandler->AddProgressBarEvent(eventName.c_str(), static_cast<uint32_t>(range.end + 1), &assetIdx, true);
             parallelTask.execute();
             parallelTask.wait();
@@ -109,7 +109,6 @@ void CGlobalAssetData::ProcessAssetsPostLoad()
     const uint32_t leftOverAssets = static_cast<uint32_t>(v_assets.size());
     assetIdx = typeRanges.empty() ? 0u : static_cast<uint32_t>(typeRanges.back().end); // last asset we processed after custom order.
 
-    // we have to account for that .size() on vector starts from 1.
     if (typeRanges.empty() || leftOverAssets != (assetIdx + 1))
     {
         parallelTask.addTask([this, leftOverAssets, &assetIdx]
