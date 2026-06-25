@@ -200,8 +200,8 @@ const bool CPakFile::LoadNonPatched()
         int remainingLength = m_pHeader->optStreamingFilesBufSize;
         while (remainingLength > 0)
         {
-            std::string streamingFilePath = reinterpret_cast<char*>(buf + offset);
-            std::filesystem::path fileInfo(streamingFilePath);
+            const std::string streamingFilePath = reinterpret_cast<char*>(buf + offset);
+            const std::filesystem::path fileInfo(streamingFilePath);
 
             ParseStreamedFile(fileInfo.filename().string(), true);
             const int length = static_cast<int>(streamingFilePath.length());
@@ -682,7 +682,7 @@ const bool CPakFile::DecompressFileBuffer(const char* fileBuffer, std::shared_pt
     }
     else if (header->flags & PAK_HEADER_FLAGS_ZSTD_ENCODED)
     {
-        g_assetData.Log_Error(this, "Pak file used unsupported ZSTD compression. RSX does not support this compression");
+        g_assetData.Log_Error(this, "Pak file used ZSTD compression. RSX does not support this compression");
 
         delete header;
         return false;
@@ -721,7 +721,7 @@ void CPakFile::CreateHeaderSegmentCollection()
         assetTypeInfo.offsetToNextHeaderInCollection = nextOffsetAligned;
         nextOffsetForAssetTypeHeaders = nextOffsetAligned + (assetTypeInfo.assetCount * assetTypeInfo.headerSize);
 
-        // == Update "HEADER" segment collection ==
+
         SegmentCollection_t* const collection = &this->segmentCollections[SegmentCollection_t::eType::SCT_HEAD];
 
         // The size of the header collection will now be equal to the calculated value for the next offset,
@@ -868,7 +868,6 @@ const bool CPakFile::DecodePatchCommands()
 
             bitbuf->DiscardStoredBits(p.unk[bitbuf->ReadStoredBits(6)]);
 
-            // get the next patch function to execute
             p.patchFunc = g_pakPatchApi[cmd];
 
             if (cmd <= 3u)
@@ -888,7 +887,7 @@ const bool CPakFile::DecodePatchCommands()
             }
         }
 
-#if (PAKLOAD_DEBUG == PAKLOAD_DEBUG_VERBOSE)
+#if (PAKLOAD_DEBUG == PAKLOAD_DEBUG_VERBOSE) // This print is extremely verbose. Do not uncomment unless debugging pak patching
         //Log("PTCH: Patch [%i]\n\tRemaining source bytes: %lld\n\tPatch destination size: %lld\n\tNumber of bytes to skip: %lld\n\tNumber of bytes left in the file buffer: %lld\n", cmd, p.numBytesToPatch, p.patchDestinationSize, p.numBytesToSkip, p.numRemainingFileBufferBytes);
 #endif // #if (PAKLOAD_DEBUG == PAKLOAD_DEBUG_VERBOSE)
 
@@ -928,7 +927,6 @@ void CPakFile::CalculateLoadedAssetTypeInfo()
 {
     for (int i = 0; i < this->assetCount(); ++i)
     {
-        //const PakAsset_t* const asset = &this->internalAssets()[i];
         void* asset = this->rawAsset(static_cast<size_t>(i));
 
         const uint32_t type = PakAsset_t::Type(asset, this->header()->version);
@@ -978,6 +976,10 @@ void CPakFile::SortAssetsByHeaderPointer()
 #undef SWAP_DWORDS
     };
 
+    // Calculate the number of assets in this pak that are contained in real new pages.
+    // For non-patched paks (i.e., paks without (XX).rpak), this will be 0.
+    // For any patched paks, this will be any assets that have their header in brand new pages
+    //  instead of in the pages of one of the lower patch versions
     int numAssetsInNewPages = 0;
     for (int i = 0; i < this->assetCount(); ++i)
     {
@@ -993,14 +995,14 @@ void CPakFile::SortAssetsByHeaderPointer()
 
     const int numOldAssets = this->assetCount() - numAssetsInNewPages;
 
-    // copy all of the assets in new pages to the front of the vector
+    // Copy all of the assets in new pages to the front of the vector
     memcpy(
         tempAssetPointers.data(),
         this->sortedAssetPointers.data() + numOldAssets,
         sizeof(PakAsset*) * numAssetsInNewPages
     );
 
-    // copy all of the assets in old pages to the back of the vector
+    // Copy all of the assets in old pages to the back of the vector
     memcpy(
         tempAssetPointers.data() + numAssetsInNewPages,
         this->sortedAssetPointers.data(),

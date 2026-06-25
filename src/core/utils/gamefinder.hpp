@@ -34,8 +34,6 @@ inline std::vector<std::filesystem::path> GameFinder_FindAllCompatibleSteamGames
 		return {};
 	}
 
-	std::vector<std::filesystem::path> gameDirs = {};
-
 	/*
 	"libraryfolders"
 	{
@@ -52,6 +50,8 @@ inline std::vector<std::filesystem::path> GameFinder_FindAllCompatibleSteamGames
 		}
 	}
 	*/
+
+	std::vector<std::filesystem::path> gameDirs = {};
 
 	auto root = tyti::vdf::read(lfStream);
 

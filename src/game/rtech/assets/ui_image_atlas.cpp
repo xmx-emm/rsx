@@ -131,7 +131,7 @@ void PostLoadUIImageAtlasAsset(CAssetContainer* const pak, CAsset* const asset)
     {
         std::string atlasName = "ui_image_atlas/" + std::string(txtrAsset->name) + ".rpak";
 
-        //assertm(pakAsset->data()->guids == RTech::StringToGuid(atlasName.c_str()), "hashed name for atlas did not match existing guid\n");
+        //assertm(pakAsset->data()->guid == RTech::StringToGuid(atlasName.c_str()), "hashed name for atlas did not match existing guid\n");
 
         pakAsset->SetAssetName(atlasName, true);
     }
