@@ -176,7 +176,10 @@ void Preview_Model(CDXDrawData* drawData, float dt)
         while (iterator != drawData->debugPrims.end())
         {
             if (!iterator->visible)
+            {
+                iterator++;
                 continue;
+            }
 
             ctx->IASetPrimitiveTopology(iterator->primTopology);
 
