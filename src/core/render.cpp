@@ -548,6 +548,10 @@ static void MainWnd_LaunchSkinFinderForGame(const std::filesystem::path& dirPath
 
 static void MainWnd_WelcomeBox()
 {
+    // Don't bother showing the welcome box if we're in file load. We can't do shit anyway...
+    if (inJobAction)
+        return;
+
     static bool firstTimeWelcoming = true;
     static std::vector<std::filesystem::path> foundGameDirectories = {};
     static std::vector<int8_t> gameDirectoryTypes = {};
