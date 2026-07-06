@@ -495,6 +495,8 @@ void* PreviewTextureAsset(CAsset* const asset, const bool firstFrameForAsset)
         for (size_t i = 0; i < ARRAYSIZE(currContainerStem); i++)
             currContainerStem[i].clear();
 
+        uint8_t highestLoadedMipIdx = 0xff;
+
         uint8_t mipIdx = 0;
         for (auto& mip : txtrAsset->mipArray)
         {
@@ -531,10 +533,15 @@ void* PreviewTextureAsset(CAsset* const asset, const bool firstFrameForAsset)
                 previewData.dataOrigin = targetStem.c_str();
             }
 
+            if (mip.isLoaded)
+                highestLoadedMipIdx = mipIdx;
+
             mipIdx++;
         }
 
-        selectedMip = selectedMip.index > previewMipSize ? previewMips.back() : selectedMip;
+        selectedMip = highestLoadedMipIdx != 0xFF ? previewMips.at(highestLoadedMipIdx) : previewMips.back();// selectedMip.index > previewMipSize ? previewMips.back() : selectedMip;
+        lastSelectedMip = selectedMip.level;
+
         selectedArrayIndex = selectedArrayIndex > txtrAsset->arraySize ? 0 : selectedArrayIndex;
     }
 
