@@ -928,6 +928,38 @@ void HandleRenderFrame()
                         }
                         if (knownAssetType && !typeBinding->second._loadAssetType)
                             ImGui::PopStyleColor();
+
+                        // Context menu (right-click)
+                        if (ImGui::BeginPopupContextItem())
+                        {
+                            if (ImGui::Selectable("Copy asset names"))
+                            {
+                                std::stringstream nameStream;
+                                for (auto& it : s_selectedAssets)
+                                {
+                                    nameStream << it->GetAssetName() << "\n";
+                                }
+
+                                ImGui::SetClipboardText(nameStream.str().c_str());
+
+                                ImGui::CloseCurrentPopup();
+                            }
+
+                            if (ImGui::Selectable("Copy asset guids"))
+                            {
+                                std::stringstream guidStream;
+                                for (auto& it : s_selectedAssets)
+                                {
+                                    guidStream << "0x" << std::uppercase << std::hex << it->GetAssetGUID() << "\n";
+                                }
+
+                                ImGui::SetClipboardText(guidStream.str().c_str());
+
+                                ImGui::CloseCurrentPopup();
+                            }
+
+                            ImGui::EndPopup();
+                        }
                     }
 
                     if (ImGui::TableSetColumnIndex(AssetColumn_t::AC_GUID))
