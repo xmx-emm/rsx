@@ -658,9 +658,9 @@ public:
 		{
 			for (uint32_t i = 0; i < m_numLogMessages; ++i)
 			{
-				free((void*)m_logMessages->timestampStr);
-				free((void*)m_logMessages->message);
-				free((void*)m_logMessages->sourceName);
+				free((void*)m_logMessages[i].timestampStr);
+				free((void*)m_logMessages[i].message);
+				free((void*)m_logMessages[i].sourceName);
 			}
 
 			free(m_logMessages);
