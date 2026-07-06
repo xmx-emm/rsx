@@ -977,7 +977,7 @@ void HandleRenderFrame()
                                 ImGui::CloseCurrentPopup();
                             }
 
-                            if (ImGui::Selectable("Export selected assets"), false, inJobAction ? ImGuiSelectableFlags_Disabled : 0)
+                            if (ImGui::Selectable("Export selected assets"))
                             {
                                 ImGui::CloseCurrentPopup();
 
