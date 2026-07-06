@@ -24,6 +24,7 @@
 #include <core/fonts/codicons.h>
 
 #include <core/utils/gamefinder.hpp>
+#include <misc/ImGuiNotify.hpp>
 
 extern CDXParentHandler* g_dxHandler;
 extern std::atomic<uint32_t> g_maxConcurrentThreadCount;
@@ -1127,6 +1128,8 @@ void HandleRenderFrame()
         LogWnd_Draw(&uiState);
 
     g_pImGuiHandler->HandleProgressBar();
+
+    ImGui::RenderNotifications();
 
     ImGui::Render();
 

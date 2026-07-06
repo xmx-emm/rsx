@@ -6,6 +6,7 @@
 #include <core/filehandling/export.h>
 
 #include <game/rtech/cpakfile.h>
+#include <misc/ImGuiNotify.hpp>
 
 void HandlePakLoad(std::vector<std::string> filePaths)
 {
@@ -180,9 +181,10 @@ void HandlePakAssetExportList(std::deque<CAsset*> selectedAssets, const bool exp
     parallelProcessTask.execute();
     parallelProcessTask.wait();
     g_pImGuiHandler->FinishProgressBarEvent(exportAssetListEvent);
+
+
+    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, std::format("Exported {} assets!", selectedAssets.size()).c_str()});
 }
-
-
 
 void HandleExportAllPakAssets(std::vector<CGlobalAssetData::AssetLookup_t>* const pakAssets, const bool exportDependencies)
 {

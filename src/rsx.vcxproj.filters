@@ -486,6 +486,9 @@
     <ClInclude Include="thirdparty\valvefilevdf\vdf_parser.hpp">
       <Filter>thirdparty\ValveFileVDF</Filter>
     </ClInclude>
+    <ClInclude Include="thirdparty\imgui\misc\ImGuiNotify.hpp">
+      <Filter>thirdparty\imgui\misc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
