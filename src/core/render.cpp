@@ -445,41 +445,36 @@ void ApplySelectionRequests(ImGuiMultiSelectIO* ms_io, std::deque<CAsset*>& sele
     }
 }
 
+// Reset the load state of the UI so that we can prepare to un/load a new set of files
+void ClearLoadState()
+{
+    s_selectedAssets.clear();
+    s_filteredAssets.clear();
+    s_prevRenderInfoAsset = nullptr;
+    g_assetData.ClearAssetData();
+    g_dxHandler->GetUIState().ClearAssetData();
+}
+
 void MainWnd_MenuBar()
 {
     if (ImGui::BeginMainMenuBar())
     {
-        CUIState& uiState = g_dxHandler->GetUIState();
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Open"))
+            if (ImGui::MenuItem("Open", "CTRL+O", false, !inJobAction) && !inJobAction)
             {
-                if (!inJobAction)
-                {
-                    s_selectedAssets.clear();
-                    s_filteredAssets.clear();
-                    s_prevRenderInfoAsset = nullptr;
-                    g_assetData.ClearAssetData();
-                    uiState.ClearAssetData();
+                ClearLoadState();
 
-                    // We kinda leak the thread here but it's okay, we want it to keep executing.
-                    CThread(HandleOpenFileDialog, g_dxHandler->GetWindowHandle()).detach();
-                }
+                // We kinda leak the thread here but it's okay, we want it to keep executing.
+                CThread(HandleOpenFileDialog, g_dxHandler->GetWindowHandle()).detach();
             }
 
-            if (ImGui::MenuItem("Unload Files"))
+            if (ImGui::MenuItem("Unload Files", "CTRL+W", false, !inJobAction) && !inJobAction)
             {
-                if (!inJobAction)
-                {
-                    if (g_assetData.v_assets.size() > 0)
-                        g_assetData.Log_Info(nullptr, "Unloaded %lld asset%s from %lld container file%s", g_assetData.v_assets.size(), g_assetData.v_assets.size() == 1 ? "" : "s", g_assetData.v_assetContainers.size(), g_assetData.v_assetContainers.size() == 1 ? "" : "s");
+                if (g_assetData.v_assets.size() > 0)
+                    g_assetData.Log_Info(nullptr, "Unloaded %lld asset%s from %lld container file%s", g_assetData.v_assets.size(), g_assetData.v_assets.size() == 1 ? "" : "s", g_assetData.v_assetContainers.size(), g_assetData.v_assetContainers.size() == 1 ? "" : "s");
 
-                    s_selectedAssets.clear();
-                    s_filteredAssets.clear();
-                    s_prevRenderInfoAsset = nullptr;
-                    g_assetData.ClearAssetData();
-                    uiState.ClearAssetData();
-                }
+                ClearLoadState();
             }
 
             ImGui::EndMenu();
@@ -487,6 +482,7 @@ void MainWnd_MenuBar()
 
         if (ImGui::BeginMenu("Edit"))
         {
+            CUIState& uiState = g_dxHandler->GetUIState();
             if (ImGui::MenuItem("Settings"))
                 uiState.ShowSettingsWindow(true);
 
