@@ -1837,21 +1837,24 @@ void UpdateModelBoneMatrix(CDXDrawData* const drawData, const ModelParsedData_t*
 
 		boneArray[i] = multiplied;
 
-		//if (bone.parent != -1)
-		//{
-		//	XMVECTOR scale;
-		//	XMVECTOR pos;
-		//	XMVECTOR rot;
-		//	XMMatrixDecompose(&scale, &rot, &pos, tempBoneMatrices[i]);
+		if (bone.parent != -1)
+		{
+			XMVECTOR scale;
+			XMVECTOR pos;
+			XMVECTOR rot;
+			XMMatrixDecompose(&scale, &rot, &pos, tempBoneMatrices[i]);
 
-		//	XMVECTOR parentPos;
-		//	XMMatrixDecompose(&scale, &rot, &parentPos, tempBoneMatrices[bone.parent]);
-		//	//MatrixGetColumn(boneArray[bone.parent], 3, parentPos);
+			XMVECTOR parentPos;
+			XMMatrixDecompose(&scale, &rot, &parentPos, tempBoneMatrices[bone.parent]);
 
 		//	constexpr uint32_t boneColour = 0xFF0000FF;
+			constexpr uint32_t boneColour = 0xFF0000FF;
 
 		//	drawData->DrawLine(pos, parentPos, boneColour, true, 1.f, -1.f);
-		//}
+			Vector pos1 = pos;
+			Vector pos2 = parentPos;
+			drawData->DrawLine(Vector(pos1.x, pos1.z, pos1.y), Vector(pos2.x, pos2.z, pos2.y), boneColour, true, 1.f, -1.f);
+		}
 
 		i++;
 	}
