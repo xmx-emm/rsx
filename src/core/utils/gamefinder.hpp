@@ -7,15 +7,33 @@ const std::unordered_map<std::string, const char*> STEAM_APP_IDS = {
 	{"1172470", "Apex Legends"}, // Apex Legends
 };
 
-inline std::vector<std::filesystem::path> GameFinder_FindAllCompatibleSteamGames()
+enum class GameFinderGame_e
 {
+	INVALID = 0,
+
+	TITANFALL_1, // erm actually it's called Titanfall
+	TITANFALL_2,
+
+	APEX_LEGENDS = 5, // i can be very funny sometimes
+};
+
+struct GameFinderResults_s
+{
+	std::vector<std::filesystem::path> gamePaths;
+	std::vector<GameFinderGame_e> gameTypes;
+};
+
+inline bool GameFinder_FindAllCompatibleSteamGames(GameFinderResults_s* results)
+{
+	assert(results);
+
 	wchar_t buf[1024] = {};
 	DWORD bufSize = 1024;
 
 	if (RegGetValueW(HKEY_CURRENT_USER, L"Software\\Valve\\Steam", L"SteamPath", RRF_RT_ANY, NULL, &buf, &bufSize))
 	{
 		Log("GameFinder: Failed to locate steam installation\n");
-		return {};
+		return false;
 	}
 
 	std::filesystem::path steamInstallationPath = buf;
@@ -23,7 +41,7 @@ inline std::vector<std::filesystem::path> GameFinder_FindAllCompatibleSteamGames
 	if (!std::filesystem::exists(steamInstallationPath / "steamapps" / "libraryfolders.vdf"))
 	{
 		Log("GameFinder: Failed to locate libraryfolders.vdf within steamapps directory\n");
-		return {};
+		return false;
 	}
 
 	std::ifstream lfStream(steamInstallationPath / "steamapps" / "libraryfolders.vdf", std::ios::in);
@@ -31,7 +49,7 @@ inline std::vector<std::filesystem::path> GameFinder_FindAllCompatibleSteamGames
 	if (!lfStream.is_open())
 	{
 		Log("GameFinder: Failed to open libraryfolders.vdf\n");
-		return {};
+		return false;
 	}
 
 	/*
@@ -51,8 +69,6 @@ inline std::vector<std::filesystem::path> GameFinder_FindAllCompatibleSteamGames
 	}
 	*/
 
-	std::vector<std::filesystem::path> gameDirs = {};
-
 	auto root = tyti::vdf::read(lfStream);
 
 	assert(root.name == "libraryfolders");
@@ -71,12 +87,23 @@ inline std::vector<std::filesystem::path> GameFinder_FindAllCompatibleSteamGames
 				std::filesystem::path gamePath = libraryPath / it->second;
 
 				// Final check to make sure that steam isn't lying to us
-				if(std::filesystem::exists(gamePath))
-					gameDirs.push_back(gamePath);
+				if (std::filesystem::exists(gamePath))
+				{
+					results->gamePaths.push_back(gamePath);
+					
+					// Discover the type of game! Sure I could just use the steam app id to determine this
+					// but like what if I didn't do that
+					if (std::filesystem::exists(gamePath / "r5apexdata.bin"))
+						results->gameTypes.push_back(GameFinderGame_e::APEX_LEGENDS);
+					else if (std::filesystem::exists(gamePath / "Titanfall2.exe"))
+						results->gameTypes.push_back(GameFinderGame_e::TITANFALL_2);
+					else if (std::filesystem::exists(gamePath / "Titanfall.exe"))
+						results->gameTypes.push_back(GameFinderGame_e::TITANFALL_1);
+				}
 			}
 		}
 	}
 
 
-	return gameDirs;
+	return true;
 }

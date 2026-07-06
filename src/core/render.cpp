@@ -468,10 +468,10 @@ void MainWnd_MenuBar()
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Open", "CTRL+O", false, !inJobAction) && !inJobAction)
+            if (ImGui::MenuItem("Open", "CTRL+O", false, !inJobAction))
                 ShowOpenFileDialog();
 
-            if (ImGui::MenuItem("Unload Files", "CTRL+W", false, !inJobAction) && !inJobAction)
+            if (ImGui::MenuItem("Unload Files", "CTRL+W", false, !inJobAction))
             {
                 if (g_assetData.v_assets.size() > 0)
                     g_assetData.Log_Info(nullptr, "Unloaded %lld asset%s from %lld container file%s", g_assetData.v_assets.size(), g_assetData.v_assets.size() == 1 ? "" : "s", g_assetData.v_assetContainers.size(), g_assetData.v_assetContainers.size() == 1 ? "" : "s");
@@ -517,9 +517,9 @@ void MainWnd_MenuBar()
 
 extern void HandlePakLoad(std::vector<std::string> filePaths);
 
-static void MainWnd_LaunchSkinFinderForGame(const std::filesystem::path& dirPath, int8_t gameType)
+static void MainWnd_LaunchSkinFinderForGame(const std::filesystem::path& dirPath, GameFinderGame_e gameType)
 {
-    if (gameType == 2) // apex
+    if (gameType == GameFinderGame_e::APEX_LEGENDS)
     {
         const std::vector<std::string> filePaths = {
             (dirPath / "paks/Win64/localization_english.rpak").string(),
@@ -553,28 +553,16 @@ static void MainWnd_WelcomeBox()
         return;
 
     static bool firstTimeWelcoming = true;
-    static std::vector<std::filesystem::path> foundGameDirectories = {};
-    static std::vector<int8_t> gameDirectoryTypes = {};
+    static GameFinderResults_s gfResults = {};
     static int64_t selectedGameDirectoryIdx = -1;
     if (SHOW_WELCOME_BOX)
     {
+        // There's no point in rediscovering the game installations if the user loads files and then unloads them, since
+        // it's incredibly unlikely that in that time they have un/installed a new compatible game, and doing this minimises
+        // registry/FS accesses
         if (firstTimeWelcoming)
         {
-            foundGameDirectories = GameFinder_FindAllCompatibleSteamGames();
-            gameDirectoryTypes.resize(foundGameDirectories.size());
-
-            size_t i = 0;
-            for (auto& gameDir : foundGameDirectories)
-            {
-                if (std::filesystem::exists(gameDir / "r5apexdata.bin"))
-                    gameDirectoryTypes[i] = 2; // apex
-                else if (std::filesystem::exists(gameDir / "Titanfall2.exe"))
-                    gameDirectoryTypes[i] = 1; // titanfall 2
-                else if (std::filesystem::exists(gameDir / "Titanfall.exe"))
-                    gameDirectoryTypes[i] = 0;
-
-                i++;
-            }
+            GameFinder_FindAllCompatibleSteamGames(&gfResults);
 
             firstTimeWelcoming = false;
         }
@@ -595,7 +583,7 @@ static void MainWnd_WelcomeBox()
             if (ImGui::Button("Open File..."))
                 ShowOpenFileDialog();
 
-            if (foundGameDirectories.size() > 0)
+            if (gfResults.gamePaths.size() > 0)
             {
                 ImGui::Separator();
                 ImGui::TextUnformatted("Compatible Game Installations");
@@ -609,7 +597,7 @@ static void MainWnd_WelcomeBox()
                     ImGui::TableHeadersRow();
 
                     int i = 0;
-                    for (auto& path : foundGameDirectories)
+                    for (auto& path : gfResults.gamePaths)
                     {
                         ImGui::PushID(i);
                         ImGui::TableNextRow();
@@ -637,14 +625,14 @@ static void MainWnd_WelcomeBox()
                 if (selectedGameDirectoryIdx != -1)
                 {
                     const char* buttonLabel = "Open";
-                    switch (gameDirectoryTypes[selectedGameDirectoryIdx])
+                    switch (gfResults.gameTypes[selectedGameDirectoryIdx])
                     {
-                    case 0: // wait r1 doesn't have rpaks... good thing the gamefinder doesn't search for r1 yet!
-                    case 1: // titanfall 2
+                    case GameFinderGame_e::TITANFALL_1: // wait r1 doesn't have rpaks... good thing the gamefinder doesn't search for r1 yet!
+                    case GameFinderGame_e::TITANFALL_2:
                         buttonLabel = "Open common.rpak";
                         break;
-                    case 2:
-                        buttonLabel = "Open skin finder";
+                    case GameFinderGame_e::APEX_LEGENDS:
+                        buttonLabel = "Open Skin Finder";
                         break;
                     }
 
@@ -657,7 +645,7 @@ static void MainWnd_WelcomeBox()
                                 }).detach();
                             }, true);
 
-                        MainWnd_LaunchSkinFinderForGame(foundGameDirectories[selectedGameDirectoryIdx], gameDirectoryTypes[selectedGameDirectoryIdx]);
+                        MainWnd_LaunchSkinFinderForGame(gfResults.gamePaths[selectedGameDirectoryIdx], gfResults.gameTypes[selectedGameDirectoryIdx]);
                     }
                 }
             }
