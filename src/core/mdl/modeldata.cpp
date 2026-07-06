@@ -1783,24 +1783,6 @@ bool ExportSeqDesc(const int setting, const ModelSeq_t* const seqdesc, std::file
 }
 
 #if defined(HAS_BONED_MODELS)
-void CalcMatrixForBone_Unparented(const ModelBone_t& bone, matrix3x4_t& matOut)
-{
-	matrix3x4_t mat;
-	QuaternionMatrix(bone.quat, mat);
-	MatrixSetColumn(bone.pos, 3, mat);
-
-	mat[0][0] *= bone.scale.x;
-	mat[1][0] *= bone.scale.x;
-	mat[2][0] *= bone.scale.x;
-	mat[0][1] *= bone.scale.y;
-	mat[1][1] *= bone.scale.y;
-	mat[2][1] *= bone.scale.y;
-	mat[0][2] *= bone.scale.z;
-	mat[1][2] *= bone.scale.z;
-	mat[2][2] *= bone.scale.z;
-
-	matOut = mat;
-}
 
 void CalcMatrixForBone_Unparented(const ModelBone_t& bone, XMMATRIX& matOut)
 {
