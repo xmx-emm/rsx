@@ -74,8 +74,7 @@ void LogWnd_Draw(CUIState* uiState)
 
 			ImGui::EndTable();
 		}
-
-
-        ImGui::End();
     }
+
+	ImGui::End();
 }
