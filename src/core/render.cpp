@@ -377,8 +377,10 @@ void SettingsWnd_Draw(CUIState* uiState)
                 if (colouredText) ImGui::PopStyleColor();
 
                 // Prevent the asset status from being toggled while files are loading, as this could cause some serious inconsistencies
-                // if changed while assets are already being processed
-                ImGui::BeginDisabled(inJobAction);
+                // if changed while assets are already being processed.
+                // This setting must also not be changed while files are already opened, as otherwise RSX may attempt to preview an asset
+                // that has not been loaded
+                ImGui::BeginDisabled(inJobAction || g_assetData.v_assetContainers.size() != 0);
 
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 25.f);
                 ImGui::Checkbox(std::format("Load Asset Type##_{}", binding.name).c_str(), &binding._loadAssetType);
@@ -386,7 +388,7 @@ void SettingsWnd_Draw(CUIState* uiState)
                 ImGui::EndDisabled();
 
                 ImGui::SameLine();
-                ImGuiExt::HelpMarker("This setting determines whether this asset type should be processed by RSX when loading asset files");
+                ImGuiExt::HelpMarker("This setting determines whether this asset type should be processed by RSX when loading asset files.\n\nIMPORTANT: This setting can only be changed before selecting pak files to open.");
 
 
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 25.f);
