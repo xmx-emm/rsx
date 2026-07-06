@@ -771,6 +771,10 @@ void HandleRenderFrame()
         // CTRL + O : Open files
         if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_O, ImGuiInputFlags_RouteGlobal))
             ShowOpenFileDialog();
+
+        // CTRL + W : Unload files
+        if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_W, ImGuiInputFlags_RouteGlobal))
+            ClearLoadState();
     }
 
     // create a docking area across the entire viewport
