@@ -750,6 +750,15 @@ static void MainWnd_AssetListMenuBar(std::vector<CGlobalAssetData::AssetLookup_t
 
             ImGui::EndMenu();
         }
+
+        const std::string assetCountText = std::format("{} assets", !FilterConfig->textFilter.IsActive() ? g_assetData.v_assets.size() : s_filteredAssets.size());
+
+        const float availX = ImGui::GetContentRegionAvail().x;
+        const float sizeX = ImGui::CalcTextSize(assetCountText.c_str()).x;
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (availX-sizeX));
+
+        ImGui::TextDisabled("%s", assetCountText.c_str());
+
         ImGui::EndMenuBar();
     }
 }
@@ -969,7 +978,6 @@ void HandleRenderFrame()
 
                                 CThread(HandlePakAssetExportList, std::move(s_selectedAssets), g_rsxSettings.exportAssetDeps).detach();
                                 s_selectedAssets.clear();
-
                             }
 
                             ImGui::EndPopup();
