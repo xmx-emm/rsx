@@ -376,8 +376,15 @@ void SettingsWnd_Draw(CUIState* uiState)
 
                 if (colouredText) ImGui::PopStyleColor();
 
+                // Prevent the asset status from being toggled while files are loading, as this could cause some serious inconsistencies
+                // if changed while assets are already being processed
+                ImGui::BeginDisabled(inJobAction);
+
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 25.f);
                 ImGui::Checkbox(std::format("Load Asset Type##_{}", binding.name).c_str(), &binding._loadAssetType);
+
+                ImGui::EndDisabled();
+
                 ImGui::SameLine();
                 ImGuiExt::HelpMarker("This setting determines whether this asset type should be processed by RSX when loading asset files");
 
