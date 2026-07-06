@@ -314,8 +314,8 @@ struct LogErrorListInfo_t
 
 	const std::pair<int, int> GetPair() const { return { numWarnings, numErrors }; };
 
-	int numWarnings;
-	int numErrors;
+	std::atomic<int> numWarnings;
+	std::atomic<int> numErrors;
 };
 
 class CAssetContainer;
@@ -522,6 +522,8 @@ public:
 
 	ContainerMessage_t* m_logMessages;
 
+	std::mutex m_logMutex;
+
 	LogErrorListInfo_t m_logErrorListInfo;
 	uint32_t m_numLogMessages;
 	uint32_t m_numFailedContainerLoads;
@@ -622,16 +624,6 @@ public:
 
 	void LogMessages_Append(ContainerMessage_t::MessageType_e type, const std::string& sourceName, const std::string& msg)
 	{
-		// If there's no log messages ptr, try and allocate a placeholder so we can write something into the array
-		if (!m_logMessages)
-			m_logMessages = reinterpret_cast<ContainerMessage_t*>(calloc(0, sizeof(ContainerMessage_t)));
-
-		// If there's still no log messages ptr just return since logs are not critical
-		if (!m_logMessages)
-			return;
-
-		m_logMessages = reinterpret_cast<ContainerMessage_t*>(realloc(m_logMessages, sizeof(ContainerMessage_t) * (m_numLogMessages + 1)));
-
 		const time_t t = std::time(nullptr);
 		tm tm;
 		if (localtime_s(&tm, &t))
@@ -642,6 +634,15 @@ public:
 
 		std::ostringstream oss;
 		oss << std::put_time(&tm, "%H:%M:%S");
+
+		std::lock_guard lock(m_logMutex);
+
+		ContainerMessage_t* const newMessages = reinterpret_cast<ContainerMessage_t*>(realloc(m_logMessages, sizeof(ContainerMessage_t) * (m_numLogMessages + 1)));
+
+		if (!newMessages)
+			return;
+
+		m_logMessages = newMessages;
 
 		ContainerMessage_t* m = &m_logMessages[m_numLogMessages];
 		m->type = type;
@@ -654,6 +655,8 @@ public:
 
 	void FreeLogMessages()
 	{
+		std::lock_guard lock(m_logMutex);
+
 		if (m_logMessages && m_numLogMessages > 0)
 		{
 			for (uint32_t i = 0; i < m_numLogMessages; ++i)
