@@ -183,7 +183,7 @@ void HandlePakAssetExportList(std::deque<CAsset*> selectedAssets, const bool exp
     g_pImGuiHandler->FinishProgressBarEvent(exportAssetListEvent);
 
 
-    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, std::format("Exported {} assets!", selectedAssets.size()).c_str()});
+    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, 150.f, "Exported %lld asset%s!", selectedAssets.size(), selectedAssets.size() == 1 ? "" : "s"});
 }
 
 void HandleExportAllPakAssets(std::vector<CGlobalAssetData::AssetLookup_t>* const pakAssets, const bool exportDependencies)

@@ -961,6 +961,8 @@ void HandleRenderFrame()
 
                                 ImGui::SetClipboardText(nameStream.str().c_str());
 
+                                ImGui::InsertNotification({ ImGuiToastType::Success, 1000, 100.f, "Copied!", });
+
                                 ImGui::CloseCurrentPopup();
                             }
 
@@ -973,6 +975,8 @@ void HandleRenderFrame()
                                 }
 
                                 ImGui::SetClipboardText(guidStream.str().c_str());
+
+                                ImGui::InsertNotification({ ImGuiToastType::Success, 1000, 100.f, "Copied!" });
 
                                 ImGui::CloseCurrentPopup();
                             }

@@ -112,6 +112,8 @@ private:
     char										title[NOTIFY_MAX_MSG_LENGTH];
     char										content[NOTIFY_MAX_MSG_LENGTH];
 
+    float                                       widthOverride = 500.f;
+
     int											dismissTime = NOTIFY_DEFAULT_DISMISS;
     std::chrono::system_clock::time_point		creationTime = std::chrono::system_clock::now();
 
@@ -252,6 +254,11 @@ public:
     inline ImGuiToastType getType()
     {
         return this->type;
+    };
+
+    inline float getWidth()
+    {
+        return this->widthOverride;
     };
 
     /**
@@ -450,6 +457,20 @@ public:
     }
 
     /**
+     * @brief Constructor for creating a new ImGuiToast object with a specified type, dismiss time, and content format.
+     *
+     * @param type The type of the toast message.
+     * @param dismissTime The time in milliseconds before the toast message is dismissed.
+     * @param format The format string for the content of the toast message.
+     * @param ... The variable arguments to be formatted according to the format string.
+     */
+    ImGuiToast(ImGuiToastType type, int dismissTime, float _widthOverride, const char* format, ...) : ImGuiToast(type, dismissTime)
+    {
+        NOTIFY_FORMAT(this->setContent, format);
+        this->widthOverride = _widthOverride;
+    }
+
+    /**
      * @brief Constructor for creating a new ImGuiToast object with a specified type, dismiss time, title format, content format and a button.
      *
      * @param type The type of the toast message.
@@ -570,7 +591,7 @@ namespace ImGui
                 currentToast->setWindowFlags(NOTIFY_DEFAULT_TOAST_FLAGS | ImGuiWindowFlags_NoInputs);
             }
 
-            SetNextWindowSize(ImVec2(500.f, 0.f), ImGuiCond_Always);
+            SetNextWindowSize(ImVec2(currentToast->getWidth(), 0.f), ImGuiCond_Always);
             Begin(windowName, nullptr, currentToast->getWindowFlags());
 
             // Render over all other windows
