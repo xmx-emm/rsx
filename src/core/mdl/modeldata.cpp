@@ -1787,17 +1787,13 @@ bool ExportSeqDesc(const int setting, const ModelSeq_t* const seqdesc, std::file
 void CalcMatrixForBone_Unparented(const ModelBone_t& bone, XMMATRIX& matOut)
 {
 	XMVECTOR quat = { bone.quat.x, bone.quat.y, bone.quat.z, bone.quat.w };
-	XMVECTOR pos = { bone.pos.x, bone.pos.y, bone.pos.z };
 
 	XMMATRIX rotationMatrix = XMMatrixRotationQuaternion(quat);
 
 	XMMATRIX translationMatrix = XMMatrixTranslation(bone.pos.x, bone.pos.y, bone.pos.z);
 
-	XMMATRIX transform = XMMatrixMultiply(rotationMatrix, translationMatrix);
-
-	XMMATRIX finalMatrix = XMMatrixMultiply(transform, XMMatrixScaling(bone.scale.x, bone.scale.y, bone.scale.z));
-
-	matOut = finalMatrix;
+	// srt ong fr
+	matOut = XMMatrixMultiply(XMMatrixMultiply(XMMatrixScaling(bone.scale.x, bone.scale.y, bone.scale.z), rotationMatrix), translationMatrix);
 }
 
 //
@@ -1830,12 +1826,12 @@ void UpdateModelBoneMatrix(CDXDrawData* const drawData, const ModelParsedData_t*
 		
 		// now handle parenting
 		if (bone.parent != -1)
-			tempBoneMatrices[i] = XMMatrixMultiply(tempBoneMatrices[bone.parent], tempBoneMatrices[i]);
+			tempBoneMatrices[i] = XMMatrixMultiply(tempBoneMatrices[i], tempBoneMatrices[bone.parent]);
 
 		const XMMATRIX inverseBindMat = parsedData->boneInverseBindMatrices.at(i);
-		const XMMATRIX multiplied = XMMatrixMultiply(tempBoneMatrices[i], inverseBindMat);
+		const XMMATRIX multiplied = XMMatrixMultiply(inverseBindMat, tempBoneMatrices[i]);
 
-		boneArray[i] = multiplied;
+		boneArray[i] = XMMatrixTranspose(multiplied);
 
 		if (bone.parent != -1)
 		{
