@@ -37,14 +37,6 @@ StructuredBuffer<VertexWeight_t> g_weights : register(t61);
 
 StructuredBuffer<float4x4> g_boneMatrix : register(t60);
 
-#define RCP_32768 (3.05175781e-05) // 1 / 32768
-#define SCALEWEIGHT(w) ((w) * RCP_32768 + RCP_32768)
-
-#define MATRIX_VEC0(m) (m._m00_m10_m20_m01)
-#define MATRIX_VEC1(m) (m._m11_m21_m02_m12)
-#define MATRIX_VEC2(m) (m._m22_m03_m13_m23)
-
-
 VS_Output vs_main(VS_Input input)
 {
     VS_Output output;
