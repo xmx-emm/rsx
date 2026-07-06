@@ -480,6 +480,8 @@ void MainWnd_MenuBar()
         {
             if (ImGui::MenuItem("Open", "CTRL+O", false, !inJobAction))
                 ShowOpenFileDialog();
+            if (inJobAction) ImGui::SetItemTooltip("Unable to open new files while file loading is still in progress");
+
 
             if (ImGui::MenuItem("Unload Files", "CTRL+W", false, !inJobAction))
             {
@@ -488,6 +490,7 @@ void MainWnd_MenuBar()
 
                 ClearLoadState();
             }
+            if (inJobAction) ImGui::SetItemTooltip("Unable to open new files while file loading is still in progress");
 
             ImGui::EndMenu();
         }
