@@ -307,10 +307,12 @@ public:
     void DrawLine(const Vector& start, const Vector& end, uint32_t col, bool noDepthTest = false, float width = 1.f, float duration = 0.f);
 };
 
+#define CAMERA_DEFAULT_DISTANCE 25.f
+
 class CDXCamera
 {
 public:
-    CDXCamera() : distanceToPivot(25.f) {};
+    CDXCamera() : distanceToPivot(CAMERA_DEFAULT_DISTANCE) {};
 
     void Move(float dt);
 

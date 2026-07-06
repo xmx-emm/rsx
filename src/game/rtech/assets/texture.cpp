@@ -66,10 +66,10 @@ void LoadTextureAsset(CAssetContainer* const pak, CAsset* const asset)
     // [rika]: verify we know this texture format
     assertm(txtrAsset->imgFormat < eTextureFormat::TEX_FMT_UNKNOWN, "unaccounted texture format!");
 
-#ifdef _DEBUG
-    if (txtrAsset->type != _UNUSED && s_TextureTypeMap.count(txtrAsset->type) == 0)
-        Log("found texture '%s' with unknown texture type: %i\n", asset->GetAssetName().c_str(), txtrAsset->type);
-#endif // _DEBUG
+//#ifdef _DEBUG
+//    if (txtrAsset->type != _UNUSED && s_TextureTypeMap.count(txtrAsset->type) == 0)
+//        Log("found texture '%s' with unknown texture type: %i\n", asset->GetAssetName().c_str(), txtrAsset->type);
+//#endif // _DEBUG
 
     txtrAsset->totalMipLevels = (txtrAsset->optStreamedMipLevels + txtrAsset->streamedMipLevels + txtrAsset->permanentMipLevels);
     txtrAsset->arraySize = txtrAsset->arraySize == 0 ? 1 : txtrAsset->arraySize;

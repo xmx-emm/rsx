@@ -238,15 +238,17 @@ void Preview_Model(CDXDrawData* drawData, float dt)
         ImGui::SetCursorPos(initCursorPos + ImVec2(3.f, 0.f));
         ImGui::Text("%s", fullTextSize.x > windowSize.x ? GetStringAfterLastSlash(drawData->modelName) : drawData->modelName);
 
-        ImGui::SetCursorPos(ImVec2(initCursorPos.x + 5.f, (initCursorPos.y + windowSize.y) - 200.f));
+        ImGui::SetCursorPos(ImVec2(initCursorPos.x + 5.f, (initCursorPos.y + windowSize.y) - 215.f));
         ImGui::VSliderFloat("##ModelZoom", ImVec2(20.f, 150.f), &camera->distanceToPivot, 300.f, 5.f, "", ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_NoInput);
 
         const bool isSliderHovered = ImGui::IsItemHovered();
 
-        ImGui::SetCursorPos(ImVec2(initCursorPos.x + 11.f, (initCursorPos.y + windowSize.y) - 200.f));
+        ImGui::SetCursorPos(ImVec2(initCursorPos.x + 11.f, (initCursorPos.y + windowSize.y) - 215.f));
         ImGui::Text("+");
-        ImGui::SetCursorPos(ImVec2(initCursorPos.x + 13.f, (initCursorPos.y + windowSize.y) - 70.f));
+        ImGui::SetCursorPos(ImVec2(initCursorPos.x + 13.f, (initCursorPos.y + windowSize.y) - 85.f));
         ImGui::Text("-");
+
+        ImGui::Text("%.f%%", (CAMERA_DEFAULT_DISTANCE / camera->distanceToPivot) * 100.f);
 
         const bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
         if (!g_pInput->applyMouseInput)
