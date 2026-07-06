@@ -1871,8 +1871,8 @@ void CalculateBonesInverseBindMatrix(ModelParsedData_t* const parsedData)
 
 		// now handle parenting
 		if (bone.parent != -1)
-			tempBoneMatrices[i] = XMMatrixMultiply(tempBoneMatrices[bone.parent], tempBoneMatrices[i]);
-		
+			tempBoneMatrices[i] = XMMatrixMultiply(tempBoneMatrices[i], tempBoneMatrices[bone.parent]);
+
 		XMVECTOR determinant;
 		parsedData->boneInverseBindMatrices[i] = XMMatrixInverse(&determinant, tempBoneMatrices[i]);
 
