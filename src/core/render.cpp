@@ -455,6 +455,13 @@ void ClearLoadState()
     g_dxHandler->GetUIState().ClearAssetData();
 }
 
+void ShowOpenFileDialog()
+{
+    ClearLoadState();
+
+    CThread(HandleOpenFileDialog, g_dxHandler->GetWindowHandle()).detach();
+}
+
 void MainWnd_MenuBar()
 {
     if (ImGui::BeginMainMenuBar())
@@ -462,12 +469,7 @@ void MainWnd_MenuBar()
         if (ImGui::BeginMenu("File"))
         {
             if (ImGui::MenuItem("Open", "CTRL+O", false, !inJobAction) && !inJobAction)
-            {
-                ClearLoadState();
-
-                // We kinda leak the thread here but it's okay, we want it to keep executing.
-                CThread(HandleOpenFileDialog, g_dxHandler->GetWindowHandle()).detach();
-            }
+                ShowOpenFileDialog();
 
             if (ImGui::MenuItem("Unload Files", "CTRL+W", false, !inJobAction) && !inJobAction)
             {
@@ -515,7 +517,7 @@ void MainWnd_MenuBar()
 
 extern void HandlePakLoad(std::vector<std::string> filePaths);
 
-void MainWnd_LaunchSkinFinderForGame(const std::filesystem::path& dirPath, int8_t gameType)
+static void MainWnd_LaunchSkinFinderForGame(const std::filesystem::path& dirPath, int8_t gameType)
 {
     if (gameType == 2) // apex
     {
@@ -544,7 +546,7 @@ void MainWnd_LaunchSkinFinderForGame(const std::filesystem::path& dirPath, int8_
 
 #define SHOW_WELCOME_BOX (!inJobAction && g_assetData.v_assetContainers.empty())
 
-void MainWnd_WelcomeBox()
+static void MainWnd_WelcomeBox()
 {
     static bool firstTimeWelcoming = true;
     static std::vector<std::filesystem::path> foundGameDirectories = {};
@@ -587,16 +589,7 @@ void MainWnd_WelcomeBox()
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.f);
 
             if (ImGui::Button("Open File..."))
-            {
-                // Reset selected asset to avoid crash.
-                s_selectedAssets.clear();
-                s_filteredAssets.clear();
-                s_prevRenderInfoAsset = nullptr;
-                g_assetData.ClearAssetData();
-
-                // We kinda leak the thread here but it's okay, we want it to keep executing.
-                CThread(HandleOpenFileDialog, g_dxHandler->GetWindowHandle()).detach();
-            }
+                ShowOpenFileDialog();
 
             if (foundGameDirectories.size() > 0)
             {
@@ -771,6 +764,14 @@ void HandleRenderFrame()
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
+
+    // These shortcuts shouldn't be allowed to work when we are already processing a file load
+    if (!inJobAction)
+    {
+        // CTRL + O : Open files
+        if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_O, ImGuiInputFlags_RouteGlobal))
+            ShowOpenFileDialog();
+    }
 
     // create a docking area across the entire viewport
     if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DockingEnable)
