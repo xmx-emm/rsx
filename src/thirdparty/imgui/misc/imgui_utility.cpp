@@ -238,14 +238,14 @@ static void PreviewSettings_WriteAll(ImGuiContext* const ctx, ImGuiSettingsHandl
     buf->appendf("\n");
 }
 
-bool ImGuiCustomTextFilter::Draw(const char* label, float width)
+bool ImGuiCustomTextFilter::Draw(const char* label, const char* hint, float width)
 {
     if (width != 0.0f)
     {
         ImGui::SetNextItemWidth(width);
     }
 
-    const bool valChanged = ImGui::InputText(label, &inputBuf);
+    const bool valChanged = ImGui::InputTextWithHint(label, hint, &inputBuf);
     if (valChanged)
     {
         Build();

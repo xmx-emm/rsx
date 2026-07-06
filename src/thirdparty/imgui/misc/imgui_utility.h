@@ -64,7 +64,7 @@ public:
         Build();
     }
 
-    bool Draw(const char* label = "Filter", float width = 0.0f);
+    bool Draw(const char* label = "Filter", const char* hint="incl,-excl", float width = 0.0f);
     bool PassFilter(const char* text, const char* textEnd = nullptr) const;
     void Build();
 

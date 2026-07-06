@@ -835,7 +835,7 @@ void HandleRenderFrame()
         MainWnd_AssetListMenuBar(pakAssets);
 
         // OR case if we load a pak and the filter is not cleared yet.
-        if (FilterConfig->textFilter.Draw("##Filter", -1.f) || (s_filteredAssets.empty() && FilterConfig->textFilter.IsActive()))
+        if (FilterConfig->textFilter.Draw("##Filter", "Filter (incl,-excl)", -1.f) || (s_filteredAssets.empty() && FilterConfig->textFilter.IsActive()))
         {
             s_filteredAssets.clear();
             for (auto& it : g_assetData.v_assets)
@@ -863,6 +863,10 @@ void HandleRenderFrame()
             // Shrink capacity to match new size.
             s_filteredAssets.shrink_to_fit();
         }
+
+        ImGui::PushFont(NULL, 16.f);
+        ImGui::TextDisabled("Double-click the name of an asset to export");
+        ImGui::PopFont();
 
         constexpr int numColumns = AssetColumn_t::_AC_COUNT;
         if (ImGui::BeginTable("Assets", numColumns, ImGuiTableFlags_Hideable | ImGuiTableFlags_Sortable | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_BordersOuterV | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable))

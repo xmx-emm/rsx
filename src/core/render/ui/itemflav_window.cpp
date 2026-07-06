@@ -287,7 +287,7 @@ void ItemflavWnd_Draw(CUIState* uiState)
                 static ImGuiCustomTextFilter skinFilter;
 
                 // OR case if we load a pak and the filter is not cleared yet.
-                if (skinFilter.Draw("##SkinFilter", -1.f))
+                if (skinFilter.Draw("##SkinFilter", "incl,-excl", -1.f))
                 {
                     for (auto& skin : character->skins)
                     {
