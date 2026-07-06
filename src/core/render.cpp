@@ -963,6 +963,15 @@ void HandleRenderFrame()
                                 ImGui::CloseCurrentPopup();
                             }
 
+                            if (ImGui::Selectable("Export selected assets"), false, inJobAction ? ImGuiSelectableFlags_Disabled : 0)
+                            {
+                                ImGui::CloseCurrentPopup();
+
+                                CThread(HandlePakAssetExportList, std::move(s_selectedAssets), g_rsxSettings.exportAssetDeps).detach();
+                                s_selectedAssets.clear();
+
+                            }
+
                             ImGui::EndPopup();
                         }
                     }
