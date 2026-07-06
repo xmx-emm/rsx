@@ -1847,10 +1847,8 @@ void UpdateModelBoneMatrix(CDXDrawData* const drawData, const ModelParsedData_t*
 			XMVECTOR parentPos;
 			XMMatrixDecompose(&scale, &rot, &parentPos, tempBoneMatrices[bone.parent]);
 
-		//	constexpr uint32_t boneColour = 0xFF0000FF;
 			constexpr uint32_t boneColour = 0xFF0000FF;
 
-		//	drawData->DrawLine(pos, parentPos, boneColour, true, 1.f, -1.f);
 			Vector pos1 = pos;
 			Vector pos2 = parentPos;
 			drawData->DrawLine(Vector(pos1.x, pos1.z, pos1.y), Vector(pos2.x, pos2.z, pos2.y), boneColour, true, 1.f, -1.f);
