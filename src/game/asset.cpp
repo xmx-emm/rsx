@@ -107,11 +107,9 @@ void CGlobalAssetData::ProcessAssetsPostLoad()
                     AssetLookup_t* const pAssetLookup = &this->v_assets[assetToProcess];
                     if (auto it = m_assetTypeBindings.find(pAssetLookup->m_asset->GetAssetType()); it != m_assetTypeBindings.end() && it->second.postLoadFunc)
                     {
-                        //it->second.postLoadFunc(pAssetLookup->m_asset->pak(), pAssetLookup->m_asset);
                         if (!it->second._loadAssetType)
                             continue;
                         
-                        // temp
                         it->second.postLoadFunc(pAssetLookup->m_asset->GetContainerFile<CAssetContainer>(), pAssetLookup->m_asset);
                     }
                     pAssetLookup->m_asset->SetPostLoadStatus(true);

@@ -537,11 +537,7 @@ static void MainWnd_LaunchSkinFinderForGame(const std::filesystem::path& dirPath
         CThread([](const std::vector<std::string> filePaths) {
             inJobAction = true;
 
-            // Reset selected asset to avoid crash.
-            s_selectedAssets.clear();
-            s_filteredAssets.clear();
-            s_prevRenderInfoAsset = nullptr;
-            g_assetData.ClearAssetData();
+            ClearLoadState();
 
             HandlePakLoad(std::move(filePaths));
             g_assetData.ProcessAssetsPostLoad();
