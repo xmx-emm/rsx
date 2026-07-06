@@ -1898,7 +1898,8 @@ void CalculateBonesInverseBindMatrix(ModelParsedData_t* const parsedData)
 		parsedData->boneInverseBindMatrices[i] = XMMatrixInverse(&determinant, tempBoneMatrices[i]);
 
 		assert(determinant.m128_f32[0] != 0 && determinant.m128_f32[1] != 0 && determinant.m128_f32[2] != 0);
-		//XMMATRIX fuck = XMLoadFloat3x4((XMFLOAT3X4*)boneArray + i);
+
+		i++;
 	}
 }
 
@@ -1908,7 +1909,6 @@ void InitModelBoneMatrix(CDXDrawData* const drawData, ModelParsedData_t* const p
 
 	D3D11_BUFFER_DESC desc{};
 
-	desc.ByteWidth = static_cast<UINT>(parsedData->bones.size()) * sizeof(matrix3x4_t);
 	desc.ByteWidth = static_cast<UINT>(parsedData->bones.size()) * sizeof(XMMATRIX);
 	desc.StructureByteStride = sizeof(XMMATRIX);
 
