@@ -604,54 +604,11 @@ public:
 											   va_end(args2); \
 											   returnVar = std::string(buf.begin(), buf.end())
 	// Logging functions
-	void Log_Info(const CAssetContainer* const container, const char* fmt, ...)
-	{
-		va_list args;
-		va_start(args, fmt);
+	void Log_Info(const CAssetContainer* const container, const char* fmt, ...);
 
-		std::string msg;
-		GET_LOG_MSG_VARIADIC(args, msg, fmt);
+	void Log_Warning(const CAssetContainer* const container, const char* fmt, ...);
 
-		const std::string sourceName = container ? container->GetFilePath().filename().string() : "N/A";
-
-		Log("[%s] %s\n", sourceName.c_str(), msg.c_str());
-		LogMessages_Append(ContainerMessage_t::MessageType_e::MSG_INFO, sourceName, msg);
-	}
-
-	void Log_Warning(const CAssetContainer* const container, const char* fmt, ...)
-	{
-		va_list args;
-
-		va_start(args, fmt);
-		
-		std::string msg;
-		GET_LOG_MSG_VARIADIC(args, msg, fmt);
-
-		const std::string sourceName = container ? container->GetFilePath().filename().string() : "N/A";
-
-		Log("WARNING [%s]: %s\n", sourceName.c_str(), msg.c_str());
-
-		m_logErrorListInfo.AddWarning();
-
-		LogMessages_Append(ContainerMessage_t::MessageType_e::MSG_WARNING, sourceName, msg);
-	}
-
-	void Log_Error(const CAssetContainer* const container, const char* fmt, ...)
-	{
-		va_list args;
-		va_start(args, fmt);
-
-		std::string msg;
-		GET_LOG_MSG_VARIADIC(args, msg, fmt);
-
-		const std::string sourceName = container ? container->GetFilePath().filename().string() : "N/A";
-
-		Log("ERROR [%s]: %s\n", sourceName.c_str(), msg.c_str());
-
-		m_logErrorListInfo.AddError();
-
-		LogMessages_Append(ContainerMessage_t::MessageType_e::MSG_ERROR, sourceName, msg);
-	}
+	void Log_Error(const CAssetContainer* const container, const char* fmt, ...);
 
 	const ContainerMessage_t* GetLogMessages() const
 	{

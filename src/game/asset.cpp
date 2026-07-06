@@ -7,6 +7,10 @@
 #include <misc/imgui_utility.h>
 #include "rtech/utils/utils.h"
 
+#ifndef BUILD_NOGUI
+#include <misc/ImGuiNotify.hpp>
+#endif
+
 void CGlobalAssetData::ProcessAssetsPostLoad()
 {
     this->m_donePostLoad = false;
@@ -136,6 +140,68 @@ void CGlobalAssetData::ProcessAssetsPostLoad()
         }
 
     }
+}
+
+// Logging functions
+void CGlobalAssetData::Log_Info(const CAssetContainer* const container, const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+
+    std::string msg;
+    GET_LOG_MSG_VARIADIC(args, msg, fmt);
+
+    const std::string sourceName = container ? container->GetFilePath().filename().string() : "N/A";
+
+    Log("[%s] %s\n", sourceName.c_str(), msg.c_str());
+    LogMessages_Append(ContainerMessage_t::MessageType_e::MSG_INFO, sourceName, msg);
+
+#ifndef BUILD_NOGUI
+    ImGui::InsertNotification({ ImGuiToastType::Info, 3000, "%s", msg.c_str() });
+#endif
+}
+
+void CGlobalAssetData::Log_Warning(const CAssetContainer* const container, const char* fmt, ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+
+    std::string msg;
+    GET_LOG_MSG_VARIADIC(args, msg, fmt);
+
+    const std::string sourceName = container ? container->GetFilePath().filename().string() : "N/A";
+
+    Log("WARNING [%s]: %s\n", sourceName.c_str(), msg.c_str());
+
+    m_logErrorListInfo.AddWarning();
+
+    LogMessages_Append(ContainerMessage_t::MessageType_e::MSG_WARNING, sourceName, msg);
+
+#ifndef BUILD_NOGUI
+    ImGui::InsertNotification({ ImGuiToastType::Warning, 5000, "%s", msg.c_str() });
+#endif
+}
+
+void CGlobalAssetData::Log_Error(const CAssetContainer* const container, const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+
+    std::string msg;
+    GET_LOG_MSG_VARIADIC(args, msg, fmt);
+
+    const std::string sourceName = container ? container->GetFilePath().filename().string() : "N/A";
+
+    Log("ERROR [%s]: %s\n", sourceName.c_str(), msg.c_str());
+
+    m_logErrorListInfo.AddError();
+
+    LogMessages_Append(ContainerMessage_t::MessageType_e::MSG_ERROR, sourceName, msg);
+
+#ifndef BUILD_NOGUI
+    ImGui::InsertNotification({ ImGuiToastType::Error, 5000, "%s", msg.c_str() });
+#endif
 }
 
 CGlobalAssetData g_assetData;
