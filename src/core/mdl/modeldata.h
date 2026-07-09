@@ -399,22 +399,6 @@ struct ModelBodyPart_t
 	FORCEINLINE bool IsPreviewEnabled() const { return previewEnabled; };
 };
 
-struct ModelAnimSequence_t
-{
-	enum class eType : uint8_t
-	{
-		UNLOADED = 0,
-		DIRECT,
-		RIG,
-	};
-
-	CPakAsset* asset;
-	uint64_t guid;
-	eType type;
-
-	FORCEINLINE const bool IsLoaded() const { return type != eType::UNLOADED; };
-};
-
 struct ModelPoseParam_t
 {
 	ModelPoseParam_t() : name(nullptr), flags(0), start(0.0f), end(0.0f), loop(0.0f) {}
@@ -603,9 +587,6 @@ public:
 
 	std::vector<ModelBodyPart_t> bodyParts;
 
-	// Resolved vector of animation sequences for use in model preview
-	// [rika]: unused, not quite sure why this was added
-	//std::vector<ModelAnimSequence_t> animSequences;
 	ModelSeq_t* localSequences;
 	int numLocalSequences;
 	int numExternalSequences;
