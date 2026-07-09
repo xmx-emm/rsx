@@ -15,6 +15,7 @@ extern CDXParentHandler* g_dxHandler;
 void Preview_Model(CDXDrawData* drawData, float dt)
 {
 
+    UpdateModelBoneMatrix(drawData);
 
     ID3D11Device* const device = g_dxHandler->GetDevice();
     ID3D11DeviceContext* const ctx = g_dxHandler->GetDeviceContext();
