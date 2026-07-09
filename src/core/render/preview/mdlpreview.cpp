@@ -12,30 +12,8 @@
 
 extern CDXParentHandler* g_dxHandler;
 
-static float tailMin = INFINITY;
-static float tailMax = INFINITY;
-static float dir = +1.f;
-
 void Preview_Model(CDXDrawData* drawData, float dt)
 {
-    // Temporary animation to test weighting
-    for (auto& bone : drawData->bones)
-    {
-        if (!_stricmp(bone.name, "def_c_tail1"))
-        {
-            if (tailMin == INFINITY)
-            {
-                tailMin = bone.pos.z - 60.f;
-                tailMax = bone.pos.z + 60.f;
-            }
-
-            bone.pos.z += (dt * 30.f) * dir;
-
-            // If we hit either of the bounds, flip the direction
-            if (bone.pos.z >= tailMax || bone.pos.z <= tailMin) dir *= -1.f;
-        }
-    }
-
     UpdateModelBoneMatrix(drawData);
 
     ID3D11Device* const device = g_dxHandler->GetDevice();
