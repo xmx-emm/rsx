@@ -7,7 +7,7 @@
 
 // [GENERAL FEATURES]
 //#define ADVANCED_MODEL_PREVIEW
-//#define HAS_BONED_MODELS
+#define HAS_BONED_MODELS
 
 // [DEBUG FEATURES]
 //#define DEBUG_NO_ASEQ_POSTLOAD // - DEBUG ONLY - disables (very) slow postloading for animseq assets
