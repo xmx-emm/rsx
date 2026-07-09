@@ -800,14 +800,8 @@
     <ClCompile Include="core\update\update.cpp">
       <Filter>core\update</Filter>
     </ClCompile>
-    <ClCompile Include="core\preview\grid.cpp">
-      <Filter>core\render\preview</Filter>
-    </ClCompile>
     <ClCompile Include="game\rtech\assets\cube.cpp">
       <Filter>game\rtech\assets</Filter>
-    </ClCompile>
-    <ClCompile Include="core\preview\texpreview.cpp">
-      <Filter>core\render\preview</Filter>
     </ClCompile>
     <ClCompile Include="core\render\preview\mdlpreview.cpp">
       <Filter>core\render\preview</Filter>
@@ -820,6 +814,12 @@
     </ClCompile>
     <ClCompile Include="core\filehandling\validation.cpp">
       <Filter>core\filehandling</Filter>
+    </ClCompile>
+    <ClCompile Include="core\render\preview\grid.cpp">
+      <Filter>core\render\preview</Filter>
+    </ClCompile>
+    <ClCompile Include="core\render\preview\texpreview.cpp">
+      <Filter>core\render\preview</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
