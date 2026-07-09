@@ -595,7 +595,6 @@ public:
 	CRamen meshVertexData;
 
 	std::vector<ModelBone_t> bones;
-	std::vector<XMMATRIX> boneInverseBindMatrices;
 	std::vector<ModelAttachment_t> attachments;
 	std::vector<ModelHitboxSet_t> hitboxsets;
 
@@ -882,7 +881,7 @@ bool ExportModelQC(const ModelParsedData_t* const parsedData, std::filesystem::p
 bool ExportSeqDesc(const int setting, const ModelSeq_t* const seqdesc, std::filesystem::path& exportPath, const char* const skelName, const std::vector<ModelBone_t>* const bones, const uint64_t guid);
 bool ExportSeqQC(const ModelParsedData_t* const parsedData, const ModelSeq_t* const sequence, std::filesystem::path& exportPath, const int setting, const int version);
 
-void UpdateModelBoneMatrix(CDXDrawData* const drawData, const ModelParsedData_t* const parsedData);
+void UpdateModelBoneMatrix(CDXDrawData* const drawData);
 void InitModelBoneMatrix(CDXDrawData* const drawData, const ModelParsedData_t* const parsedData);
 
 struct ModelPreviewInfo_t

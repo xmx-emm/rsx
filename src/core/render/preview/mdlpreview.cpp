@@ -8,11 +8,14 @@
 
 #define IMOGUIZMO_LEFT_HANDED
 #include <thirdparty/imgui/misc/imoguizmo.hpp>
+#include <core/mdl/modeldata.h>
 
 extern CDXParentHandler* g_dxHandler;
 
 void Preview_Model(CDXDrawData* drawData, float dt)
 {
+
+
     ID3D11Device* const device = g_dxHandler->GetDevice();
     ID3D11DeviceContext* const ctx = g_dxHandler->GetDeviceContext();
     CDXScene& scene = g_dxHandler->GetScene();

@@ -1784,7 +1784,7 @@ bool ExportSeqDesc(const int setting, const ModelSeq_t* const seqdesc, std::file
 
 #if defined(HAS_BONED_MODELS)
 
-void CalcMatrixForBone_Unparented(const ModelBone_t& bone, XMMATRIX& matOut)
+void CalcMatrixForBone_Unparented(const DXBone_t& bone, XMMATRIX& matOut)
 {
 	XMVECTOR quat = { bone.quat.x, bone.quat.y, bone.quat.z, bone.quat.w };
 
@@ -1799,7 +1799,7 @@ void CalcMatrixForBone_Unparented(const ModelBone_t& bone, XMMATRIX& matOut)
 //
 // PREVIEWDATA
 //
-void UpdateModelBoneMatrix(CDXDrawData* const drawData, const ModelParsedData_t* const parsedData)
+void UpdateModelBoneMatrix(CDXDrawData* const drawData)
 {
 	ID3D11DeviceContext* const ctx = g_dxHandler->GetDeviceContext();
 
@@ -1817,10 +1817,10 @@ void UpdateModelBoneMatrix(CDXDrawData* const drawData, const ModelParsedData_t*
 
 	XMMATRIX* boneArray = reinterpret_cast<XMMATRIX*>(resource.pData);
 
-	std::vector<XMMATRIX> tempBoneMatrices(parsedData->bones.size());
+	std::vector<XMMATRIX> tempBoneMatrices(drawData->bones.size());
 
 	int i = 0;
-	for (const ModelBone_t& bone : parsedData->bones)
+	for (const DXBone_t& bone : drawData->bones)
 	{
 		CalcMatrixForBone_Unparented(bone, tempBoneMatrices[i]);
 		
@@ -1828,7 +1828,7 @@ void UpdateModelBoneMatrix(CDXDrawData* const drawData, const ModelParsedData_t*
 		if (bone.parent != -1)
 			tempBoneMatrices[i] = XMMatrixMultiply(tempBoneMatrices[i], tempBoneMatrices[bone.parent]);
 
-		const XMMATRIX inverseBindMat = parsedData->boneInverseBindMatrices.at(i);
+		const XMMATRIX inverseBindMat = drawData->boneInverseBindMatrices.at(i);
 		const XMMATRIX multiplied = XMMatrixMultiply(inverseBindMat, tempBoneMatrices[i]);
 
 		boneArray[i] = XMMatrixTranspose(multiplied);
@@ -1847,7 +1847,7 @@ void UpdateModelBoneMatrix(CDXDrawData* const drawData, const ModelParsedData_t*
 
 			Vector pos1 = pos;
 			Vector pos2 = parentPos;
-			drawData->DrawLine(Vector(pos1.x, pos1.z, pos1.y), Vector(pos2.x, pos2.z, pos2.y), boneColour, true, 1.f, -1.f);
+			drawData->DrawLine(Vector(pos1.x, pos1.z, pos1.y), Vector(pos2.x, pos2.z, pos2.y), boneColour, true, 1.f, 0.f);
 		}
 
 		i++;
@@ -1858,14 +1858,14 @@ void UpdateModelBoneMatrix(CDXDrawData* const drawData, const ModelParsedData_t*
 
 // Calculates a matrix that translates from model-space to joint-space.
 // This is only calculated once when the model is first selected for preview, as it's completely useless for export
-void CalculateBonesInverseBindMatrix(ModelParsedData_t* const parsedData)
+void CalculateBonesInverseBindMatrix(CDXDrawData* const drawData)
 {
-	parsedData->boneInverseBindMatrices.resize(parsedData->bones.size());
+	drawData->boneInverseBindMatrices.resize(drawData->bones.size());
 
-	std::vector<XMMATRIX> tempBoneMatrices(parsedData->bones.size());
+	std::vector<XMMATRIX> tempBoneMatrices(drawData->bones.size());
 
 	int i = 0;
-	for (const ModelBone_t& bone : parsedData->bones)
+	for (const DXBone_t& bone : drawData->bones)
 	{
 		CalcMatrixForBone_Unparented(bone, tempBoneMatrices[i]);
 
@@ -1874,7 +1874,7 @@ void CalculateBonesInverseBindMatrix(ModelParsedData_t* const parsedData)
 			tempBoneMatrices[i] = XMMatrixMultiply(tempBoneMatrices[i], tempBoneMatrices[bone.parent]);
 
 		XMVECTOR determinant;
-		parsedData->boneInverseBindMatrices[i] = XMMatrixInverse(&determinant, tempBoneMatrices[i]);
+		drawData->boneInverseBindMatrices[i] = XMMatrixInverse(&determinant, tempBoneMatrices[i]);
 
 		assert(determinant.m128_f32[0] != 0 && determinant.m128_f32[1] != 0 && determinant.m128_f32[2] != 0);
 
@@ -1924,10 +1924,20 @@ void InitModelBoneMatrix(CDXDrawData* const drawData, ModelParsedData_t* const p
 		return;
 #endif
 
-	CalculateBonesInverseBindMatrix(parsedData);
+	drawData->bones.resize(parsedData->bones.size());
+
+	size_t i = 0;
+	for (auto& bone : parsedData->bones)
+	{
+		drawData->bones.at(i) = DXBone_t(bone.name, bone.pos, bone.quat, bone.scale, bone.rot, bone.parent);
+
+		i++;
+	}
+
+	CalculateBonesInverseBindMatrix(drawData);
 
 	// Initial update for the bone matrices
-	UpdateModelBoneMatrix(drawData, parsedData);
+	UpdateModelBoneMatrix(drawData);
 }
 #endif
 

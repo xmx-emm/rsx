@@ -243,6 +243,17 @@ struct CBufModelInstance
 };
 static_assert(sizeof(CBufModelInstance) == 208);
 
+struct DXBone_t
+{
+    const char* name;
+    Vector pos;
+    Quaternion quat;
+    Vector scale;
+    RadianEuler rot;
+
+    int parent;
+};
+
 class CDXDrawData
 {
 public:
@@ -253,7 +264,7 @@ public:
         TEXTURE,
     };
 
-    CDXDrawData() = default;
+    CDXDrawData() : bones() {};
 
     ~CDXDrawData()
     {
@@ -271,6 +282,10 @@ public:
 
     std::vector<DXMeshDrawData_t> meshBuffers;
     std::vector<DXMeshDrawData_DebugPrim_t> debugPrims;
+
+    std::vector<DXBone_t> bones;
+    std::vector<XMMATRIX> boneInverseBindMatrices;
+
 
     ID3D11Buffer* transformsBuffer;
     ID3D11Buffer* modelInstanceBuffer;
