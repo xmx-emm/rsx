@@ -864,6 +864,26 @@ bool ExportSeqQC(const ModelParsedData_t* const parsedData, const ModelSeq_t* co
 void UpdateModelBoneMatrix(CDXDrawData* const drawData);
 void InitModelBoneMatrix(CDXDrawData* const drawData, const ModelParsedData_t* const parsedData);
 
+enum class PreviewSeqType_e : uint8_t
+{
+	SEQ_LOCAL, // stored directly inside the rmdl
+	SEQ_ASEQ,  // rmdl -> aseq
+	SEQ_ARIG,   // rmdl -> arig -> aseq
+};
+
+struct SeqPreviewEntry_t
+{
+	std::string name;
+	uint64_t guid; // local seqs do not have a guid so this is zero
+
+	const ModelSeq_t* seqdesc;
+
+	PreviewSeqType_e type;
+
+	bool parsed; // if this is from an external sequence then this is true if the asset was loaded (i.e., not in a diff pak)
+				 // local sequences are always considered parsed
+};
+
 struct ModelPreviewInfo_t
 {
 	ModelPreviewInfo_t() : lastSelectedBodypartIndex(0u), selectedBodypartIndex(0u), lastSelectedSkinIndex(0u), selectedSkinIndex(0u), selectedLODLevel(0u), minLODIndex(0u), maxLODIndex(0u)
@@ -882,6 +902,8 @@ struct ModelPreviewInfo_t
 	uint8_t selectedLODLevel = 0u;
 	uint8_t minLODIndex = 0u;
 	uint8_t maxLODIndex = 0u;
+
+	std::vector<SeqPreviewEntry_t> sequences;
 };
 
 void* PreviewParsedData(ModelPreviewInfo_t* const info, ModelParsedData_t* const parsedData, char* const assetName, const uint64_t assetGUID, const bool firstFrameForAsset);

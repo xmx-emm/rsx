@@ -1,6 +1,7 @@
 #include <pch.h>
 
 #include <game/rtech/assets/model.h>
+#include <game/rtech/assets/animrig.h>
 #include <game/rtech/assets/animseq.h>
 #include <game/rtech/assets/texture.h>
 #include <game/rtech/assets/material.h>
@@ -1532,6 +1533,93 @@ void PostLoadModelAsset(CAssetContainer* const pak, CAsset* const asset)
     }
 }
 
+static void ModelPreview_AddExternalSeq(const uint64_t guid, const PreviewSeqType_e seqType, AnimRigAsset* const rig, ModelAsset* const modelAsset, ModelPreviewInfo_t& previewInfo, std::unordered_set<uint64_t>& knownGuids)
+{
+    // sequences should only be added once
+    if (knownGuids.contains(guid))
+        return;
+
+    // add guids early so that if the anim is invalid in some way (like not loaded or no extra data) then we don't try and find it twice
+    // bc it's not gonna suddenly be valid
+    knownGuids.insert(guid);
+
+    CPakAsset* const seqAsset = g_assetData.FindAssetByGUID<CPakAsset>(guid);
+
+    if (!seqAsset)
+        return;
+
+    AnimSeqAsset* const animSeq = reinterpret_cast<AnimSeqAsset*>(seqAsset->extraData());
+
+    if (!animSeq)
+        return;
+
+    // if this seq didn't get parsed for whatever reason (model was in an odl pak?) then record where it came from and parse it here
+    if (!animSeq->animationParsed)
+    {
+        if (!(animSeq->parentModel || animSeq->parentRig))
+        {
+            // rig will be nullptr if the sequence asset was not found thru a rig and instead from the model itself
+            if (rig)
+                animSeq->parentRig = rig;
+            else
+                animSeq->parentModel = modelAsset;
+        }
+
+        AnimSeq_ParseExtraData(seqAsset);
+    }
+
+    previewInfo.sequences.emplace_back(
+        animSeq->name,
+        guid,
+        &animSeq->seqdesc,
+        seqType,
+        animSeq->animationParsed
+    );
+};
+
+static void ModelPreview_DiscoverSequences(ModelAsset* const modelAsset, ModelPreviewInfo_t& previewInfo)
+{
+    previewInfo.sequences.clear();
+
+    ModelParsedData_t* const parsedData = modelAsset->GetParsedData();
+
+    for (int i = 0; i < parsedData->NumLocalSeq(); i++)
+    {
+        const ModelSeq_t* const seqdesc = parsedData->LocalSeq(i);
+
+        previewInfo.sequences.emplace_back(
+            seqdesc->szlabel,
+            0ull, // guid
+            seqdesc,
+            PreviewSeqType_e::SEQ_LOCAL,
+            true // local sequences are always already parsed
+        );
+    }
+
+    std::unordered_set<uint64_t> knownGuids;
+
+    // Add all sequences that are directly attached to the model asset (instead of being referenced by a rig that the model uses)
+    for (uint32_t i = 0; i < modelAsset->numAnimSeqs; i++)
+        ModelPreview_AddExternalSeq(modelAsset->animSeqs[i].guid, PreviewSeqType_e::SEQ_ASEQ, nullptr, modelAsset, previewInfo, knownGuids);
+
+    // Go thru each of the model's rigs and find all seq assets that are referenced that way
+    for (uint32_t i = 0; i < modelAsset->numAnimRigs; i++)
+    {
+        CPakAsset* const rigAsset = g_assetData.FindAssetByGUID<CPakAsset>(modelAsset->animRigs[i].guid);
+
+        if (!rigAsset)
+            continue;
+
+        AnimRigAsset* const animRig = reinterpret_cast<AnimRigAsset*>(rigAsset->extraData());
+
+        if (!animRig)
+            continue;
+
+        for (int j = 0; j < animRig->numAnimSeqs; j++)
+            ModelPreview_AddExternalSeq(animRig->animSeqs[j].guid, PreviewSeqType_e::SEQ_ARIG, animRig, modelAsset, previewInfo, knownGuids);
+    }
+}
+
 void* PreviewModelAsset(CAsset* const asset, const bool firstFrameForAsset)
 {
     CPakAsset* const pakAsset = static_cast<CPakAsset*>(asset);
@@ -1563,6 +1651,8 @@ void* PreviewModelAsset(CAsset* const asset, const bool firstFrameForAsset)
     ImGui::Text("Sequences: %i", modelAsset->numAnimSeqs);
 
     return PreviewParsedData(&previewInfo, parsedData, modelAsset->name, asset->GetAssetGUID(), firstFrameForAsset);
+    if (firstFrameForAsset)
+        ModelPreview_DiscoverSequences(modelAsset, previewInfo);
 }
 
 static bool ExportModelStreamedData(const ModelAsset* const modelAsset, std::filesystem::path& exportPath, const char* const streamedData, const char* const extension)
