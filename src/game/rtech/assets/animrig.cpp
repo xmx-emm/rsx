@@ -164,7 +164,7 @@ void PostLoadAnimRigAsset(CAssetContainer* const pak, CAsset* const asset)
             if (nullptr == animSeqAsset)
                 continue;
 
-            if (!animSeqAsset->GetPostLoadStatus())
+            if (!animSeqAsset->hasExtraData())
                 continue;
 
             AnimSeqAsset* const animSeq = reinterpret_cast<AnimSeqAsset* const>(animSeqAsset->extraData());
