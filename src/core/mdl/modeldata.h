@@ -555,7 +555,6 @@ public:
 		{
 			this->meshVertexData.move(parsed.meshVertexData);
 			this->bones.swap(parsed.bones);
-			this->boneInverseBindMatrices.swap(parsed.boneInverseBindMatrices);
 			this->attachments.swap(parsed.attachments);
 			this->hitboxsets.swap(parsed.hitboxsets);
 
