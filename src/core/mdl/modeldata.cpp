@@ -1929,7 +1929,7 @@ void InitModelBoneMatrix(CDXDrawData* const drawData, ModelParsedData_t* const p
 	size_t i = 0;
 	for (auto& bone : parsedData->bones)
 	{
-		drawData->bones.at(i) = DXBone_t(bone.name, bone.pos, bone.quat, bone.scale, bone.rot, bone.parent);
+		drawData->bones.at(i) = DXBone_t(bone.name, bone.pos, bone.quat, bone.scale, bone.parent);
 
 		i++;
 	}
@@ -1938,6 +1938,271 @@ void InitModelBoneMatrix(CDXDrawData* const drawData, ModelParsedData_t* const p
 
 	// Initial update for the bone matrices
 	UpdateModelBoneMatrix(drawData);
+}
+
+static void ModelPreview_ResetPose(const ModelParsedData_t* const parsedData, CDXDrawData* const drawData)
+{
+	// get our bones back!
+	for (size_t i = 0; i < drawData->bones.size(); i++)
+	{
+		const ModelBone_t& originalBone = parsedData->bones.at(i);
+		DXBone_t& bone = drawData->bones.at(i);
+
+		bone.pos = originalBone.pos;
+		bone.quat = originalBone.quat;
+		bone.scale = originalBone.scale;
+	}
+}
+
+static void ModelPreview_AnimFrame(AnimState_t* const state, const SeqPreviewEntry_t* const entry, const ModelParsedData_t* const parsedData, CDXDrawData* const drawData, const float dt)
+{
+	const ModelAnim_t* const animdesc = entry->seqdesc->Anim(state->selectedAnimIndex);
+
+	// update active data when our selection changes
+	if (state->activeSeqIdx != state->selectedSeqIndex || state->activeAnimIdx != state->selectedAnimIndex || state->boneRemap.size() != drawData->bones.size())
+	{
+		state->frame = 0.0f;
+
+		state->activeSeqIdx = state->selectedSeqIndex;
+		state->activeAnimIdx = state->selectedAnimIndex;
+		state->dcmpNoodle.reset();
+
+		if ((animdesc->flags & eStudioAnimFlags::ANIM_VALID) && animdesc->parsedBufferIndex != invalidNoodleIdx)
+			state->dcmpNoodle = entry->seqdesc->parsedData.getIdx(animdesc->parsedBufferIndex);
+
+		// placeholder value of -1 means that the bone has no mapping to the animation's skeleton
+		state->boneRemap.assign(drawData->bones.size(), -1);
+
+		const std::vector<ModelBone_t>& srcBones = *entry->srcBones;
+
+		// find each of our model's bones in the animation's skeleton
+		// i thought that they would match up but apparently not so that's super fun!
+		// i'm sure this isn't the right way of doing it but it's good enough for now
+		for (size_t i = 0; i < drawData->bones.size(); ++i)
+		{
+			for (size_t j = 0; j < srcBones.size(); ++j)
+			{
+				if (!_stricmp(drawData->bones.at(i).name, srcBones.at(j).name))
+				{
+					state->boneRemap.at(i) = static_cast<int>(j);
+					break;
+				}
+			}
+		}
+	}
+
+	// start from the non-animated position of the model
+	ModelPreview_ResetPose(parsedData, drawData);
+
+	// this check must be after resetting the pose so that we end up in a neutral position if there is no real anim data 
+	if (!state->dcmpNoodle)
+		return;
+
+	const int finalFrameIdx = animdesc->numframes - 1;
+
+	// if the player is paused or there's only one anim frame then dont advance any further
+	if (state->playing && finalFrameIdx > 0)
+	{
+		state->frame += dt * animdesc->fps;
+
+		// if we've hit the end of the anim!
+		if (state->frame > finalFrameIdx)
+		{
+			state->frame = state->looping ? fmodf(state->frame, static_cast<float>(finalFrameIdx)) : finalFrameIdx;
+			state->playing = state->looping; // if looping we r still playing
+		}
+	}
+	
+	// the cast rounds down to the current anim frame that we're using.
+	// state->frame will contain a fractional part since we will almost definitely be running at >30fps (or animdesc->fps)
+	const int currFrameIdx = std::clamp(static_cast<int>(state->frame), 0, finalFrameIdx);
+	const int nextFrameIdx = std::min(currFrameIdx + 1, finalFrameIdx);
+
+	// get the distance that we are between the two frames so we can (s)lerp the pos and scale
+	const float frameFrac = std::clamp(state->frame - currFrameIdx, 0.0f, 1.0f);
+
+	CAnimData animData(state->dcmpNoodle.get());
+
+	for (size_t i = 0; i < drawData->bones.size(); i++)
+	{
+		// map the gpu's bone on to that of the skeleton that the anim uses
+		const int boneIndex = state->boneRemap.at(i);
+
+		// if boneindex is -1 then this bone is not in the anim's skeleton
+		if (boneIndex < 0)
+			continue;
+
+		DXBone_t& bone = drawData->bones.at(i);
+		const uint8_t flags = animData.GetFlag(boneIndex);
+
+		if (flags & CAnimDataBone::ANIMDATA_POS)
+		{
+			const Vector& pos0 = *animData.GetBonePosForFrame(boneIndex, currFrameIdx);
+			const Vector& pos1 = *animData.GetBonePosForFrame(boneIndex, nextFrameIdx);
+
+			bone.pos = Vector::Lerp(pos0, pos1, frameFrac);
+		}
+
+		if (flags & CAnimDataBone::ANIMDATA_ROT)
+		{
+			Quaternion quat;
+			QuaternionSlerp(*animData.GetBoneQuatForFrame(boneIndex, currFrameIdx), *animData.GetBoneQuatForFrame(boneIndex, nextFrameIdx), frameFrac, quat);
+
+			bone.quat = quat;
+		}
+
+		if (flags & CAnimDataBone::ANIMDATA_SCL)
+		{
+			const Vector& scale0 = *animData.GetBoneScaleForFrame(boneIndex, currFrameIdx);
+			const Vector& scale1 = *animData.GetBoneScaleForFrame(boneIndex, nextFrameIdx);
+
+			bone.scale = Vector::Lerp(scale0, scale1, frameFrac);
+		}
+	}
+}
+
+bool Preview_SequencesSection(ModelPreviewInfo_t* const info, const ModelParsedData_t* const parsedData, CDXDrawData* const drawData)
+{
+	AnimState_t& state = info->animState;
+
+	bool refreshRequested = false;
+
+	const SeqPreviewEntry_t* selectedSequenceEntry = nullptr;
+	if (state.selectedSeqIndex >= 0 && state.selectedSeqIndex < static_cast<int>(info->sequences.size()))
+	{
+		selectedSequenceEntry = &info->sequences.at(state.selectedSeqIndex);
+
+		state.selectedAnimIndex = std::clamp(state.selectedAnimIndex, 0, std::max(selectedSequenceEntry->seqdesc->AnimCount() - 1, 0));
+	}
+	else
+		state.selectedSeqIndex = -1;
+
+	if (ImGui::CollapsingHeader("Sequences"))
+	{
+		if (info->sequences.empty())
+			ImGui::TextUnformatted("No sequences associated with this model.");
+		else
+		{
+			// just in case the sequence data hasn't been parsed properly for whatever reason
+			// return to the caller and let it know that we want new data!
+			if (ImGui::Button("Refresh##AnimPreview"))
+				refreshRequested = true;
+
+			const char* const comboLabel = selectedSequenceEntry ? selectedSequenceEntry->name.c_str() : "(base pose)";
+
+			if (ImGui::BeginCombo("Sequence##AnimPreview", comboLabel))
+			{
+				// if there's no selected seq then we have selected the base pose (non animated)
+				if (ImGui::Selectable("(base pose)", selectedSequenceEntry == nullptr))
+				{
+					state.selectedSeqIndex = -1;
+					state.Stop();
+
+					selectedSequenceEntry = nullptr;
+				}
+
+				for (int i = 0; i < static_cast<int>(info->sequences.size()); i++)
+				{
+					const SeqPreviewEntry_t& entry = info->sequences.at(i);
+
+					const bool isSelected = state.selectedSeqIndex == i;
+
+					if (ImGui::Selectable(entry.name.c_str(), isSelected, !entry.parsed ? ImGuiSelectableFlags_Disabled : 0))
+					{
+						state.selectedSeqIndex = i;
+						state.selectedAnimIndex = 0;
+
+						state.Restart();
+
+						selectedSequenceEntry = &info->sequences.at(state.selectedSeqIndex);
+					}
+
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+
+				ImGui::EndCombo();
+			}
+
+			if (selectedSequenceEntry)
+			{
+				if (selectedSequenceEntry->seqdesc->AnimCount() > 0)
+				{
+					const ModelSeq_t* const seqdesc = selectedSequenceEntry->seqdesc;
+					const ModelAnim_t* const animdesc = seqdesc->Anim(state.selectedAnimIndex);
+
+					ImGui::Text("Name: %s\nMetadata: %.1f fps, %i frames, %.3f seconds", animdesc->name, animdesc->fps, animdesc->numframes, animdesc->Duration());
+
+					if (animdesc->flags & eStudioAnimFlags::ANIM_DELTA)
+						ImGui::TextUnformatted("Unsupported delta anim; Preview unavailable");
+					else if (!(animdesc->flags & eStudioAnimFlags::ANIM_VALID) || animdesc->parsedBufferIndex == invalidNoodleIdx)
+						ImGui::TextUnformatted("Invalid anim data; Preview unavailable");
+
+					// i don't know what this does ibsr
+					if (seqdesc->AnimCount() > 1)
+						ImGui::SliderInt("AnimIdx##AnimPreview", &state.selectedAnimIndex, 0, seqdesc->AnimCount() - 1);
+
+					if (ImGui::Button(state.playing ? "Pause##AnimPreview" : "Play##AnimPreview"))
+						state.TogglePlay();
+
+					ImGui::SameLine();
+
+					// if the player isnt playing then the user cannot click stop (obvs)
+					ImGui::BeginDisabled(!state.playing && state.frame == 0.f);
+					{
+						if (ImGui::Button("Stop##AnimPreview")) state.Stop();
+					}
+					ImGui::EndDisabled();
+
+					ImGui::SameLine();
+					ImGui::Checkbox("Loop##AnimPreview", &state.looping);
+
+					const int finalFrameIdx = animdesc->numframes > 0 ? animdesc->numframes - 1 : 0;
+
+					ImGui::BeginDisabled(finalFrameIdx == 0);
+					{
+						ImGui::SliderFloat("Frame##AnimPreview", &state.frame, 0.0f, static_cast<float>(finalFrameIdx), "%.1f");
+					}
+					ImGui::EndDisabled();
+
+					// when scrubbing, don't keep playing
+					if (ImGui::IsItemActive())
+						state.playing = false;
+
+				} else ImGui::TextUnformatted("Sequence has no anims!");
+			}
+		}
+	}
+
+	// can run a frame if:
+	// - not refreshing
+	// - we have a sequence entry that:
+	//   - is parsed
+	//   - has animdescs
+	//   - does not have a delta anim selected
+	const bool canRunFrame = !refreshRequested &&
+		(selectedSequenceEntry != nullptr
+			&& selectedSequenceEntry->parsed
+			&& selectedSequenceEntry->seqdesc->AnimCount() > 0
+			&& !(selectedSequenceEntry->seqdesc->Anim(state.selectedAnimIndex)->flags & eStudioAnimFlags::ANIM_DELTA));
+
+	if (!canRunFrame)
+	{
+		// if we aren't able to show a frame of the sequence while we have one selected then show the base pose instead
+		// this happens when you click refresh while a sequence is active or swap to a sequence with no animdescs or a delta anim
+		// (sorry rika i dunno how delta anims work)
+		if (state.selectedSeqIndex != -1)
+		{
+			ModelPreview_ResetPose(parsedData, drawData);
+
+			state.activeSeqIdx = -1;
+			state.activeAnimIdx = -1;
+			state.dcmpNoodle.reset(); // clear the noodle
+		}
+	} else ModelPreview_AnimFrame(&state, selectedSequenceEntry, parsedData, drawData, ImGui::GetIO().DeltaTime);
+
+	// if we clicked refresh then the caller needs to reparse the data so let them know!
+	return refreshRequested;
 }
 #endif
 

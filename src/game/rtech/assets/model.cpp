@@ -1568,18 +1568,35 @@ static void ModelPreview_AddExternalSeq(const uint64_t guid, const PreviewSeqTyp
         AnimSeq_ParseExtraData(seqAsset);
     }
 
+    const std::vector<ModelBone_t>* srcBones = nullptr;
+
+    if (animSeq->parentModel)
+        srcBones = animSeq->parentModel->GetRig();
+    else if (animSeq->parentRig)
+        srcBones = animSeq->parentRig->GetRig();
+
     previewInfo.sequences.emplace_back(
         animSeq->name,
         guid,
         &animSeq->seqdesc,
+        srcBones,
         seqType,
-        animSeq->animationParsed
+        animSeq->animationParsed && nullptr != srcBones
     );
 };
 
 static void ModelPreview_DiscoverSequences(ModelAsset* const modelAsset, ModelPreviewInfo_t& previewInfo)
 {
     previewInfo.sequences.clear();
+    previewInfo.animState = AnimState_t{
+        .selectedSeqIndex = -1,
+        .selectedAnimIndex = -1,
+        .activeSeqIdx = -1,
+        .activeAnimIdx = -1,
+        .frame = 0.f,
+        .playing = false,
+        .looping = true,
+    };
 
     ModelParsedData_t* const parsedData = modelAsset->GetParsedData();
 
@@ -1591,6 +1608,7 @@ static void ModelPreview_DiscoverSequences(ModelAsset* const modelAsset, ModelPr
             seqdesc->szlabel,
             0ull, // guid
             seqdesc,
+            parsedData->GetRig(), // local sequences are always parsed against the model's own skeleton
             PreviewSeqType_e::SEQ_LOCAL,
             true // local sequences are always already parsed
         );
@@ -1650,9 +1668,21 @@ void* PreviewModelAsset(CAsset* const asset, const bool firstFrameForAsset)
     ImGui::Text("Rigs: %i", modelAsset->numAnimRigs);
     ImGui::Text("Sequences: %i", modelAsset->numAnimSeqs);
 
-    return PreviewParsedData(&previewInfo, parsedData, modelAsset->name, asset->GetAssetGUID(), firstFrameForAsset);
     if (firstFrameForAsset)
         ModelPreview_DiscoverSequences(modelAsset, previewInfo);
+
+    void* const drawData = PreviewParsedData(&previewInfo, parsedData, modelAsset->name, asset->GetAssetGUID(), firstFrameForAsset);
+
+#if defined(HAS_BONED_MODELS)
+    if (drawData)
+    {
+        // refresh picks up animrig/animseq paks loaded after the model was first previewed
+        if (Preview_SequencesSection(&previewInfo, parsedData, reinterpret_cast<CDXDrawData*>(drawData)))
+            ModelPreview_DiscoverSequences(modelAsset, previewInfo);
+    }
+#endif
+
+    return drawData;
 }
 
 static bool ExportModelStreamedData(const ModelAsset* const modelAsset, std::filesystem::path& exportPath, const char* const streamedData, const char* const extension)

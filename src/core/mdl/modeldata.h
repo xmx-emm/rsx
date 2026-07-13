@@ -877,11 +877,34 @@ struct SeqPreviewEntry_t
 	uint64_t guid; // local seqs do not have a guid so this is zero
 
 	const ModelSeq_t* seqdesc;
+	const std::vector<ModelBone_t>* srcBones; // the skeleton that belongs to this sequence's parent (i.e., model or rig)
 
 	PreviewSeqType_e type;
 
 	bool parsed; // if this is from an external sequence then this is true if the asset was loaded (i.e., not in a diff pak)
 				 // local sequences are always considered parsed
+};
+
+struct AnimState_t
+{
+	int selectedSeqIndex; // seqdesc
+	int selectedAnimIndex; // animdesc
+
+	int activeSeqIdx;
+	int activeAnimIdx;
+
+	float frame;
+
+	std::unique_ptr<char[]> dcmpNoodle; // noodle decomp
+	std::vector<int> boneRemap; // model bone index -> index into the seq's source skeleton (and its anim data), -1 if the bone isn't in it
+
+	bool playing;
+	bool looping;
+
+	void TogglePlay() { playing = !playing; };
+	void Play() { playing = true; };
+	void Stop() { playing = false; frame = 0.f; };
+	void Restart() { Play();  frame = 0.f; };
 };
 
 struct ModelPreviewInfo_t
@@ -904,7 +927,11 @@ struct ModelPreviewInfo_t
 	uint8_t maxLODIndex = 0u;
 
 	std::vector<SeqPreviewEntry_t> sequences;
+	AnimState_t animState;
 };
 
 void* PreviewParsedData(ModelPreviewInfo_t* const info, ModelParsedData_t* const parsedData, char* const assetName, const uint64_t assetGUID, const bool firstFrameForAsset);
 void PreviewSeqDesc(const ModelSeq_t* const seqdesc);
+
+// returns true if the user requested a refresh of the sequence list
+bool Preview_SequencesSection(ModelPreviewInfo_t* const info, const ModelParsedData_t* const parsedData, CDXDrawData* const drawData);

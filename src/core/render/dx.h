@@ -249,7 +249,6 @@ struct DXBone_t
     Vector pos;
     Quaternion quat;
     Vector scale;
-    RadianEuler rot;
 
     int parent;
 };
