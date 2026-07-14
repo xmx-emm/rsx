@@ -65,6 +65,36 @@ struct MilesStreamHeader_t
 	uint32_t buildTag; // must match with the associated MBNK file
 };
 
+// r2
+struct MilesSource_v13_t
+{
+	char gap0[16];
+	uint32_t nameOffset;
+
+	uint16_t sampleRate;
+	uint16_t bitRate;
+
+	// unverified offsets
+	uint8_t channelCount;
+
+	char gap_19[22];
+
+	uint32_t streamHeaderSize;
+	uint32_t sampleCount;
+	uint64_t streamHeaderOffset;
+	uint64_t streamDataOffset;
+
+	char gap_48[8];
+	short languageIdx;
+	short patchIdx;
+	char gap_54[4];
+};
+static_assert(offsetof(MilesSource_v13_t, nameOffset) == 0x10);
+static_assert(offsetof(MilesSource_v13_t, sampleRate) == 0x14);
+static_assert(offsetof(MilesSource_v13_t, languageIdx) == 0x50);
+static_assert(offsetof(MilesSource_v13_t, gap_48) == 0x48);
+static_assert(sizeof(MilesSource_v13_t) == 0x58);
+
 // s0
 struct MilesSource_v28_t
 {
@@ -140,26 +170,37 @@ static_assert(sizeof(MilesSource_v48_t) == 80);
 
 struct MilesSource_t
 {
+	MilesSource_t(const MilesSource_v13_t* const a) :
+		streamDataOffset(a->streamDataOffset), streamHeaderOffset(a->streamHeaderOffset),
+		sampleCount(a->sampleCount), streamHeaderSize(a->streamHeaderSize),
+		nameOffset(a->nameOffset),
+		languageIdx(a->languageIdx), patchIdx(a->patchIdx), bpm(0), sampleRate(a->sampleRate)
+	{
+	};
+
 	MilesSource_t(const MilesSource_v28_t* const a) :
 		streamDataOffset(a->streamDataOffset), streamHeaderOffset(a->streamHeaderOffset),
 		sampleCount(a->sampleCount), streamHeaderSize(a->streamHeaderSize),
 		nameOffset(a->nameOffset),
 		languageIdx(a->languageIdx), patchIdx(a->patchIdx), bpm(0), sampleRate(a->sampleRate)
-	{};
+	{
+	};
 
 	MilesSource_t(const MilesSource_v39_t* const a) :
 		streamDataOffset(a->streamDataOffset), streamHeaderOffset(a->streamHeaderOffset),
 		sampleCount(a->sampleCount), streamHeaderSize(a->streamHeaderSize),
 		nameOffset(a->nameOffset),
 		languageIdx(a->languageIdx), patchIdx(a->patchIdx), bpm(a->bpm), sampleRate(a->sampleRate)
-	{};
+	{
+	};
 
 	MilesSource_t(const MilesSource_v48_t* const a) :
 		streamDataOffset(a->streamDataOffset), streamHeaderOffset(a->streamHeaderOffset),
 		sampleCount(a->sampleCount), streamHeaderSize(a->streamHeaderSize),
 		nameOffset(a->nameOffset),
 		languageIdx(a->languageIdx), patchIdx(a->patchIdx), bpm(a->bpm), sampleRate(a->sampleRate)
-	{};
+	{
+	};
 
 	uint64_t nameOffset;
 	uint64_t streamDataOffset;
@@ -228,11 +269,15 @@ struct MilesBankHeader_v13_t
 	uint32_t sourceCount;
 	uint32_t patchCount;
 	uint32_t eventCount;
+
+	char gap3[16];
+	uint32_t buildTag;
 };
 
 static_assert(offsetof(MilesBankHeader_v13_t, sourceOffset) == 0x48);
 static_assert(offsetof(MilesBankHeader_v13_t, stringTableOffset) == 0x70);
 static_assert(offsetof(MilesBankHeader_v13_t, sourceCount) == 0xA0);
+static_assert(offsetof(MilesBankHeader_v13_t, buildTag) == 0xBC);
 
 
 struct MilesBankHeader_v28_t
@@ -423,7 +468,7 @@ private:
 
 	void Construct(const MilesBankHeader_v13_t* const header)
 	{
-		this->buildTag = 0;// header->buildTag;
+		this->buildTag = header->buildTag;
 		//this->bankHash = header->bankHash; // not sure if this var exists in v28
 
 		// total source count including all languages
@@ -463,7 +508,7 @@ private:
 		this->eventCount = header->eventCount;
 
 		this->localisedSourceCount = header->localisedSourceCount;
-		
+
 		this->audioSources = m_fileBuf.get() + header->sourceOffset.offset;
 		this->audioEvents = m_fileBuf.get() + header->eventOffset.offset;
 		this->stringTable = m_fileBuf.get() + header->stringTableOffset.offset;
@@ -477,7 +522,7 @@ public:
 	{
 		SetAssetName(assetName);
 		m_assetGuid = 0;
-		
+
 		SetAssetVersion({});
 
 		SetInternalAssetData(assetData);

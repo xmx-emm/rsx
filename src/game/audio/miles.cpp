@@ -81,7 +81,7 @@ const bool CMilesAudioBank::ParseFromHeader()
 	{
 	case 13:
 	{
-		this->languageCount = 0;
+		this->languageCount = 11;
 		this->languageNames = {
 			"english", "french", "german", "spanish", "italian",
 			"japanese", "polish", "portuguese", "russian", "tchinese",
@@ -92,6 +92,30 @@ const bool CMilesAudioBank::ParseFromHeader()
 
 		this->Construct(header);
 		this->DiscoverStreamingFiles();
+
+		Log("MBNK: Parsing sources...\n");
+		for (uint32_t i = 0; i < this->sourceCount; ++i)
+		{
+			const MilesSource_v13_t* const source = reinterpret_cast<MilesSource_v13_t*>(reinterpret_cast<char*>(this->audioSources) + (i * sizeof(MilesSource_v13_t)));
+			MilesSource_t* const sourceAssetData = new MilesSource_t(source);
+
+			if (!IsValidSource(sourceAssetData))
+			{
+				delete sourceAssetData;
+				continue;
+			}
+
+			const char* const sourceName = this->GetString(sourceAssetData->nameOffset);
+
+			CMilesAudioAsset* sourceAsset = new CMilesAudioAsset(sourceName, sourceAssetData, this);
+			sourceAsset->SetAssetType((uint32_t)AssetType_t::ASRC); // asrc - audio source
+			sourceAsset->SetAssetGUID(RTech::StringToGuid(sourceName));
+			sourceAsset->SetAssetVersion({ m_version });
+
+			sourceAsset->SetContainerName(GetStreamingFileNameForSource(sourceAssetData));
+
+			g_assetData.v_assets.push_back({ sourceAsset->GetAssetGUID(), sourceAsset });
+		}
 
 		break;
 	}
@@ -657,7 +681,7 @@ void* AudioSource_Preview(CAsset* const asset, const bool firstFrameForAsset)
 	ImGui::SameLine();
 	ImGui::Text("%.3f", soundLengthTime);
 
-	if(source->bpm != 0)
+	if (source->bpm != 0)
 		ImGui::Text("BPM: %u", source->bpm);
 
 	ImGui::Text("Sample Rate: %u", source->sampleRate);
