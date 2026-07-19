@@ -1663,13 +1663,12 @@ void* PreviewModelAsset(CAsset* const asset, const bool firstFrameForAsset)
         assertm(parsedData->lods.size(), "no lods in preview?");
         previewInfo.maxLODIndex = static_cast<uint8_t>(parsedData->lods.size()) - 1;
         previewInfo.selectedLODLevel = previewInfo.selectedLODLevel > previewInfo.maxLODIndex ? previewInfo.maxLODIndex : previewInfo.selectedLODLevel; // clamp it
+        
+        ModelPreview_DiscoverSequences(modelAsset, previewInfo);
     }
 
     ImGui::Text("Rigs: %i", modelAsset->numAnimRigs);
     ImGui::Text("Sequences: %i", modelAsset->numAnimSeqs);
-
-    if (firstFrameForAsset)
-        ModelPreview_DiscoverSequences(modelAsset, previewInfo);
 
     void* const drawData = PreviewParsedData(&previewInfo, parsedData, modelAsset->name, asset->GetAssetGUID(), firstFrameForAsset);
 

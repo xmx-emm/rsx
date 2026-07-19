@@ -2077,8 +2077,12 @@ bool Preview_SequencesSection(ModelPreviewInfo_t* const info, const ModelParsedD
 	else
 		state.selectedSeqIndex = -1;
 
-	if (ImGui::CollapsingHeader("Sequences"))
+	if (ImGui::CollapsingHeader("Sequences (WIP)"))
 	{
+		ImGui::PushFont(NULL, 16.f);
+		ImGui::TextDisabled("Animation preview is an unfinished feature that may have major visual issues");
+		ImGui::PopFont();
+
 		if (info->sequences.empty())
 			ImGui::TextUnformatted("No sequences associated with this model.");
 		else
