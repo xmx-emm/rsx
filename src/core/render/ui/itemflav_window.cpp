@@ -599,15 +599,6 @@ void ItemflavWnd_LegendsTab(CUIState* uiState)
                 {
                     ImGui::TableNextRow();
 
-                    const std::unordered_map<char, ImVec4> qualityColours = {
-                        {'C', ImVec4(0.765f, 0.847f, 0.851f, 1.f)}, // COMMON:    <195,216,217>
-                        {'R', ImVec4(0.384f, 0.784f, 1.f, 1.f)},    // RARE:      <98,200,255>
-                        {'E', ImVec4(0.784f, 0.302f, 1.f, 1.f)},    // EPIC:      <200,77,255>
-                        {'L', ImVec4(1.f, 0.804f, 0.235f, 1.f)},    // LEGENDARY: <255,205,60>
-                        {'M', ImVec4(1.f, 0.231f, 0.263f, 1.f)},    // MYTHIC:    <255,59,67>
-                        {'I', ImVec4(0.f, 1.f, 0.8f, 1.f)},         // ICONIC:    <0, 255, 204>
-                    };
-
                     const std::string skinName = Localize(skin.localizationKey_NAME);
 
                     if (ImGui::TableSetColumnIndex(0))
@@ -717,16 +708,6 @@ void ItemflavWnd_WeaponsTab(CUIState* uiState)
                     ImGui::PushID(static_cast<int>(i));
 
                     ImGui::TableNextRow();
-
-                    const std::unordered_map<char, ImVec4> qualityColours = {
-                        {'N', ImVec4(0.765f, 0.847f, 0.851f, 1.f)}, // COMMON:    <195,216,217>
-                        {'C', ImVec4(0.765f, 0.847f, 0.851f, 1.f)}, // COMMON:    <195,216,217>
-                        {'R', ImVec4(0.384f, 0.784f, 1.f, 1.f)},    // RARE:      <98,200,255>
-                        {'E', ImVec4(0.784f, 0.302f, 1.f, 1.f)},    // EPIC:      <200,77,255>
-                        {'L', ImVec4(1.f, 0.804f, 0.235f, 1.f)},    // LEGENDARY: <255,205,60>
-                        {'M', ImVec4(1.f, 0.231f, 0.263f, 1.f)},    // MYTHIC:    <255,59,67>
-                        {'I', ImVec4(0.f, 1.f, 0.8f, 1.f)},         // ICONIC:    <0, 255, 204>
-                    };
 
                     const std::string skinName = Localize(skin.localizationKey_NAME);
 
