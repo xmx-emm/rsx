@@ -62,7 +62,7 @@ void LogWnd_Draw(CUIState* uiState)
 #define HEX_TO_IMVEC4(hex) ImVec4(((hex & 0xFF000000) >> 24) / 255.f, ((hex & 0x00FF0000) >> 16) / 255.f, ((hex & 0x0000FF00) >> 8) / 255.f, (hex & 0xFF) / 255.f)
 				ImGui::PushStyleColor(ImGuiCol_Text, HEX_TO_IMVEC4(s_LogLevelColours[static_cast<uint8_t>(msg->type)]));
 				if (ImGui::TableSetColumnIndex(eLogMessageColumnID::LMC_LOG_LEVEL))
-					ImGui::TextUnformatted(s_LogLevelNames[static_cast<uint8_t>(msg->type)]);
+					ImGui::TextUnformatted(TR(s_LogLevelNames[static_cast<uint8_t>(msg->type)]));
 				ImGui::PopStyleColor();
 #undef HEX_TO_IMVEC4
 

@@ -2078,23 +2078,23 @@ bool Preview_SequencesSection(ModelPreviewInfo_t* const info, const ModelParsedD
 	else
 		state.selectedSeqIndex = -1;
 
-	if (ImGui::CollapsingHeader("Sequences"))
+	if (ImGui::CollapsingHeader(TR("Sequences")))
 	{
 		if (info->sequences.empty())
-			ImGui::TextUnformatted("No sequences associated with this model.");
+			ImGui::TextUnformatted(TR("No sequences associated with this model."));
 		else
 		{
 			// just in case the sequence data hasn't been parsed properly for whatever reason
 			// return to the caller and let it know that we want new data!
-			if (ImGui::Button("Refresh##AnimPreview"))
+			if (ImGui::Button(std::format("{}##AnimPreview", TR("Refresh")).c_str()))
 				refreshRequested = true;
 
-			const char* const comboLabel = selectedSequenceEntry ? selectedSequenceEntry->name.c_str() : "(base pose)";
+			const char* const comboLabel = selectedSequenceEntry ? selectedSequenceEntry->name.c_str() : TR("(base pose)");
 
-			if (ImGui::BeginCombo("Sequence##AnimPreview", comboLabel))
+			if (ImGui::BeginCombo(std::format("{}##AnimPreview", TR("Sequence")).c_str(), comboLabel))
 			{
 				// if there's no selected seq then we have selected the base pose (non animated)
-				if (ImGui::Selectable("(base pose)", selectedSequenceEntry == nullptr))
+				if (ImGui::Selectable(TR("(base pose)"), selectedSequenceEntry == nullptr))
 				{
 					state.selectedSeqIndex = -1;
 					state.Stop();
@@ -2132,18 +2132,18 @@ bool Preview_SequencesSection(ModelPreviewInfo_t* const info, const ModelParsedD
 					const ModelSeq_t* const seqdesc = selectedSequenceEntry->seqdesc;
 					const ModelAnim_t* const animdesc = seqdesc->Anim(state.selectedAnimIndex);
 
-					ImGui::Text("Name: %s\nMetadata: %.1f fps, %i frames, %.3f seconds", animdesc->name, animdesc->fps, animdesc->numframes, animdesc->Duration());
+					ImGui::Text(TR("Name: %s\nMetadata: %.1f fps, %i frames, %.3f seconds"), animdesc->name, animdesc->fps, animdesc->numframes, animdesc->Duration());
 
 					if (animdesc->flags & eStudioAnimFlags::ANIM_DELTA)
-						ImGui::TextUnformatted("Unsupported delta anim; Preview unavailable");
+						ImGui::TextUnformatted(TR("Unsupported delta anim; Preview unavailable"));
 					else if (!(animdesc->flags & eStudioAnimFlags::ANIM_VALID) || animdesc->parsedBufferIndex == invalidNoodleIdx)
-						ImGui::TextUnformatted("Invalid anim data; Preview unavailable");
+						ImGui::TextUnformatted(TR("Invalid anim data; Preview unavailable"));
 
 					// i don't know what this does ibsr
 					if (seqdesc->AnimCount() > 1)
 						ImGui::SliderInt("AnimIdx##AnimPreview", &state.selectedAnimIndex, 0, seqdesc->AnimCount() - 1);
 
-					if (ImGui::Button(state.playing ? "Pause##AnimPreview" : "Play##AnimPreview"))
+					if (ImGui::Button(std::format("{}##AnimPreview", state.playing ? TR("Pause") : TR("Play")).c_str()))
 						state.TogglePlay();
 
 					ImGui::SameLine();
@@ -2151,18 +2151,18 @@ bool Preview_SequencesSection(ModelPreviewInfo_t* const info, const ModelParsedD
 					// if the player isnt playing then the user cannot click stop (obvs)
 					ImGui::BeginDisabled(!state.playing && state.frame == 0.f);
 					{
-						if (ImGui::Button("Stop##AnimPreview")) state.Stop();
+						if (ImGui::Button(std::format("{}##AnimPreview", TR("Stop")).c_str())) state.Stop();
 					}
 					ImGui::EndDisabled();
 
 					ImGui::SameLine();
-					ImGui::Checkbox("Loop##AnimPreview", &state.looping);
+					ImGui::Checkbox(std::format("{}##AnimPreview", TR("Loop")).c_str(), &state.looping);
 
 					const int finalFrameIdx = animdesc->numframes > 0 ? animdesc->numframes - 1 : 0;
 
 					ImGui::BeginDisabled(finalFrameIdx == 0);
 					{
-						ImGui::SliderFloat("Frame##AnimPreview", &state.frame, 0.0f, static_cast<float>(finalFrameIdx), "%.1f");
+						ImGui::SliderFloat(std::format("{}##AnimPreview", TR("Frame")).c_str(), &state.frame, 0.0f, static_cast<float>(finalFrameIdx), "%.1f");
 					}
 					ImGui::EndDisabled();
 
@@ -2170,7 +2170,7 @@ bool Preview_SequencesSection(ModelPreviewInfo_t* const info, const ModelParsedD
 					if (ImGui::IsItemActive())
 						state.playing = false;
 
-				} else ImGui::TextUnformatted("Sequence has no anims!");
+				} else ImGui::TextUnformatted(TR("Sequence has no anims!"));
 			}
 		}
 	}
@@ -2240,16 +2240,16 @@ void* PreviewParsedData(ModelPreviewInfo_t* const info, ModelParsedData_t* const
 	assertm(parsedData->lods.size() > 0, "no lods in preview?");
 	const ModelLODData_t& lodData = parsedData->lods.at(info->selectedLODLevel);
 
-	ImGui::Text("Bones: %llu", parsedData->bones.size());
-	ImGui::Text("LODs: %llu", parsedData->lods.size());
-	ImGui::Text("Local Sequences: %i", parsedData->NumLocalSeq());
+	ImGui::Text(TR("Bones: %llu"), parsedData->bones.size());
+	ImGui::Text(TR("LODs: %llu"), parsedData->lods.size());
+	ImGui::Text(TR("Local Sequences: %i"), parsedData->NumLocalSeq());
 
 	if (info->minLODIndex != info->maxLODIndex)
-		ImGui::SliderScalar("LOD Level", ImGuiDataType_U8, &info->selectedLODLevel, &info->minLODIndex, &info->maxLODIndex);
+		ImGui::SliderScalar(TR("LOD Level"), ImGuiDataType_U8, &info->selectedLODLevel, &info->minLODIndex, &info->maxLODIndex);
 
 	if (parsedData->skins.size())
 	{
-		ImGui::TextUnformatted("Skins:");
+		ImGui::TextUnformatted(TR("Skins:"));
 		ImGui::SameLine();
 
 		// [rika]: cheat a little here since the first skin name should always be 'STUDIO_DEFAULT_SKIN_NAME'
@@ -2281,7 +2281,7 @@ void* PreviewParsedData(ModelPreviewInfo_t* const info, ModelParsedData_t* const
 
 	if (parsedData->bodyParts.size())
 	{
-		ImGui::TextUnformatted("Bodypart:");
+		ImGui::TextUnformatted(TR("Bodypart:"));
 		ImGui::SameLine();
 
 		// [rika]: previous implemention was loading an invalid string upon loading different files without closing the tool
@@ -2326,7 +2326,7 @@ void* PreviewParsedData(ModelPreviewInfo_t* const info, ModelParsedData_t* const
 			const ModelBodyPart_t& bodypart = parsedData->bodyParts.at(info->selectedBodypartIndex);
 			size_t& selectedModelIndex = info->bodygroupModelSelected.at(info->selectedBodypartIndex);
 
-			ImGui::TextUnformatted("Model:");
+			ImGui::TextUnformatted(TR("Model:"));
 			ImGui::SameLine();
 
 			static const char* label = nullptr;
@@ -2466,12 +2466,12 @@ void PreviewAnimDesc(const ModelAnim_t* const animdesc, const int index)
 {
 	if (ImGui::TreeNodeEx(std::to_string(index).c_str(), ImGuiTreeNodeFlags_SpanAvailWidth))
 	{
-		ImGui::Text("Name: %s", animdesc->name);
-		ImGui::Text("Flags: 0x%x", animdesc->flags);
+		ImGui::Text(TR("Name: %s"), animdesc->name);
+		ImGui::Text(TR("Flags: 0x%x"), animdesc->flags);
 
-		ImGui::Text("Frame Rate: %f", animdesc->fps);
-		ImGui::Text("Frame Count: %i", animdesc->numframes);
-		ImGui::Text("Duration: %.3f seconds", animdesc->Duration());
+		ImGui::Text(TR("Frame Rate: %f"), animdesc->fps);
+		ImGui::Text(TR("Frame Count: %i"), animdesc->numframes);
+		ImGui::Text(TR("Duration: %.3f seconds"), animdesc->Duration());
 
 		ImGui::TreePop();
 	}
@@ -2479,15 +2479,15 @@ void PreviewAnimDesc(const ModelAnim_t* const animdesc, const int index)
 
 void PreviewSeqDesc(const ModelSeq_t* const seqdesc)
 {
-	ImGui::Text("Label: %s", seqdesc->szlabel);
-	ImGui::Text("Activity: %s", seqdesc->szactivityname);
+	ImGui::Text(TR("Label: %s"), seqdesc->szlabel);
+	ImGui::Text(TR("Activity: %s"), seqdesc->szactivityname);
 
-	ImGui::Text("Flags: 0x%x", seqdesc->flags);
+	ImGui::Text(TR("Flags: 0x%x"), seqdesc->flags);
 
 	if (!seqdesc->AnimCount())
 		return;
 
-	ImGui::TextUnformatted("Animations:");
+	ImGui::TextUnformatted(TR("Animations:"));
 
 	for (int i = 0; i < seqdesc->AnimCount(); i++)
 	{

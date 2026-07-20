@@ -3,6 +3,7 @@
 #include <core/render/dx.h>
 #include <thirdparty/imgui/imgui.h>
 #include <core/render/ui/styles.h>
+#include <core/i18n.h>
 
 extern CDXParentHandler* g_dxHandler;
 extern RSXSettings_t g_rsxSettings;
@@ -555,12 +556,12 @@ void* PreviewTextureAsset(CAsset* const asset, const bool firstFrameForAsset)
 
     const ImVec2 outerSize = ImVec2(0.f, ImGui::GetTextLineHeightWithSpacing() * 12.f);
 
-    ImGui::TextUnformatted(std::format("Texture: {} (0x{:X})", nullptr != txtrAsset->name ? txtrAsset->name : "null name", txtrAsset->guid).c_str());
+    ImGui::TextUnformatted(std::format("{}: {} (0x{:X})", TR("Texture"), nullptr != txtrAsset->name ? txtrAsset->name : "null name", txtrAsset->guid).c_str());
 
     // temp, we should do better at somepoint
     if (txtrAsset->arraySize > 1)
     {
-        ImGui::TextUnformatted("Texture Array Index:");
+        ImGui::TextUnformatted(TR("Texture Array Index:"));
         ImGui::SameLine();
 
         static const char* arrayLabel = previewArrays.at(0).c_str();
@@ -583,17 +584,17 @@ void* PreviewTextureAsset(CAsset* const asset, const bool firstFrameForAsset)
         }
     }
 
-    if (ImGui::CollapsingHeader("Mip Levels", ImGuiTreeNodeFlags_DefaultOpen))
+    if (ImGui::CollapsingHeader(TR("Mip Levels"), ImGuiTreeNodeFlags_DefaultOpen))
     {
         if (ImGui::BeginTable("Texture Table", TexturePreviewData_t::eColumnID::_TPC_COUNT, tableFlags, outerSize))
         {
-            ImGui::TableSetupColumn("Level", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, TexturePreviewData_t::eColumnID::TPC_Level);
-            ImGui::TableSetupColumn("Dimensions", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, TexturePreviewData_t::eColumnID::TPC_Dimensions);
-            ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, TexturePreviewData_t::eColumnID::TPC_Status);
-            ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, TexturePreviewData_t::eColumnID::TPC_Type);
+            ImGui::TableSetupColumn(TR("Level"), ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, TexturePreviewData_t::eColumnID::TPC_Level);
+            ImGui::TableSetupColumn(TR("Dimensions"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, TexturePreviewData_t::eColumnID::TPC_Dimensions);
+            ImGui::TableSetupColumn(TR("Status"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, TexturePreviewData_t::eColumnID::TPC_Status);
+            ImGui::TableSetupColumn(TR("Type"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, TexturePreviewData_t::eColumnID::TPC_Type);
             // for some reason this column doesn't actually get any data set to it?
             //ImGui::TableSetupColumn("Compression", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, TexturePreviewData_t::eColumnID::TPC_Comp);
-            ImGui::TableSetupColumn("Origin", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, TexturePreviewData_t::eColumnID::TPC_Origin);
+            ImGui::TableSetupColumn(TR("Origin"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, TexturePreviewData_t::eColumnID::TPC_Origin);
             ImGui::TableSetupScrollFreeze(1, 1);
 
             ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs(); // get the sorting settings from this table
@@ -647,19 +648,19 @@ void* PreviewTextureAsset(CAsset* const asset, const bool firstFrameForAsset)
                     if (item->isLoaded)
                     {
                         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.f, 1.f, 0.f, 1.f));
-                        ImGui::TextUnformatted("Loaded");
+                        ImGui::TextUnformatted(TR("Loaded"));
                         ImGui::PopStyleColor();
                     }
                     else
                     {
                         ImGui::PushStyleColor(ImGuiCol_Text, Styles::TEXTCOL_NOT_LOADED);
-                        ImGui::TextUnformatted("Not Loaded");
+                        ImGui::TextUnformatted(TR("Not Loaded"));
                         ImGui::PopStyleColor();
                     }
                 }
 
                 if (ImGui::TableSetColumnIndex(TexturePreviewData_t::eColumnID::TPC_Type))
-                    ImGui::TextUnformatted(item->typeName);
+                    ImGui::TextUnformatted(TR(item->typeName));
 
                 if (ImGui::TableSetColumnIndex(TexturePreviewData_t::eColumnID::TPC_Origin))
                     ImGui::TextUnformatted(item->dataOrigin);

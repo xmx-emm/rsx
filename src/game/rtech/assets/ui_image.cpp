@@ -4,6 +4,7 @@
 #include <core/render/dx.h>
 #include <thirdparty/imgui/imgui.h>
 #include <core/render/ui/styles.h>
+#include <core/i18n.h>
 
 extern CDXParentHandler* g_dxHandler;
 extern RSXSettings_t g_rsxSettings;
@@ -498,10 +499,10 @@ void* PreviewUIImageAsset(CAsset* const asset, const bool firstFrameForAsset)
         selectedUITexture.reset();
     }
 
-    constexpr const char* const resNames[] =
+    const char* const resNames[] =
     {
-        "Low Quality",
-        "High Quality"
+        TR("Low Quality"),
+        TR("High Quality")
     };
 
     assertm(selectedUIImage < eUIImageTileType::TYPE_COUNT, "Selected ui image is out of bounds for tile types.");
@@ -541,30 +542,30 @@ void* PreviewUIImageAsset(CAsset* const asset, const bool firstFrameForAsset)
             if (!uiAsset->shouldStream && selectedUIImage == eUIImageTileType::TYPE_HQ)
             {
                 ImGui::PushStyleColor(ImGuiCol_Text, Styles::TEXTCOL_NOT_LOADED);
-                ImGui::TextUnformatted("Not Loaded");
+                ImGui::TextUnformatted(TR("Not Loaded"));
                 ImGui::PopStyleColor();
             }
             else
             {
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.f, 1.f, 0.f, 1.f));
-                ImGui::TextUnformatted("Loaded");
+                ImGui::TextUnformatted(TR("Loaded"));
                 ImGui::PopStyleColor();
             }
 
             ImGui::Separator();
 
             const UIImageAsset::QualityData* const resData = &uiAsset->resData[selectedUIImage];
-            ImGui::Text("Width: %hu", uiAsset->width);
-            ImGui::Text("Height: %hu", uiAsset->height);
+            ImGui::Text(TR("Width: %hu"), uiAsset->width);
+            ImGui::Text(TR("Height: %hu"), uiAsset->height);
             ImGui::Separator();
-            ImGui::Text("Shifted Width: %hu", resData->shiftedWidth);
-            ImGui::Text("Shifted Height: %hu", resData->shiftedHeight);
+            ImGui::Text(TR("Shifted Width: %hu"), resData->shiftedWidth);
+            ImGui::Text(TR("Shifted Height: %hu"), resData->shiftedHeight);
             ImGui::Separator();
-            ImGui::Text("Actual Width: %hu", resData->width);
-            ImGui::Text("Actual Height: %hu", resData->height);
+            ImGui::Text(TR("Actual Width: %hu"), resData->width);
+            ImGui::Text(TR("Actual Height: %hu"), resData->height);
             ImGui::Separator();
-            ImGui::Text("Num BC1 Tiles: %u", resData->numBc1Tiles);
-            ImGui::Text("Num BC7 Tiles: %u", resData->numBc7Tiles);
+            ImGui::Text(TR("Num BC1 Tiles: %u"), resData->numBc1Tiles);
+            ImGui::Text(TR("Num BC7 Tiles: %u"), resData->numBc7Tiles);
         }
 
         ImGui::EndTable();
@@ -585,11 +586,11 @@ void* PreviewUIImageAsset(CAsset* const asset, const bool firstFrameForAsset)
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.FramePadding.y);
 
         ImGui::Separator();
-        ImGui::Text("Scale: %.f%%", textureZoom * 100.f);
+        ImGui::Text(TR("Scale: %.f%%"), textureZoom * 100.f);
         ImGui::SameLine();
         ImGui::NextColumn();
 
-        constexpr const char* const zoomHelpText = "Hold CTRL and scroll to zoom";
+        const char* const zoomHelpText = TR("Hold CTRL and scroll to zoom");
         IMGUI_RIGHT_ALIGN_FOR_TEXT(zoomHelpText);
         ImGui::TextUnformatted(zoomHelpText);
         if (ImGui::BeginChild("Image Preview", ImVec2(0.f, 0.f), true, ImGuiWindowFlags_HorizontalScrollbar))
@@ -643,7 +644,7 @@ void* PreviewUIImageAsset(CAsset* const asset, const bool firstFrameForAsset)
         if(selectedUITexture)
             selectedUITexture->CreateShaderResourceView(g_dxHandler->GetDevice());
         else
-            ImGui::TextColored(ImVec4(1.f, 0.f, 0.f, 1.f), "Failed to preview selected UI Image. This asset does not contain any valid image data.\n");
+            ImGui::TextColored(ImVec4(1.f, 0.f, 0.f, 1.f), "%s", TR("Failed to preview selected UI Image. This asset does not contain any valid image data.\n"));
     }
 
     return nullptr;

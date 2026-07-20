@@ -4,6 +4,7 @@
 #include <game/rtech/utils/utils.h>
 #include <misc/imgui_utility.h>
 #include <core/render/preview/preview.h>
+#include <core/i18n.h>
 
 void Preview_Texture(CDXDrawData* drawData, float dt)
 {
@@ -23,7 +24,7 @@ void Preview_Texture(CDXDrawData* drawData, float dt)
     ImGuiStyle& style = ImGui::GetStyle();
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.FramePadding.y);
 
-    ImGui::Text("Scale: %.f%%", textureZoom * 100.f);
+    ImGui::Text(TR("Scale: %.f%%"), textureZoom * 100.f);
 
     ImGui::SameLine();
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 1.f, 1.f, 0.1f));
@@ -37,7 +38,7 @@ void Preview_Texture(CDXDrawData* drawData, float dt)
     ImGui::SameLine();
     ImGui::NextColumn();
 
-    constexpr const char* const zoomHelpText = "Hold CTRL and scroll to zoom";
+    const char* const zoomHelpText = TR("Hold CTRL and scroll to zoom");
     IMGUI_RIGHT_ALIGN_FOR_TEXT(zoomHelpText);
     ImGui::TextUnformatted(zoomHelpText);
     if (ImGui::BeginChild("Texture Preview", ImVec2(0.f, 0.f), true, ImGuiWindowFlags_HorizontalScrollbar)) // [rika]: todo smaller screens will not have the most ideal viewing experience do to the image being squashed
@@ -52,8 +53,8 @@ void Preview_Texture(CDXDrawData* drawData, float dt)
             ImGui::SetCursorScreenPos(pos);
 
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 0.48f, 0.48f, 1.f));
-            ImGuiExt::TextCentered("Failed to preview this texture.");
-            ImGuiExt::TextCentered("If this is a streamed texture, please check that all required .STARPAK files are present");
+            ImGuiExt::TextCentered(TR("Failed to preview this texture."));
+            ImGuiExt::TextCentered(TR("If this is a streamed texture, please check that all required .STARPAK files are present"));
             ImGui::PopStyleColor();
         }
         else

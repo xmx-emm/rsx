@@ -253,6 +253,128 @@ static const std::unordered_map<std::string_view, const char*> s_StringsChineseS
     { "Exporting Materials..", "正在导出材质.." },
     { "Cancel", "取消" },
 
+    // texture preview
+    { "Texture Array Index:", "纹理数组索引：" },
+    { "Mip Levels", "Mip 层级" },
+    { "Level", "级别" },
+    { "Dimensions", "尺寸" },
+    { "Origin", "来源" },
+    { "PERM", "常驻" },
+    { "STREAMED", "流式" },
+    { "OPT STREAMED", "可选流式" },
+    { "Scale: %.f%%", "缩放：%.f%%" },
+    { "Hold CTRL and scroll to zoom", "按住 CTRL 并滚动滚轮进行缩放" },
+    { "Failed to preview this texture.", "无法预览此纹理。" },
+    { "If this is a streamed texture, please check that all required .STARPAK files are present",
+      "如果这是流式纹理，请检查所需的 .STARPAK 文件是否齐全" },
+
+    // ui image / atlas / font preview
+    { "Atlas", "图集" },
+    { "Index", "序号" },
+    { "Positions", "位置" },
+    { "Render Size", "渲染尺寸" },
+    { "Low Quality", "低质量" },
+    { "High Quality", "高质量" },
+    { "Width: %hu", "宽度：%hu" },
+    { "Height: %hu", "高度：%hu" },
+    { "Shifted Width: %hu", "对齐宽度：%hu" },
+    { "Shifted Height: %hu", "对齐高度：%hu" },
+    { "Actual Width: %hu", "实际宽度：%hu" },
+    { "Actual Height: %hu", "实际高度：%hu" },
+    { "Num BC1 Tiles: %u", "BC1 图块数：%u" },
+    { "Num BC7 Tiles: %u", "BC7 图块数：%u" },
+    { "Failed to preview selected UI Image. This asset does not contain any valid image data.\n",
+      "无法预览所选 UI 图片。此资产不包含任何有效的图像数据。\n" },
+    { "Font:", "字体：" },
+
+    // material preview
+    { "Type: %s", "类型：%s" },
+    { "Shaderset: %s (0x%llx)", "着色器集：%s (0x%llx)" },
+    { "Material Snapshot: %s (0x%llx)", "材质快照：%s (0x%llx)" },
+    { "unloaded", "未加载" },
+    { "If a material uses a snapshot, the snapshot needs to be loaded for DX States preview to be accurate.\n",
+      "如果材质使用了快照，需要加载该快照才能准确预览 DX 状态。\n" },
+    { "Textures", "纹理" },
+    { "Properties", "属性" },
+    { "DX States", "DX 状态" },
+    { "The material asset does not provide any resource type information for this texture entry",
+      "材质资产未提供此纹理条目的资源类型信息" },
+    { "This type represents the way that the material is used and rendered by the game.\n\n"
+      "Possible types:\n"
+      " - RGDU: Static Props with regular vertices\n"
+      " - RGDP: Static Props with packed vertex positions\n"
+      " - RGDC: Static Props with packed vertex positions\n\n"
+      " - SKNU: Skinned model with regular vertices\n"
+      " - SKNP: Skinned model with packed vertex positions\n"
+      " - SKNC: Skinned model with packed vertex positions\n\n"
+      " - WLDU: World geometry with regular vertices\n"
+      " - WLDC: World geometry with packed vertex positions\n\n"
+      " - PTCU: Particles with regular vertices\n"
+      " - PTCS: Particles\n\n"
+      " - RGBS: Currently Unknown\n\n"
+      "Titanfall types:\n"
+      " - SKN: Skinned model\n"
+      " - FIX: Skinned model fixup for use as a static prop\n"
+      " - WLD: World geometry\n"
+      " - GEN: UI, general use, particles, etc\n",
+      "该类型表示游戏使用和渲染此材质的方式。\n\n"
+      "可能的类型：\n"
+      " - RGDU：常规顶点的静态道具\n"
+      " - RGDP：压缩顶点位置的静态道具\n"
+      " - RGDC：压缩顶点位置的静态道具\n\n"
+      " - SKNU：常规顶点的蒙皮模型\n"
+      " - SKNP：压缩顶点位置的蒙皮模型\n"
+      " - SKNC：压缩顶点位置的蒙皮模型\n\n"
+      " - WLDU：常规顶点的世界几何体\n"
+      " - WLDC：压缩顶点位置的世界几何体\n\n"
+      " - PTCU：常规顶点的粒子\n"
+      " - PTCS：粒子\n\n"
+      " - RGBS：目前未知\n\n"
+      "Titanfall 类型：\n"
+      " - SKN：蒙皮模型\n"
+      " - FIX：作为静态道具使用的蒙皮模型修正\n"
+      " - WLD：世界几何体\n"
+      " - GEN：UI、通用、粒子等\n" },
+
+    // model preview
+    { "Sequences", "动画序列" },
+    { "No sequences associated with this model.", "此模型没有关联的动画序列。" },
+    { "Refresh", "刷新" },
+    { "Sequence", "序列" },
+    { "(base pose)", "（基础姿态）" },
+    { "Name: %s\nMetadata: %.1f fps, %i frames, %.3f seconds", "名称：%s\n元数据：%.1f fps，%i 帧，%.3f 秒" },
+    { "Unsupported delta anim; Preview unavailable", "不支持的增量动画；无法预览" },
+    { "Invalid anim data; Preview unavailable", "无效的动画数据；无法预览" },
+    { "Pause", "暂停" },
+    { "Play", "播放" },
+    { "Stop", "停止" },
+    { "Loop", "循环" },
+    { "Frame", "帧" },
+    { "Sequence has no anims!", "该序列不包含动画！" },
+    { "Bones: %llu", "骨骼数：%llu" },
+    { "LODs: %llu", "LOD 数：%llu" },
+    { "Local Sequences: %i", "本地序列数：%i" },
+    { "LOD Level", "LOD 级别" },
+    { "Skins:", "皮肤：" },
+    { "Bodypart:", "身体部位：" },
+    { "Model:", "模型：" },
+    { "Name: %s", "名称：%s" },
+    { "Flags: 0x%x", "标志：0x%x" },
+    { "Frame Rate: %f", "帧率：%f" },
+    { "Frame Count: %i", "帧数：%i" },
+    { "Duration: %.3f seconds", "时长：%.3f 秒" },
+    { "Label: %s", "标签：%s" },
+    { "Activity: %s", "活动：%s" },
+    { "Animations:", "动画：" },
+
+    // audio preview
+    { "Sample Rate: %u", "采样率：%u" },
+
+    // log levels
+    { "INFO", "信息" },
+    { "WARNING", "警告" },
+    { "ERROR", "错误" },
+
     // window titles (used through TRW)
     { "Asset List", "资产列表" },
     { "Asset Info", "资产信息" },

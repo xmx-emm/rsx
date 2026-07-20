@@ -8,6 +8,7 @@
 #include <core/render/dx.h>
 #include <core/render/dxutils.h>
 #include <core/render/ui/styles.h>
+#include <core/i18n.h>
 
 extern CDXParentHandler* g_dxHandler;
 extern RSXSettings_t g_rsxSettings;
@@ -506,22 +507,22 @@ void* PreviewMaterialAsset(CAsset* const asset, const bool firstFrameForAsset)
     const ImVec2 outerSize = ImVec2(0.f, ImGui::GetTextLineHeightWithSpacing() * 12.f);
 
     //ImGui::TextUnformatted(std::format("Material: {} (0x{:X})", materialAsset->name, materialAsset->guid).c_str());
-    ImGui::Text("Type: %s", s_MaterialShaderTypeNames[materialAsset->materialType]);
+    ImGui::Text(TR("Type: %s"), s_MaterialShaderTypeNames[materialAsset->materialType]);
 
     if (materialAsset->materialType != MaterialShaderType_t::_TYPE_LEGACY)
     {
         ImGui::SameLine();
-        ImGuiExt::HelpMarker(s_MaterialShaderTypeHelpText);
+        ImGuiExt::HelpMarker(TR(s_MaterialShaderTypeHelpText));
     }
 
-    ImGui::Text("Shaderset: %s (0x%llx)", materialAsset->shaderSetAsset ? materialAsset->shaderSetAsset->GetAssetName().c_str() : "unloaded", materialAsset->shaderSet);
+    ImGui::Text(TR("Shaderset: %s (0x%llx)"), materialAsset->shaderSetAsset ? materialAsset->shaderSetAsset->GetAssetName().c_str() : TR("unloaded"), materialAsset->shaderSet);
 
     // [rika]: does this material use a snapshot?
     if (materialAsset->snapshotMaterial != 0)
     {
-        ImGui::Text("Material Snapshot: %s (0x%llx)", materialAsset->snapshotAsset ? materialAsset->snapshotAsset->GetAssetName().c_str() : "unloaded", materialAsset->snapshotMaterial);
+        ImGui::Text(TR("Material Snapshot: %s (0x%llx)"), materialAsset->snapshotAsset ? materialAsset->snapshotAsset->GetAssetName().c_str() : TR("unloaded"), materialAsset->snapshotMaterial);
         ImGui::SameLine();
-        ImGuiExt::HelpMarker("If a material uses a snapshot, the snapshot needs to be loaded for DX States preview to be accurate.\n");
+        ImGuiExt::HelpMarker(TR("If a material uses a snapshot, the snapshot needs to be loaded for DX States preview to be accurate.\n"));
     }
 
     // [rika]: depth materials here
@@ -529,21 +530,21 @@ void* PreviewMaterialAsset(CAsset* const asset, const bool firstFrameForAsset)
 
     if (ImGui::BeginTabBar("##MaterialTabs"))
     {
-        if (ImGui::BeginTabItem("Textures"))
+        if (ImGui::BeginTabItem(TR("Textures")))
         {
             if (ImGui::BeginChild("##TexturesTab", ImVec2(0, 0), false, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysVerticalScrollbar))
             {
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.f);
-                if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen))
+                if (ImGui::CollapsingHeader(TR("Textures"), ImGuiTreeNodeFlags_DefaultOpen))
                 {
                     if (ImGui::BeginTable("Material Table", NUM_MATERIAL_TEXTURE_TABLE_COLUMNS, tableFlags, outerSize))
                     {
                         ImGui::TableSetupColumn("IDX", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.f, MaterialTexturePreviewData_t::eColumnID::MTPC_ResBindPoint);
                         ImGui::TableSetupColumn("GUID", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_DefaultHide, 0.f, MaterialTexturePreviewData_t::eColumnID::MTPC_TextureGUID);
-                        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.f, MaterialTexturePreviewData_t::eColumnID::MTPC_TextureName);
-                        ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.f, MaterialTexturePreviewData_t::eColumnID::MTPC_ResBindingName);
-                        ImGui::TableSetupColumn("Dimensions", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoSort, 0.f, MaterialTexturePreviewData_t::eColumnID::MTPC_Dimensions);
-                        ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoSort, 0.f, MaterialTexturePreviewData_t::eColumnID::MTPC_Status);
+                        ImGui::TableSetupColumn(TR("Name"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.f, MaterialTexturePreviewData_t::eColumnID::MTPC_TextureName);
+                        ImGui::TableSetupColumn(TR("Type"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.f, MaterialTexturePreviewData_t::eColumnID::MTPC_ResBindingName);
+                        ImGui::TableSetupColumn(TR("Dimensions"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoSort, 0.f, MaterialTexturePreviewData_t::eColumnID::MTPC_Dimensions);
+                        ImGui::TableSetupColumn(TR("Status"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoSort, 0.f, MaterialTexturePreviewData_t::eColumnID::MTPC_Status);
                         ImGui::TableSetupScrollFreeze(1, 1);
 
                         ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
@@ -614,7 +615,7 @@ void* PreviewMaterialAsset(CAsset* const asset, const bool firstFrameForAsset)
                                 if (!item->HasResourceType())
                                 {
                                     ImGui::SameLine();
-                                    ImGuiExt::HelpMarker("The material asset does not provide any resource type information for this texture entry");
+                                    ImGuiExt::HelpMarker(TR("The material asset does not provide any resource type information for this texture entry"));
                                 }
                             }
 
@@ -631,13 +632,13 @@ void* PreviewMaterialAsset(CAsset* const asset, const bool firstFrameForAsset)
                                 if (item->IsTextureLoaded())
                                 {
                                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.f, 1.f, 0.f, 1.f));
-                                    ImGui::TextUnformatted("Loaded");
+                                    ImGui::TextUnformatted(TR("Loaded"));
                                     ImGui::PopStyleColor();
                                 }
                                 else
                                 {
                                     ImGui::PushStyleColor(ImGuiCol_Text, Styles::TEXTCOL_NOT_LOADED);
-                                    ImGui::TextUnformatted("Not Loaded");
+                                    ImGui::TextUnformatted(TR("Not Loaded"));
                                     ImGui::PopStyleColor();
                                 }
                             }
@@ -675,11 +676,11 @@ void* PreviewMaterialAsset(CAsset* const asset, const bool firstFrameForAsset)
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem("Properties"))
+        if (ImGui::BeginTabItem(TR("Properties")))
         {
             if (ImGui::BeginChild("##PropertiesTab", ImVec2(0,0), false, ImGuiWindowFlags_NoBackground))
             {
-                if (ImGui::TreeNode("DX States"))
+                if (ImGui::TreeNode(TR("DX States")))
                 {
                     MatPreview_DXState(materialAsset->dxStates[0], 0, materialAsset->numRenderTargets);
                     MatPreview_DXState(materialAsset->dxStates[1], 1, materialAsset->numRenderTargets);

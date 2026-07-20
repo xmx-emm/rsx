@@ -4,6 +4,7 @@
 
 #include <core/render/dx.h>
 #include <thirdparty/imgui/imgui.h>
+#include <core/i18n.h>
 
 extern CDXParentHandler* g_dxHandler;
 extern RSXSettings_t g_rsxSettings;
@@ -322,15 +323,15 @@ void* PreviewUIImageAtlasAsset(CAsset* const asset, const bool firstFrameForAsse
 
     const ImVec2 outerSize = ImVec2(0.f, ImGui::GetTextLineHeightWithSpacing() * 12.f);
 
-    ImGui::TextUnformatted(std::format("Atlas: {} (0x{:X})", pakAsset->GetAssetName().c_str(), pakAsset->data()->guid).c_str());
+    ImGui::TextUnformatted(std::format("{}: {} (0x{:X})", TR("Atlas"), pakAsset->GetAssetName().c_str(), pakAsset->data()->guid).c_str());
 
     if (ImGui::BeginTable("Image Table", UITexturePreviewData_t::eColumnID::_TPC_COUNT, tableFlags, outerSize))
     {
-        ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, UITexturePreviewData_t::eColumnID::TPC_Index);
-        ImGui::TableSetupColumn("Dimensions", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UITexturePreviewData_t::eColumnID::TPC_Dimensions);
-        ImGui::TableSetupColumn("Positions", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UITexturePreviewData_t::eColumnID::TPC_Position);
-        ImGui::TableSetupColumn("Render Size", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UITexturePreviewData_t::eColumnID::TPC_Dimensions);
-        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UITexturePreviewData_t::eColumnID::TPC_Name);
+        ImGui::TableSetupColumn(TR("Index"), ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, UITexturePreviewData_t::eColumnID::TPC_Index);
+        ImGui::TableSetupColumn(TR("Dimensions"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UITexturePreviewData_t::eColumnID::TPC_Dimensions);
+        ImGui::TableSetupColumn(TR("Positions"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UITexturePreviewData_t::eColumnID::TPC_Position);
+        ImGui::TableSetupColumn(TR("Render Size"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UITexturePreviewData_t::eColumnID::TPC_Dimensions);
+        ImGui::TableSetupColumn(TR("Name"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UITexturePreviewData_t::eColumnID::TPC_Name);
         ImGui::TableSetupScrollFreeze(1, 1);
 
         ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs(); // get the sorting settings from this table
@@ -402,11 +403,11 @@ void* PreviewUIImageAtlasAsset(CAsset* const asset, const bool firstFrameForAsse
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.FramePadding.y);
 
         ImGui::Separator();
-        ImGui::Text("Scale: %.f%%", textureZoom * 100.f);
+        ImGui::Text(TR("Scale: %.f%%"), textureZoom * 100.f);
         ImGui::SameLine();
         ImGui::NextColumn();
 
-        constexpr const char* const zoomHelpText = "Hold CTRL and scroll to zoom";
+        const char* const zoomHelpText = TR("Hold CTRL and scroll to zoom");
         IMGUI_RIGHT_ALIGN_FOR_TEXT(zoomHelpText);
         ImGui::TextUnformatted(zoomHelpText);
         if (ImGui::BeginChild("Texture Preview", ImVec2(0.f, 0.f), true, ImGuiWindowFlags_HorizontalScrollbar))

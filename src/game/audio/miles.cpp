@@ -9,6 +9,7 @@
 #include <core/audio/audioplayer.h>
 #include <core/fonts/codicons.h>
 #include <misc/imgui_utility.h>
+#include <core/i18n.h>
 
 bool CMilesAudioBank::IsValidSource(const MilesSource_t* source) const
 {
@@ -684,7 +685,7 @@ void* AudioSource_Preview(CAsset* const asset, const bool firstFrameForAsset)
 	if (source->bpm != 0)
 		ImGui::Text("BPM: %u", source->bpm);
 
-	ImGui::Text("Sample Rate: %u", source->sampleRate);
+	ImGui::Text(TR("Sample Rate: %u"), source->sampleRate);
 
 	return nullptr;
 }

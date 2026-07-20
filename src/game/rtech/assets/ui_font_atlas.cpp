@@ -567,11 +567,11 @@ void* PreviewUIFontAtlasAsset(CAsset* const asset, const bool firstFrameForAsset
 
     const ImVec2 outerSize = ImVec2(0.f, ImGui::GetTextLineHeightWithSpacing() * 12.f);
 
-    ImGui::TextUnformatted(std::format("Atlas: {} (0x{:X})", pakAsset->GetAssetName().c_str(), pakAsset->data()->guid).c_str());
+    ImGui::TextUnformatted(std::format("{}: {} (0x{:X})", TR("Atlas"), pakAsset->GetAssetName().c_str(), pakAsset->data()->guid).c_str());
 
     if (fontAsset->fontCount > 1)
     {
-        ImGui::TextUnformatted("Font:");
+        ImGui::TextUnformatted(TR("Font:"));
         ImGui::SameLine();
 
         static const char* arrayLabel = selectedUIFont->name.c_str();
@@ -596,9 +596,9 @@ void* PreviewUIFontAtlasAsset(CAsset* const asset, const bool firstFrameForAsset
 
     if (ImGui::BeginTable("Image Table", UICharacterPreviewData_t::eColumnID::_TPC_COUNT, tableFlags, outerSize))
     {
-        ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, UICharacterPreviewData_t::eColumnID::TPC_Index);
-        ImGui::TableSetupColumn("Dimensions", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UICharacterPreviewData_t::eColumnID::TPC_Dimensions);
-        ImGui::TableSetupColumn("Positions", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UICharacterPreviewData_t::eColumnID::TPC_Position);
+        ImGui::TableSetupColumn(TR("Index"), ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, UICharacterPreviewData_t::eColumnID::TPC_Index);
+        ImGui::TableSetupColumn(TR("Dimensions"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UICharacterPreviewData_t::eColumnID::TPC_Dimensions);
+        ImGui::TableSetupColumn(TR("Positions"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UICharacterPreviewData_t::eColumnID::TPC_Position);
         ImGui::TableSetupColumn("Unicode", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UICharacterPreviewData_t::eColumnID::TPC_Unicode);
         ImGui::TableSetupScrollFreeze(1, 1);
 
@@ -678,11 +678,11 @@ void* PreviewUIFontAtlasAsset(CAsset* const asset, const bool firstFrameForAsset
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.FramePadding.y);
 
         ImGui::Separator();
-        ImGui::Text("Scale: %.f%%", textureZoom * 100.f);
+        ImGui::Text(TR("Scale: %.f%%"), textureZoom * 100.f);
         ImGui::SameLine();
         ImGui::NextColumn();
 
-        constexpr const char* const zoomHelpText = "Hold CTRL and scroll to zoom";
+        const char* const zoomHelpText = TR("Hold CTRL and scroll to zoom");
         IMGUI_RIGHT_ALIGN_FOR_TEXT(zoomHelpText);
         ImGui::TextUnformatted(zoomHelpText);
         if (ImGui::BeginChild("Texture Preview", ImVec2(0.f, 0.f), true, ImGuiWindowFlags_HorizontalScrollbar))
