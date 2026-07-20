@@ -107,7 +107,7 @@ static void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
 
             // first field in the object is always the settings asset path
             skin.assetPath = skinObj->getValue<SettingsKVField_t*>()[0].getValue<const char*>();
-            skin.settingsAsset = g_assetData.FindAssetByGUID(RTech::StringToGuid(skin.assetPath));
+            skin.settingsAsset = g_assetData.FindAsset(skin.assetPath);
 
             SettingsAsset* skinAsset = reinterpret_cast<SettingsAsset*>(reinterpret_cast<CPakAsset*>(skin.settingsAsset)->extraData());
 
@@ -154,8 +154,8 @@ static void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
             skin.bodyModel = bodyModelValue->getValue<const char*>();
             skin.includeInList = true;
 
-            CPakAsset* armsModelOdlAsset = reinterpret_cast<CPakAsset*>(g_assetData.FindAssetByGUID(RTech::StringToGuid(armsModelOdlValue->getValue<const char*>())));
-            CPakAsset* bodyModelOdlAsset = reinterpret_cast<CPakAsset*>(g_assetData.FindAssetByGUID(RTech::StringToGuid(bodyModelOdlValue->getValue<const char*>())));
+            CPakAsset* armsModelOdlAsset = reinterpret_cast<CPakAsset*>(g_assetData.FindAsset(armsModelOdlValue->getValue<const char*>()));
+            CPakAsset* bodyModelOdlAsset = reinterpret_cast<CPakAsset*>(g_assetData.FindAsset(bodyModelOdlValue->getValue<const char*>()));
 
             if (armsModelOdlAsset)
                 skin.armsModelPak = armsModelOdlAsset->extraData<ODLAsset*>()->GetPakName();
@@ -174,7 +174,7 @@ static void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
         );
     }
 
-    CAsset* iconAsset = g_assetData.FindAssetByGUID(RTech::StringToGuid(std::format("ui_image/{}.rpak", character->icon).c_str()));
+    CAsset* iconAsset = g_assetData.FindAsset(std::format("ui_image/{}.rpak", character->icon));
 
     if (iconAsset)
     {
@@ -252,7 +252,7 @@ static void ItemflavWindow_GetWeaponDataFromSettings(CAsset* asset)
 
             // first field in the object is always the settings asset path
             skin.assetPath = skinObj->getValue<SettingsKVField_t*>()[0].getValue<const char*>();
-            skin.settingsAsset = g_assetData.FindAssetByGUID(RTech::StringToGuid(skin.assetPath));
+            skin.settingsAsset = g_assetData.FindAsset(skin.assetPath);
 
             SettingsAsset* skinAsset = reinterpret_cast<SettingsAsset*>(reinterpret_cast<CPakAsset*>(skin.settingsAsset)->extraData());
 
@@ -348,25 +348,13 @@ static void ItemflavWindow_RefreshData(CUIState* uiState)
 {
     CUI_ItemflavWindowData* const flavData = &uiState->itemflavData;
 
-    uiState->itemFlavorListAsset = g_assetData.FindAssetByGUID(RTech::StringToGuid("settings\\base_itemflavors.rpak"));
+    uiState->itemFlavorListAsset = g_assetData.FindAsset("settings\\base_itemflavors.rpak");
 
     // If the list asset has now been found, populate the character list
     if (uiState->itemFlavorListAsset)
     {
-        const uint64_t localizationGuid = RTech::StringToGuid("localization\\localization_english.rpak");
-        if (CAsset* localizationAsset = g_assetData.FindAssetByGUID(localizationGuid))
+        if (CAsset* localizationAsset = g_assetData.FindAsset("localization\\localization_english.rpak"))
             ItemflavWindow_LocalizationPostLoadCallback(localizationAsset);
-        else
-        {
-            // Full pak path for the localization_english.rpak file in the same directory as common.rpak
-            const std::filesystem::path fullPakPath = reinterpret_cast<CPakFile*>(reinterpret_cast<CPakAsset*>(uiState->itemFlavorListAsset)->GetContainerFile())->GetFilePath().parent_path() / "localization_english.rpak";
-
-            extern void HandlePakLoad(std::vector<std::string> filePaths);
-
-            HandlePakLoad({ fullPakPath.string() });
-
-            g_assetData.AddAssetPostLoadCallback(localizationGuid, ItemflavWindow_LocalizationPostLoadCallback);
-        }
 
         CPakAsset* const itemflavListAsset = reinterpret_cast<CPakAsset*>(uiState->itemFlavorListAsset);
         const SettingsAsset* const itemflavList = itemflavListAsset->extraData<SettingsAsset*>();

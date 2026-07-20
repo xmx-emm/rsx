@@ -556,6 +556,11 @@ public:
 			? it->m_asset : nullptr;
 	}
 
+	CAsset* const FindAsset(const std::string_view& str)
+	{
+		return FindAssetByGUID(RTech::StringToGuid(str.data()));
+	}
+
 	template<typename T>
 	T* const FindAssetByGUID(const uint64_t guid)
 	{
