@@ -18,7 +18,7 @@ constexpr uint32_t WEPSKIN_SHARED_FAVORITES_SAID = 0x447d095c;
 
 extern CDXParentHandler* g_dxHandler;
 
-const std::unordered_map<char, uint32_t> qualityInts = {
+static const std::unordered_map<char, uint32_t> s_qualityInts = {
     {'N', 0u}, // NONE
     {'C', 1u}, // COMMON
     {'R', 2u}, // RARE
@@ -26,6 +26,16 @@ const std::unordered_map<char, uint32_t> qualityInts = {
     {'L', 4u}, // LEGENDARY
     {'M', 5u}, // MYTHIC
     {'I', 6u}, // ICONIC
+};
+
+static const std::unordered_map<char, ImVec4> s_qualityColours = {
+    {'N', ImVec4(1.f, 1.f, 1.f, 1.f)},          // NONE:      <255,255,255>
+    {'C', ImVec4(0.765f, 0.847f, 0.851f, 1.f)}, // COMMON:    <195,216,217>
+    {'R', ImVec4(0.384f, 0.784f, 1.f, 1.f)},    // RARE:      <98,200,255>
+    {'E', ImVec4(0.784f, 0.302f, 1.f, 1.f)},    // EPIC:      <200,77,255>
+    {'L', ImVec4(1.f, 0.804f, 0.235f, 1.f)},    // LEGENDARY: <255,205,60>
+    {'M', ImVec4(1.f, 0.231f, 0.263f, 1.f)},    // MYTHIC:    <255,59,67>
+    {'I', ImVec4(0.f, 1.f, 0.8f, 1.f)},         // ICONIC:    <0, 255, 204>
 };
 
 // temporary macro to check if the stgs bug comes back
@@ -139,7 +149,7 @@ void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
 
             skin.localizationKey_NAME = skinNameValue->getValue<const char*>();
             skin.quality = qualityValue->getValue<const char*>();
-            skin.qualityIndex = qualityInts.at(skin.quality[0]);
+            skin.qualityIndex = s_qualityInts.at(skin.quality[0]);
             skin.armsModel = armsModelValue->getValue<const char*>();
             skin.bodyModel = bodyModelValue->getValue<const char*>();
             skin.includeInList = true;
@@ -283,7 +293,7 @@ void ItemflavWindow_GetWeaponDataFromSettings(CAsset* asset)
 
             skin.localizationKey_NAME = skinNameValue->getValue<const char*>();
             skin.quality = qualityValue->getValue<const char*>();
-            skin.qualityIndex = qualityInts.at(skin.quality[0]);
+            skin.qualityIndex = s_qualityInts.at(skin.quality[0]);
             skin.viewModel = viewModelValue->getValue<const char*>();
             skin.worldModel = worldModelValue->getValue<const char*>();
             skin.includeInList = true;
@@ -484,6 +494,7 @@ void ItemflavWnd_LegendsTab(CUIState* uiState)
 
         if (flavData->selectedCharacterIdx != -1)
         {
+            // Display a small icon for the currently selected character
             CUI_ItemflavCharacter* character = &flavData->characterData[flavData->selectedCharacterIdx];
             ImGui::SameLine();
             if (character->iconTexture)
@@ -601,7 +612,7 @@ void ItemflavWnd_LegendsTab(CUIState* uiState)
 
                     if (ImGui::TableSetColumnIndex(0))
                     {
-                        ImGui::PushStyleColor(ImGuiCol_Text, qualityColours.at(skin.quality[0]));
+                        ImGui::PushStyleColor(ImGuiCol_Text, s_qualityColours.at(skin.quality[0]));
 
                         ImGui::TextUnformatted(skin.quality);
 
@@ -721,7 +732,7 @@ void ItemflavWnd_WeaponsTab(CUIState* uiState)
 
                     if (ImGui::TableSetColumnIndex(0))
                     {
-                        ImGui::PushStyleColor(ImGuiCol_Text, qualityColours.at(skin.quality[0]));
+                        ImGui::PushStyleColor(ImGuiCol_Text, s_qualityColours.at(skin.quality[0]));
 
                         ImGui::TextUnformatted(skin.quality);
 
@@ -741,7 +752,6 @@ void ItemflavWnd_WeaponsTab(CUIState* uiState)
                 }
                 ImGui::EndTable();
             }
-
         }
     }
 }
@@ -781,8 +791,6 @@ void ItemflavWnd_Draw(CUIState* uiState)
 
             ImGui::EndTabBar();
         }
-
-        
     }
     ImGui::End();
 }
