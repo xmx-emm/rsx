@@ -1457,16 +1457,15 @@ void PostLoadModelAsset(CAssetContainer* const pak, CAsset* const asset)
             CPakAsset* const animSeqAsset = g_assetData.FindAssetByGUID<CPakAsset>(guid);
 
             if (nullptr == animSeqAsset)
-            {
                 continue;
-            }
+
+            if (!animSeqAsset->hasExtraData())
+                continue;
 
             AnimSeqAsset* const animSeq = reinterpret_cast<AnimSeqAsset* const>(animSeqAsset->extraData());
 
             if (nullptr == animSeq)
-            {
                 continue;
-            }
 
             animSeq->parentModel = !animSeq->parentModel ? modelAsset : animSeq->parentModel;
         }
@@ -1545,7 +1544,7 @@ static void ModelPreview_AddExternalSeq(const uint64_t guid, const PreviewSeqTyp
 
     CPakAsset* const seqAsset = g_assetData.FindAssetByGUID<CPakAsset>(guid);
 
-    if (!seqAsset)
+    if (!seqAsset || !seqAsset->hasExtraData())
         return;
 
     AnimSeqAsset* const animSeq = reinterpret_cast<AnimSeqAsset*>(seqAsset->extraData());

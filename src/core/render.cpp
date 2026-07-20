@@ -538,6 +538,7 @@ static void MainWnd_LaunchSkinFinderForGame(const std::filesystem::path& dirPath
             (dirPath / "paks/Win64/localization_english.rpak").string(),
             (dirPath / "paks/Win64/common_early.rpak").string(),
             (dirPath / "paks/Win64/common.rpak").string(),
+            (dirPath / "paks/Win64/ui.rpak").string(),
         };
 
         CThread([](const std::vector<std::string> filePaths) {

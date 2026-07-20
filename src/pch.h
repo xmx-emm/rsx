@@ -132,3 +132,8 @@
 #else
 #define IS_NOGUI(cli) ((cli) && (cli)->HasParam("-nogui"))
 #endif
+
+
+#define CONCAT(a, b) XCONCAT(a, b)
+#define XCONCAT(a, b) a ## b
+#define UNIQUE_VAR() CONCAT(__unique_, __COUNTER__)

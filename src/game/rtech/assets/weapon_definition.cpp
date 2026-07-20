@@ -78,7 +78,7 @@ bool ExportWeaponDefinitionAsset(CAsset* const asset, const int setting)
     if (g_rsxSettings.exportPathsFull)
         exportPath.append(wepnPath.parent_path().string());
     else
-        exportPath.append("weapon/");
+        exportPath.append("weapon");
 
     if (!CreateDirectories(exportPath))
     {
