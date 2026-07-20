@@ -46,7 +46,7 @@ static const std::unordered_map<char, ImVec4> s_qualityColours = {
 #define STGS_VALUE(outVar, asset, key, type) XSTGS_VALUE(asset, key, UNIQUE_VAR(), type, outVar)
 
 // takes a vector of keys that have uiia paths as a value and adds them all to the cache db
-void IFW_CacheIconNames(SettingsAsset* settings, std::vector<std::string> argNames)
+static void IFW_CacheIconNames(SettingsAsset* settings, std::vector<std::string> argNames)
 {
     SettingsKVValue_t* value = nullptr;
     for (auto& it : argNames)
@@ -56,7 +56,7 @@ void IFW_CacheIconNames(SettingsAsset* settings, std::vector<std::string> argNam
     }
 }
 
-void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
+static void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
 {
     CUIState& uiState = g_dxHandler->GetUIState();
 
@@ -189,7 +189,7 @@ void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
     }
 }
 
-void ItemflavWindow_GetWeaponDataFromSettings(CAsset* asset)
+static void ItemflavWindow_GetWeaponDataFromSettings(CAsset* asset)
 {
     CUIState& uiState = g_dxHandler->GetUIState();
 
@@ -311,14 +311,14 @@ void ItemflavWindow_GetWeaponDataFromSettings(CAsset* asset)
     }
 }
 
-void ItemflavWindow_LocalizationPostLoadCallback(CAsset* asset)
+static void ItemflavWindow_LocalizationPostLoadCallback(CAsset* asset)
 {
     CUIState& uiState = g_dxHandler->GetUIState();
 
     uiState.itemflavData.localizationAsset = asset;
 }
 
-std::string Localize(const char* key)
+static std::string Localize(const char* key)
 {
     const char* origKey = key;
 
@@ -344,7 +344,7 @@ std::string Localize(const char* key)
     return origKey;
 }
 
-void ItemflavWindow_RefreshData(CUIState* uiState)
+static void ItemflavWindow_RefreshData(CUIState* uiState)
 {
     CUI_ItemflavWindowData* const flavData = &uiState->itemflavData;
 
@@ -464,7 +464,7 @@ void ItemflavWindow_RefreshData(CUIState* uiState)
     }
 }
 
-void ItemflavWnd_LegendsTab(CUIState* uiState)
+static void ItemflavWnd_LegendsTab(CUIState* uiState)
 {
     CUI_ItemflavWindowData* flavData = &uiState->itemflavData;
 
@@ -631,8 +631,7 @@ void ItemflavWnd_LegendsTab(CUIState* uiState)
     }
 }
 
-
-void ItemflavWnd_WeaponsTab(CUIState* uiState)
+static void ItemflavWnd_WeaponsTab(CUIState* uiState)
 {
     CUI_ItemflavWindowData* flavData = &uiState->itemflavData;
 
