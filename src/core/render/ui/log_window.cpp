@@ -8,6 +8,7 @@
 #include <game/rtech/assets/settings.h>
 #include <core/render/dx.h>
 #include <game/rtech/assets/localization.h>
+#include <core/i18n.h>
 
 extern CDXParentHandler* g_dxHandler;
 
@@ -24,7 +25,7 @@ enum eLogMessageColumnID
 void LogWnd_Draw(CUIState* uiState)
 {
     ImGui::SetNextWindowSize(ImVec2(0.f, 0.f), ImGuiCond_Always);
-    if (ImGui::Begin("Logs", &uiState->logWindowVisible, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+    if (ImGui::Begin(TRW("Logs"), &uiState->logWindowVisible, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
     {
 		constexpr ImGuiTableFlags tableFlags =
 			ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable
@@ -36,10 +37,10 @@ void LogWnd_Draw(CUIState* uiState)
 
 		if (ImGui::BeginTable("Logs", eLogMessageColumnID::_LMC_COUNT, tableFlags, outerSize))
 		{
-			ImGui::TableSetupColumn("Time", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, eLogMessageColumnID::LMC_LOG_LEVEL);
-			ImGui::TableSetupColumn("Level", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.f, eLogMessageColumnID::LMC_LOG_LEVEL);
-			ImGui::TableSetupColumn("File", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.f, eLogMessageColumnID::LMC_LOG_SOURCE);
-			ImGui::TableSetupColumn("Message", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 500.0f, eLogMessageColumnID::LMC_LOG_MSG);
+			ImGui::TableSetupColumn(TR("Time"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, eLogMessageColumnID::LMC_LOG_LEVEL);
+			ImGui::TableSetupColumn(TR("Level"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.f, eLogMessageColumnID::LMC_LOG_LEVEL);
+			ImGui::TableSetupColumn(TR("File"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.f, eLogMessageColumnID::LMC_LOG_SOURCE);
+			ImGui::TableSetupColumn(TR("Message"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 500.0f, eLogMessageColumnID::LMC_LOG_MSG);
 
 			ImGui::TableSetupScrollFreeze(1, 1);
 

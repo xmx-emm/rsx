@@ -40,6 +40,7 @@
     <ClInclude Include="core\filehandling\export.h" />
     <ClInclude Include="core\filehandling\load.h" />
     <ClInclude Include="core\fonts\sourcesans.h" />
+    <ClInclude Include="core\i18n.h" />
     <ClInclude Include="core\input\input.h" />
     <ClInclude Include="core\logging\logger.h" />
     <ClInclude Include="core\math\color32.h" />
@@ -176,6 +177,7 @@
     <ClCompile Include="core\filehandling\load.cpp" />
     <ClCompile Include="core\filehandling\mdl.cpp" />
     <ClCompile Include="core\filehandling\rpak.cpp" />
+    <ClCompile Include="core\i18n.cpp" />
     <ClCompile Include="core\input\input.cpp" />
     <ClCompile Include="core\main.cpp" />
     <ClCompile Include="core\math\color32.cpp" />
@@ -455,6 +457,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -487,6 +490,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <StringPooling>true</StringPooling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -520,6 +524,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <StringPooling>true</StringPooling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -553,6 +558,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <StringPooling>true</StringPooling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

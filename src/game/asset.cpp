@@ -6,6 +6,7 @@
 #include <game/asset.h>
 #include <misc/imgui_utility.h>
 #include "rtech/utils/utils.h"
+#include <core/i18n.h>
 
 #ifndef BUILD_NOGUI
 #include <misc/ImGuiNotify.hpp>
@@ -120,7 +121,7 @@ void CGlobalAssetData::ProcessAssetsPostLoad()
                 }
             }, threadCount);
 
-        const ProgressBarEvent_t* const processingAssetsEvent = g_pImGuiHandler->AddProgressBarEvent("Processing Assets Post Load...", leftOverAssets, &assetIdx, true);
+        const ProgressBarEvent_t* const processingAssetsEvent = g_pImGuiHandler->AddProgressBarEvent(TR("Processing Assets Post Load..."), leftOverAssets, &assetIdx, true);
         parallelTask.execute();
         parallelTask.wait();
         g_pImGuiHandler->FinishProgressBarEvent(processingAssetsEvent);

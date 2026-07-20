@@ -5,6 +5,7 @@
 #include <core/render/dx.h>
 #include <thirdparty/imgui/imgui.h>
 #include <thirdparty/imgui/misc/imgui_utility.h>
+#include <core/i18n.h>
 
 extern CDXParentHandler* g_dxHandler;
 extern RSXSettings_t g_rsxSettings;
@@ -817,7 +818,7 @@ bool ExportUIFontAtlasAsset(CAsset* const asset, const int setting)
         assertm(uiAsset->txtrConverted, "Converted atlas was not valid.");
 
         std::atomic<uint32_t> remainingFonts = 0; // we don't actually need thread safe here
-        const ProgressBarEvent_t* const fontExportProgress = g_pImGuiHandler->AddProgressBarEvent("Exporting Fonts..", static_cast<uint32_t>(uiAsset->fontCount), &remainingFonts, true);
+        const ProgressBarEvent_t* const fontExportProgress = g_pImGuiHandler->AddProgressBarEvent(TR("Exporting Fonts.."), static_cast<uint32_t>(uiAsset->fontCount), &remainingFonts, true);
         for (uint16_t idx = 0; idx < uiAsset->fontCount; idx++)
         {
             const UIFontHeader* const font = &uiAsset->fontData.at(idx);
@@ -859,7 +860,7 @@ bool ExportUIFontAtlasAsset(CAsset* const asset, const int setting)
         assertm(uiAsset->txtrConverted, "Converted atlas was not valid.");
 
         std::atomic<uint32_t> remainingFonts = 0; // we don't actually need thread safe here
-        const ProgressBarEvent_t* const fontExportProgress = g_pImGuiHandler->AddProgressBarEvent("Exporting Fonts..", static_cast<uint32_t>(uiAsset->fontCount), &remainingFonts, true);
+        const ProgressBarEvent_t* const fontExportProgress = g_pImGuiHandler->AddProgressBarEvent(TR("Exporting Fonts.."), static_cast<uint32_t>(uiAsset->fontCount), &remainingFonts, true);
         for (uint16_t idx = 0; idx < uiAsset->fontCount; idx++)
         {
             const UIFontHeader* const font = &uiAsset->fontData.at(idx);

@@ -6,11 +6,12 @@
 #include <core/filehandling/export.h>
 
 #include <game/bluepoint/bp_pakfile.h>
+#include <core/i18n.h>
 
 void HandleBPKLoad(std::vector<std::string> filePaths)
 {
     std::atomic<uint32_t> pakfileLoadingProgress = 0;
-    const ProgressBarEvent_t* const pakfileLoadProgressBar = g_pImGuiHandler->AddProgressBarEvent("Loading Bluepoint Pak Files..", static_cast<uint32_t>(filePaths.size()), &pakfileLoadingProgress, true);
+    const ProgressBarEvent_t* const pakfileLoadProgressBar = g_pImGuiHandler->AddProgressBarEvent(TR("Loading Bluepoint Pak Files.."), static_cast<uint32_t>(filePaths.size()), &pakfileLoadingProgress, true);
 
     for (std::string& path : filePaths)
     {

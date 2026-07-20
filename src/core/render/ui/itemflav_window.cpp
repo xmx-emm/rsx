@@ -11,6 +11,7 @@
 #include <game/rtech/assets/odl_asset.h>
 #include <imgui_internal.h>
 #include <misc/imgui_utility.h>
+#include <core/i18n.h>
 
 extern CDXParentHandler* g_dxHandler;
 
@@ -237,15 +238,15 @@ void ItemflavWindow_RefreshData(CUIState* uiState)
 void ItemflavWnd_Draw(CUIState* uiState)
 {
     ImGui::SetNextWindowSize(ImVec2(0.f, 500.f), ImGuiCond_Always);
-    if (ImGui::Begin("Skin Finder", &uiState->itemflavWindowVisible, ImGuiWindowFlags_NoCollapse))
+    if (ImGui::Begin(TRW("Skin Finder"), &uiState->itemflavWindowVisible, ImGuiWindowFlags_NoCollapse))
     {
-        ImGui::Text("This menu contains a list of all registered cosmetic items associated with each game character.\n"
-            "For all features to work properly, RSX must load common.rpak, common_early.rpak, and localization_english.rpak");
+        ImGui::TextUnformatted(TR("This menu contains a list of all registered cosmetic items associated with each game character.\n"
+            "For all features to work properly, RSX must load common.rpak, common_early.rpak, and localization_english.rpak"));
 
         CUI_ItemflavWindowData* flavData = &uiState->itemflavData;
 
         // Always render the refresh button, but also try to grab everything the first time the window is shown
-        if ((ImGui::Button("Refresh data") || !flavData->triedToInitialise) && g_assetData.m_donePostLoad)
+        if ((ImGui::Button(TR("Refresh data")) || !flavData->triedToInitialise) && g_assetData.m_donePostLoad)
         {
             ItemflavWindow_RefreshData(uiState);
 
@@ -282,7 +283,7 @@ void ItemflavWnd_Draw(CUIState* uiState)
                 ImGui::SameLine();
                 ImGui::TextUnformatted(Localize(character->characterDesc).c_str());
 
-                ImGui::TextUnformatted("Search"); ImGui::SameLine();
+                ImGui::TextUnformatted(TR("Search")); ImGui::SameLine();
 
                 static ImGuiCustomTextFilter skinFilter;
 
@@ -338,10 +339,10 @@ void ItemflavWnd_Draw(CUIState* uiState)
                         {
                             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.f);
 
-                            ImGui::Text("These skins can be found by opening file '%s':", skin.armsModelPak);
+                            ImGui::Text(TR("These skins can be found by opening file '%s':"), skin.armsModelPak);
                             
                             ImGui::PushID(static_cast<ImGuiID>(i | 0x10000));
-                            if (ImGui::Button("Load Assets"))
+                            if (ImGui::Button(TR("Load Assets")))
                             {
                                 // Full pak path for the localization_english.rpak file in the same directory as common.rpak
                                 const std::filesystem::path fullPakPath = reinterpret_cast<CPakFile*>(reinterpret_cast<CPakAsset*>(uiState->itemFlavorListAsset)->GetContainerFile())->GetFilePath().parent_path() / skin.armsModelPak;
@@ -355,10 +356,10 @@ void ItemflavWnd_Draw(CUIState* uiState)
                             lastTableRet = ImGui::BeginTableEx("SkinsTable", static_cast<ImGuiID>(i | 0x8000), 4, ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersInner);
                             if (lastTableRet)
                             {
-                                ImGui::TableSetupColumn("Quality", ImGuiTableColumnFlags_WidthFixed, 100.f, 0);
-                                ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 0, 1);
-                                ImGui::TableSetupColumn("Arms Model", ImGuiTableColumnFlags_WidthFixed, 0, 2);
-                                ImGui::TableSetupColumn("Body Model", ImGuiTableColumnFlags_WidthFixed, 0, 3);
+                                ImGui::TableSetupColumn(TR("Quality"), ImGuiTableColumnFlags_WidthFixed, 100.f, 0);
+                                ImGui::TableSetupColumn(TR("Name"), ImGuiTableColumnFlags_WidthFixed, 0, 1);
+                                ImGui::TableSetupColumn(TR("Arms Model"), ImGuiTableColumnFlags_WidthFixed, 0, 2);
+                                ImGui::TableSetupColumn(TR("Body Model"), ImGuiTableColumnFlags_WidthFixed, 0, 3);
 
                                 ImGui::TableSetupScrollFreeze(0, 1);
                                 ImGui::TableHeadersRow();

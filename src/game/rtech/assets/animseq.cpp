@@ -10,6 +10,7 @@
 #include <core/mdl/animdata.h>
 
 #include <thirdparty/imgui/misc/imgui_utility.h>
+#include <core/i18n.h>
 
 extern CBufferManager g_BufferManager;
 extern RSXSettings_t g_rsxSettings;
@@ -274,7 +275,7 @@ bool ExportAnimSeqFromAsset(const std::filesystem::path& exportPath, const std::
 		}
 
 		std::atomic<uint32_t> remainingSeqs = 0; // we don't actually need thread safe here
-		const ProgressBarEvent_t* const seqExportProgress = g_pImGuiHandler->AddProgressBarEvent("Exporting Sequences..", static_cast<uint32_t>(numAnimSeqs), &remainingSeqs, true);
+		const ProgressBarEvent_t* const seqExportProgress = g_pImGuiHandler->AddProgressBarEvent(TR("Exporting Sequences.."), static_cast<uint32_t>(numAnimSeqs), &remainingSeqs, true);
 		for (int i = 0; i < numAnimSeqs; i++)
 		{
 			const uint64_t guid = animSeqs[i].guid;

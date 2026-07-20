@@ -9,6 +9,7 @@
 //#include <thirdparty/imgui/imgui.h>
 #include <thirdparty/imgui/misc/imgui_utility.h>
 #include <core/render/preview/preview.h>
+#include <core/i18n.h>
 
 extern CDXParentHandler* g_dxHandler;
 extern CBufferManager g_BufferManager;
@@ -881,7 +882,7 @@ void HandleModelMaterials(const ModelParsedData_t* const parsedData, std::unorde
 
 	// [rika]: export material textures
 	std::atomic<uint32_t> remainingMaterials = 0; // we don't actually need thread safe here
-	const ProgressBarEvent_t* const materialExportProgress = g_pImGuiHandler->AddProgressBarEvent("Exporting Materials..", static_cast<uint32_t>(materials.size()), &remainingMaterials, true);
+	const ProgressBarEvent_t* const materialExportProgress = g_pImGuiHandler->AddProgressBarEvent(TR("Exporting Materials.."), static_cast<uint32_t>(materials.size()), &remainingMaterials, true);
 
 	// [rika]: so we don't export textures per lod, we should exclude skins
 	// todo: move this into the base function, don't export if raw

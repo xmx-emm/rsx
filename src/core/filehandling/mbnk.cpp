@@ -6,11 +6,12 @@
 #include <core/filehandling/export.h>
 
 #include <game/audio/miles.h>
+#include <core/i18n.h>
 
 void HandleMBNKLoad(std::vector<std::string> filePaths)
 {
 	std::atomic<uint32_t> bankLoadingProgress = 0;
-	const ProgressBarEvent_t* const bankLoadProgressBar = g_pImGuiHandler->AddProgressBarEvent("Loading Audio Banks..", static_cast<uint32_t>(filePaths.size()), &bankLoadingProgress, true);
+	const ProgressBarEvent_t* const bankLoadProgressBar = g_pImGuiHandler->AddProgressBarEvent(TR("Loading Audio Banks.."), static_cast<uint32_t>(filePaths.size()), &bankLoadingProgress, true);
 
 	Log("MBNK: Started loading %lld files\n", filePaths.size());
 

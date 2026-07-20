@@ -9,6 +9,7 @@
 
 #ifndef RTECH_STATIC_LIB
 #include <thirdparty/imgui/misc/imgui_utility.h>
+#include <core/i18n.h>
 
 #define PARSE_THREAD_COUNT UtilsConfig->parseThreadCount
 #else
@@ -1185,7 +1186,7 @@ void CPakFile::HandleOwnPostLoad()
             }, PARSE_THREAD_COUNT);
 
 #ifndef RTECH_STATIC_LIB
-        const ProgressBarEvent_t* const processingAssetsEvent = g_pImGuiHandler->AddProgressBarEvent("Processing Assets Post Load...", leftOverAssets, &assetIdx, true);
+        const ProgressBarEvent_t* const processingAssetsEvent = g_pImGuiHandler->AddProgressBarEvent(TR("Processing Assets Post Load..."), leftOverAssets, &assetIdx, true);
 #endif
         parallelTask.execute();
         parallelTask.wait();
@@ -1256,7 +1257,7 @@ void CPakFile::ProcessAssets()
     // Only do the Preparing Assets progress bar if there are more than 100 assets
     // as this gives a reasonable chance of the progress bar actually showing up instead of just flashing
     if(assetCount() >= 100)
-        processingAssetsEvent = g_pImGuiHandler->AddProgressBarEvent("Preparing Assets...", static_cast<uint32_t>(assetCount()), &assetIdx, true);
+        processingAssetsEvent = g_pImGuiHandler->AddProgressBarEvent(TR("Preparing Assets..."), static_cast<uint32_t>(assetCount()), &assetIdx, true);
 #endif
 
     parallelProcessTask.execute();
@@ -1266,7 +1267,7 @@ void CPakFile::ProcessAssets()
     if(processingAssetsEvent)
         g_pImGuiHandler->FinishProgressBarEvent(processingAssetsEvent);
 
-    const ProgressBarEvent_t* const loadAssetsEvent = g_pImGuiHandler->AddProgressBarEvent("Processing Assets...", parallelLoadTask.getRemainingTasks(), &parallelLoadTask, fnRemainingTasks, nullptr);
+    const ProgressBarEvent_t* const loadAssetsEvent = g_pImGuiHandler->AddProgressBarEvent(TR("Processing Assets..."), parallelLoadTask.getRemainingTasks(), &parallelLoadTask, fnRemainingTasks, nullptr);
 #endif
 
     parallelLoadTask.execute();

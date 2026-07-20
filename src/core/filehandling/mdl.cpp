@@ -7,6 +7,7 @@
 
 #include <game/rtech/assets/model.h>
 #include <game/model/sourcemodel.h>
+#include <core/i18n.h>
 
 void HandleMDLLoad(std::vector<std::string> filePaths)
 {
@@ -14,7 +15,7 @@ void HandleMDLLoad(std::vector<std::string> filePaths)
     guids.reserve(filePaths.size());
 
     std::atomic<uint32_t> modelLoadingProgress = 0;
-    const ProgressBarEvent_t* const modelLoadProgressBar = g_pImGuiHandler->AddProgressBarEvent("Loading Model Files..", static_cast<uint32_t>(filePaths.size()), &modelLoadingProgress, true);
+    const ProgressBarEvent_t* const modelLoadProgressBar = g_pImGuiHandler->AddProgressBarEvent(TR("Loading Model Files.."), static_cast<uint32_t>(filePaths.size()), &modelLoadingProgress, true);
 
     for (std::string& path : filePaths)
     {

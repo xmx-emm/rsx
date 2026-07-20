@@ -6,6 +6,7 @@
 
 #include <game/rtech/cpakfile.h>
 #include <game/rtech/utils\utils.h>
+#include <core/i18n.h>
 
 #define ImGuiReadSetting(str, var, a, type)  if (sscanf_s(line, str, &a) == 1) { var = static_cast<type>(a); }
 
@@ -114,6 +115,10 @@ static void UtilSettings_ReadLine(ImGuiContext* const ctx, ImGuiSettingsHandler*
         ImGuiReadSetting("ParseThreads=%u", cfg->parseThreadCount, i, uint32_t);
         ImGuiReadSetting("CompressionLevel=%u", cfg->compressionLevel, i, uint32_t);
         ImGuiReadSetting("CheckForUpdates=%u", cfg->checkForUpdates, i, int);
+
+        uint32_t language = static_cast<uint32_t>(eUILanguage::UILANG_ENGLISH);
+        if (sscanf_s(line, "Language=%u", &language) == 1 && language < static_cast<uint32_t>(eUILanguage::UILANG_COUNT))
+            I18N_SetLanguage(static_cast<eUILanguage>(language));
     }
 }
 
@@ -127,6 +132,7 @@ static void UtilSettings_WriteAll(ImGuiContext* const ctx, ImGuiSettingsHandler*
     buf->appendf("ParseThreads=%u\n", UtilsConfig->parseThreadCount);
     buf->appendf("CompressionLevel=%u\n", UtilsConfig->compressionLevel);
     buf->appendf("CheckForUpdates=%i\n", UtilsConfig->checkForUpdates ? 1 : 0);
+    buf->appendf("Language=%u\n", static_cast<uint32_t>(I18N_GetLanguage()));
     buf->append("\n");
 }
 
@@ -413,7 +419,11 @@ void ImGuiHandler::SetStyle()
     assertm(_dupenv_s(&systemRootPath, &systemRootPathLen, "SYSTEMROOT") == 0, "couldn't get systemroot env var");
 
     const std::string fontsDir = std::string(systemRootPath) + "\\Fonts\\";
-    io.Fonts->AddFontFromFileTTF((fontsDir + "simsun.ttc").c_str(), 18.f, &config, io.Fonts->GetGlyphRangesChineseFull());
+
+    // [i18n]: prefer Microsoft YaHei for CJK glyphs since it is much more legible than SimSun
+    // at UI sizes; fall back to SimSun on systems where it is not available
+    const std::string cjkFontPath = std::filesystem::exists(fontsDir + "msyh.ttc") ? (fontsDir + "msyh.ttc") : (fontsDir + "simsun.ttc");
+    io.Fonts->AddFontFromFileTTF(cjkFontPath.c_str(), 18.f, &config, io.Fonts->GetGlyphRangesChineseFull());
     io.Fonts->AddFontFromFileTTF((fontsDir + "malgun.ttf").c_str(), 18.f, &config, io.Fonts->GetGlyphRangesJapanese());
     io.Fonts->AddFontFromFileTTF((fontsDir + "micross.ttf").c_str(), 18.f, &config, io.Fonts->GetGlyphRangesCyrillic());
     io.Fonts->AddFontFromMemoryCompressedBase85TTF(Codicons_compressed_data, 14.f, &config);
@@ -696,11 +706,11 @@ void ImGuiExt::ProgressBarCentered(float fraction, const ImVec2& size_arg, const
     if (event && event->fnCancelEvents)
     {
         // https://github.com/ocornut/imgui/issues/4157
-        float cancelButtonWidth = ImGui::CalcTextSize("Cancel").x + style.FramePadding.x * 2.f;
+        float cancelButtonWidth = ImGui::CalcTextSize(TR("Cancel")).x + style.FramePadding.x * 2.f;
         float widthNeeded = style.ItemSpacing.x + cancelButtonWidth - 5.f;
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - widthNeeded);
 
-        if (ImGui::Button("Cancel"))
+        if (ImGui::Button(TR("Cancel")))
             event->fnCancelEvents(event);
     }
 }

@@ -261,6 +261,9 @@
     <ClInclude Include="core\render.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="core\i18n.h">
+      <Filter>core</Filter>
+    </ClInclude>
     <ClInclude Include="game\rtech\assets\localization.h">
       <Filter>game\rtech\assets</Filter>
     </ClInclude>
@@ -495,6 +498,9 @@
       <Filter>pch</Filter>
     </ClCompile>
     <ClCompile Include="core\main.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\i18n.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="game\rtech\cpakfile.cpp">

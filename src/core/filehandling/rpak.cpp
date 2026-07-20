@@ -7,11 +7,12 @@
 
 #include <game/rtech/cpakfile.h>
 #include <misc/ImGuiNotify.hpp>
+#include <core/i18n.h>
 
 void HandlePakLoad(std::vector<std::string> filePaths)
 {
     std::atomic<uint32_t> pakLoadingProgress = 0;
-    const ProgressBarEvent_t* const pakLoadProgress = g_pImGuiHandler->AddProgressBarEvent("Loading Paks..", static_cast<uint32_t>(filePaths.size()), &pakLoadingProgress, true);
+    const ProgressBarEvent_t* const pakLoadProgress = g_pImGuiHandler->AddProgressBarEvent(TR("Loading Paks.."), static_cast<uint32_t>(filePaths.size()), &pakLoadingProgress, true);
 
     // If post-load has already been done when this function is called, then an ODL pak has been requested
     if (!g_assetData.m_donePostLoad)
@@ -174,7 +175,7 @@ void HandlePakAssetExportList(std::deque<CAsset*> selectedAssets, const bool exp
     }
 
     const ProgressBarEvent_t* const exportAssetListEvent = g_pImGuiHandler->AddProgressBarEvent(
-        "Exporting asset list...",
+        TR("Exporting asset list..."),
         parallelProcessTask.getRemainingTasks(),
         &parallelProcessTask,
         PB_FNCLASS_TO_VOID(&CParallelTask::getRemainingTasks));
@@ -183,7 +184,8 @@ void HandlePakAssetExportList(std::deque<CAsset*> selectedAssets, const bool exp
     g_pImGuiHandler->FinishProgressBarEvent(exportAssetListEvent);
 
 
-    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, 150.f, "Exported %lld asset%s!", selectedAssets.size(), selectedAssets.size() == 1 ? "" : "s"});
+    // [i18n]: separate singular/plural strings so languages without plural suffixes translate cleanly
+    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, 150.f, TR(selectedAssets.size() == 1 ? "Exported %lld asset!" : "Exported %lld assets!"), selectedAssets.size()});
 }
 
 void HandleExportAllPakAssets(std::vector<CGlobalAssetData::AssetLookup_t>* const pakAssets, const bool exportDependencies)
@@ -202,7 +204,7 @@ void HandleExportAllPakAssets(std::vector<CGlobalAssetData::AssetLookup_t>* cons
     }
 
     const ProgressBarEvent_t* const exportAllAssetsEvent = g_pImGuiHandler->AddProgressBarEvent(
-        "Exporting all assets...",
+        TR("Exporting all assets..."),
         parallelProcessTask.getRemainingTasks(),
         &parallelProcessTask,
         PB_FNCLASS_TO_VOID(&CParallelTask::getRemainingTasks)
