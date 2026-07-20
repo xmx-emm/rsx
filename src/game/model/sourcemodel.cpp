@@ -258,8 +258,8 @@ void ParseSourceModelTextureData(ModelParsedData_t* const parsedData)
         const uint64_t sknGUID = RTech::StringToGuid(skn.c_str());
         const uint64_t fixGUID = RTech::StringToGuid(fix.c_str());
 
-        CPakAsset* const sknAsset = g_assetData.FindAssetByGUID<CPakAsset>(sknGUID);
-        CPakAsset* const fixAsset = g_assetData.FindAssetByGUID<CPakAsset>(fixGUID);
+        CPakAsset* const sknAsset = g_assetData.FindAsset<CPakAsset>(skn);
+        CPakAsset* const fixAsset = g_assetData.FindAsset<CPakAsset>(fix);
 
         if (sknAsset)
         {

@@ -343,7 +343,7 @@ void PostLoadUIFontAtlasAsset(CAssetContainer* const pak, CAsset* const asset)
 
 	if (txtrAsset->name)
 	{
-		std::string atlasName = "ui_font_atlas/" + std::string(txtrAsset->name) + ".rpak";
+		const std::string atlasName = "ui_font_atlas/" + std::string(txtrAsset->name) + ".rpak";
 
 		assertm(pakAsset->data()->guid == RTech::StringToGuid(atlasName.c_str()), "hashed name for atlas did not match existing guid\n");
 

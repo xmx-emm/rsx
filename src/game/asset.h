@@ -570,6 +570,12 @@ public:
 			? static_cast<T*>(it->m_asset) : nullptr;
 	}
 
+	template<typename T>
+	T* const FindAsset(const std::string_view& str)
+	{
+		FindAssetByGUID<T>(RTech::StringToGuid(str.data()));
+	}
+
 	void ClearAssetData()
 	{
 		for (const auto& lookup : v_assets)
