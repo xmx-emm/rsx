@@ -1,6 +1,7 @@
 #include <pch.h>
 #include <game/rtech/assets/datatable.h>
 #include <thirdparty/imgui/imgui.h>
+#include <core/i18n.h>
 
 void LoadDatatableAsset(CAssetContainer* const pak, CAsset* const asset)
 {
@@ -47,7 +48,7 @@ void* PreviewDatatableAsset(CAsset* const asset, const bool firstFrameForAsset)
     const DatatableAsset* const dtblAsset = pakAsset->extraData<const DatatableAsset* const>();
 
     ImGui::TextUnformatted(std::format("Datatable: {} (0x{:X})", nullptr != dtblAsset->name ? dtblAsset->name : "null name", asset->GetAssetGUID()).c_str());
-    ImGui::Text("Columns: %i Rows: %i", dtblAsset->numColumns, dtblAsset->numRows);
+    ImGui::Text(TR("Columns: %i Rows: %i"), dtblAsset->numColumns, dtblAsset->numRows);
 
     constexpr ImGuiTableFlags tableFlags =
         ImGuiTableFlags_Resizable  | ImGuiTableFlags_Hideable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders

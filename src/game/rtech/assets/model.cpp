@@ -11,6 +11,7 @@
 
 #include <core/render/dx.h>
 #include <thirdparty/imgui/imgui.h>
+#include <core/i18n.h>
 #include <thirdparty/imgui/misc/imgui_utility.h>
 
 #include <immintrin.h>
@@ -1665,8 +1666,8 @@ void* PreviewModelAsset(CAsset* const asset, const bool firstFrameForAsset)
         previewInfo.selectedLODLevel = previewInfo.selectedLODLevel > previewInfo.maxLODIndex ? previewInfo.maxLODIndex : previewInfo.selectedLODLevel; // clamp it
     }
 
-    ImGui::Text("Rigs: %i", modelAsset->numAnimRigs);
-    ImGui::Text("Sequences: %i", modelAsset->numAnimSeqs);
+    ImGui::Text(TR("Rigs: %i"), modelAsset->numAnimRigs);
+    ImGui::Text(TR("Sequences: %i"), modelAsset->numAnimSeqs);
 
     if (firstFrameForAsset)
         ModelPreview_DiscoverSequences(modelAsset, previewInfo);

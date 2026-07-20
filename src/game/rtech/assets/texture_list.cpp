@@ -4,6 +4,7 @@
 #include <game/rtech/cpakfile.h>
 #include <game/rtech/utils/utils.h>
 #include <thirdparty/imgui/imgui.h>
+#include <core/i18n.h>
 
 static void TextureList_LoadAsset(CAssetContainer* pak, CAsset* asset)
 {
@@ -108,9 +109,9 @@ static void* TextureList_PreviewAsset(CAsset* const asset, const bool firstFrame
 
 	if (ImGui::BeginTable("Texture list##TextureList_PreviewAsset", 3, tableFlags, outerSize))
 	{
-		ImGui::TableSetupColumn("Index##TextureList_PreviewAsset", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, TextureListTablePreviewColumn_e::kIndex);
-		ImGui::TableSetupColumn("Name##TextureList_PreviewAsset", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, TextureListTablePreviewColumn_e::kName);
-		ImGui::TableSetupColumn("Guid##TextureList_PreviewAsset", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, TextureListTablePreviewColumn_e::kGuid);
+		ImGui::TableSetupColumn(std::format("{}##TextureList_PreviewAsset", TR("Index")).c_str(), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, TextureListTablePreviewColumn_e::kIndex);
+		ImGui::TableSetupColumn(std::format("{}##TextureList_PreviewAsset", TR("Name")).c_str(), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, TextureListTablePreviewColumn_e::kName);
+		ImGui::TableSetupColumn(std::format("{}##TextureList_PreviewAsset", TR("Guid")).c_str(), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, TextureListTablePreviewColumn_e::kGuid);
 
 		ImGui::TableSetupScrollFreeze(1, 1);
 		ImGui::TableHeadersRow();

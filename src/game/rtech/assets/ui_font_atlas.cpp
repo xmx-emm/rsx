@@ -450,7 +450,7 @@ void* PreviewUIFontAtlasAsset(CAsset* const asset, const bool firstFrameForAsset
 
     if (!pakAsset->extraData())
     {
-        ImGui::Text("This asset version is not currently supported for preview.");
+        ImGui::TextUnformatted(TR("This asset version is not currently supported for preview."));
         return nullptr;
     }
 
@@ -461,7 +461,7 @@ void* PreviewUIFontAtlasAsset(CAsset* const asset, const bool firstFrameForAsset
 
     if (!txtrRegistered)
     {
-        ImGui::TextUnformatted("Txtr was not registered as an asset binding.");
+        ImGui::TextUnformatted(TR("Txtr was not registered as an asset binding."));
         return nullptr;
     }
 

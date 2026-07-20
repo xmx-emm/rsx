@@ -3,6 +3,7 @@
 #include <game/rtech/cpakfile.h>
 #include <game/rtech/utils/utils.h>
 #include <imgui.h>
+#include <core/i18n.h>
 
 extern RSXSettings_t g_rsxSettings;
 static const char* const s_PathPrefixSTLT = s_AssetTypePaths.find(AssetType_t::STLT)->second;
@@ -204,7 +205,7 @@ void* PreviewSettingsLayoutAsset(CAsset* const asset, const bool firstFrameForAs
 
 	ImGui::BeginDisabled(!s_settingsLayoutPreviewState.HasParent());
 
-	if (ImGui::Button("Return to Parent##SettingsLayoutPreview"))
+	if (ImGui::Button(std::format("{}##SettingsLayoutPreview", TR("Return to Parent")).c_str()))
 		s_settingsLayoutPreviewState.SetToParent();
 
 	ImGui::EndDisabled();
@@ -215,7 +216,7 @@ void* PreviewSettingsLayoutAsset(CAsset* const asset, const bool firstFrameForAs
 
 	ImGui::BeginDisabled(numSubHeaders == 0);
 
-	if (ImGui::BeginCombo("Sub-layout", nullptr))
+	if (ImGui::BeginCombo(TR("Sub-layout"), nullptr))
 	{
 		for (size_t i = 0; i < numSubHeaders; i++)
 		{
@@ -243,11 +244,11 @@ void* PreviewSettingsLayoutAsset(CAsset* const asset, const bool firstFrameForAs
 
 	if (ImGui::BeginTable("Settings Layout Fields", eSettingsLayoutColumnID::_SLC_COUNT, tableFlags, outerSize))
 	{
-		ImGui::TableSetupColumn("Field Name", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, eSettingsLayoutColumnID::SLC_NAME);
-		ImGui::TableSetupColumn("Data Type", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, eSettingsLayoutColumnID::SLC_TYPE);
-		ImGui::TableSetupColumn("Value Offset", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, eSettingsLayoutColumnID::SLC_VALUE_OFFSET);
-		ImGui::TableSetupColumn("Layout Index", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, eSettingsLayoutColumnID::SLC_SUB_LAYOUT_INDEX);
-		ImGui::TableSetupColumn("Help Text", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, eSettingsLayoutColumnID::SLC_HELP_TEXT);
+		ImGui::TableSetupColumn(TR("Field Name"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, eSettingsLayoutColumnID::SLC_NAME);
+		ImGui::TableSetupColumn(TR("Data Type"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, eSettingsLayoutColumnID::SLC_TYPE);
+		ImGui::TableSetupColumn(TR("Value Offset"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, eSettingsLayoutColumnID::SLC_VALUE_OFFSET);
+		ImGui::TableSetupColumn(TR("Layout Index"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, eSettingsLayoutColumnID::SLC_SUB_LAYOUT_INDEX);
+		ImGui::TableSetupColumn(TR("Help Text"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, eSettingsLayoutColumnID::SLC_HELP_TEXT);
 
 		ImGui::TableSetupScrollFreeze(1, 1);
 

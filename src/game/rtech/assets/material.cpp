@@ -389,13 +389,13 @@ void MatPreview_DXState(const MaterialDXState_t& dxState, const uint8_t dxStateI
 {
 
     ImGui::SeparatorText(std::to_string(dxStateId).c_str());
-    if (ImGui::TreeNodeEx(ITEMID("Blend States", dxStateId), ImGuiTreeNodeFlags_SpanAvailWidth))
+    if (ImGui::TreeNodeEx(std::format("{}##{}", TR("Blend States"), dxStateId).c_str(), ImGuiTreeNodeFlags_SpanAvailWidth))
     {
         for (int i = 0; i < numRenderTargets; ++i)
         {
             if(ImGui::TreeNodeEx(std::format("{}##dxs_{}", i, dxStateId).c_str(), ImGuiTreeNodeFlags_SpanAvailWidth))
             {
-                ImGuiExt::ConstIntInputLeft("Raw Value", *reinterpret_cast<const int*>(&dxState.blendStates[i]), 170, ImGuiInputTextFlags_CharsHexadecimal);
+                ImGuiExt::ConstIntInputLeft(TR("Raw Value"), *reinterpret_cast<const int*>(&dxState.blendStates[i]), 170, ImGuiInputTextFlags_CharsHexadecimal);
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.f);
 
                 ImGuiExt::ConstTextInputLeft("blendEnable", dxState.blendStates[i].blendEnable == 1 ? "true" : "false");
@@ -416,8 +416,8 @@ void MatPreview_DXState(const MaterialDXState_t& dxState, const uint8_t dxStateI
         }
         ImGui::TreePop();
     }
-    ImGui::Text("Depth Stencil Flags: %u", dxState.depthStencilFlags);
-    ImGui::Text("Rasterizer Flags:    %u", dxState.rasterizerFlags);
+    ImGui::Text(TR("Depth Stencil Flags: %u"), dxState.depthStencilFlags);
+    ImGui::Text(TR("Rasterizer Flags:    %u"), dxState.rasterizerFlags);
 }
 
 static CDXDrawData* s_materialDrawData = nullptr;

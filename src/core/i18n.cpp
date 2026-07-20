@@ -370,6 +370,52 @@ static const std::unordered_map<std::string_view, const char*> s_StringsChineseS
     // audio preview
     { "Sample Rate: %u", "采样率：%u" },
 
+    // settings layout preview
+    { "Return to Parent", "返回上级" },
+    { "Sub-layout", "子布局" },
+    { "Field Name", "字段名" },
+    { "Data Type", "数据类型" },
+    { "Value Offset", "值偏移" },
+    { "Layout Index", "布局索引" },
+    { "Help Text", "帮助文本" },
+    { "Settings asset unavailable", "设置资产不可用" },
+
+    // shader / shaderset preview
+    { "Number of vertex shader textures: %i", "顶点着色器纹理数量：%i" },
+    { "Number of pixel shader textures:  %i", "像素着色器纹理数量：%i" },
+    { "Number of samplers:  %i", "采样器数量：%i" },
+    { "First resource bind point: %i", "首个资源绑定点：%i" },
+    { "Number of Resources: %i", "资源数量：%i" },
+    { "(no debug name)", "（无调试名称）" },
+    { "Vertex Shader: %llX (%s)", "顶点着色器：%llX (%s)" },
+    { "Pixel Shader: %llX (%s)", "像素着色器：%llX (%s)" },
+    { "Features: %016X", "特性：%016X" },
+    { "Shader Input Flags", "着色器输入标志" },
+
+    // misc asset previews
+    { "This asset version is not currently supported for preview.", "暂不支持预览此版本的资产。" },
+    { "Txtr was not registered as an asset binding.", "纹理类型未注册为资产绑定，无法预览。" },
+    { "Hash", "哈希" },
+    { "Subtitle", "字幕" },
+    { "Columns: %i Rows: %i", "列数：%i 行数：%i" },
+    { "Root node type: 0x%x", "根节点类型：0x%x" },
+    { "Num Arg Clusters: %u", "参数簇数量：%u" },
+    { "Struct Size: %u", "结构体大小：%u" },
+    { "Constant Values Size: %u", "常量值大小：%u" },
+    { "Hash Constants: MUL (0x%X), ADD (0x%X)", "哈希常量：MUL (0x%X)，ADD (0x%X)" },
+    { "Offset", "偏移" },
+    { "Value", "值" },
+    { "Rigs: %i", "骨架数：%i" },
+    { "Sequences: %i", "序列数：%i" },
+    { "Element Size: %d", "元素大小：%d" },
+    { "Can't preview this asset: You must also select '%s' when choosing which files to open!",
+      "无法预览此资产：打开文件时必须同时选择 '%s'！" },
+    { "Preview for WRAP assets is currently not supported for BSP files", "暂不支持预览 BSP 类型的 WRAP 资产" },
+    { "Blend States", "混合状态" },
+    { "Raw Value", "原始值" },
+    { "Depth Stencil Flags: %u", "深度模板标志：%u" },
+    { "Rasterizer Flags:    %u", "光栅化标志：%u" },
+
     // log levels
     { "INFO", "信息" },
     { "WARNING", "警告" },

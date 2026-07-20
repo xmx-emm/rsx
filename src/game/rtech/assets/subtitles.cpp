@@ -2,6 +2,7 @@
 #include <game/rtech/assets/subtitles.h>
 
 #include <thirdparty/imgui/imgui.h>
+#include <core/i18n.h>
 
 extern RSXSettings_t g_rsxSettings;
 
@@ -97,7 +98,7 @@ void* PreviewSubtitlesAsset(CAsset* const asset, const bool firstFrameForAsset)
 
     if (pakAsset->version() > 1)
     {
-        ImGui::Text("This asset version is not currently supported for preview.");
+        ImGui::TextUnformatted(TR("This asset version is not currently supported for preview."));
         return nullptr;
     }
 
@@ -113,8 +114,8 @@ void* PreviewSubtitlesAsset(CAsset* const asset, const bool firstFrameForAsset)
 
     if (ImGui::BeginTable("Arg Table", 2, tableFlags, outerSize))
     {
-        ImGui::TableSetupColumn("Hash", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, 0);
-        ImGui::TableSetupColumn("Subtitle", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, 1);
+        ImGui::TableSetupColumn(TR("Hash"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, 0);
+        ImGui::TableSetupColumn(TR("Subtitle"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, 1);
         ImGui::TableSetupScrollFreeze(1, 1);
 
         //ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs(); // get the sorting settings from this table

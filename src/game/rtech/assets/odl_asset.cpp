@@ -5,6 +5,7 @@
 #include <game/rtech/cpakfile.h>
 #include <game/rtech/utils/utils.h>
 #include <thirdparty/imgui/imgui.h>
+#include <core/i18n.h>
 #include <core/render/dx.h>
 
 #if defined(HAS_ODL_ASSET)
@@ -119,13 +120,13 @@ void* PreviewODLAsset(CAsset* const asset, const bool _firstFrame)
             }
             else
             {
-                ImGui::Text("Asset type '%s' does not currently support Asset Preview.", fourCCToString(loadedAsset->GetAssetType()).c_str());
+                ImGui::Text(TR("Asset type '%s' does not currently support Asset Preview."), fourCCToString(loadedAsset->GetAssetType()).c_str());
             }
         }
         
     }
     else
-        ImGui::Text("Can't preview this asset: You must also select '%s' when choosing which files to open!", odlAsset->GetPakName());
+        ImGui::Text(TR("Can't preview this asset: You must also select '%s' when choosing which files to open!"), odlAsset->GetPakName());
 
 
     return drawData;

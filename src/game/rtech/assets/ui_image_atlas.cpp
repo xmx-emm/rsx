@@ -242,7 +242,7 @@ void* PreviewUIImageAtlasAsset(CAsset* const asset, const bool firstFrameForAsse
 
     if (!txtrRegistered)
     {
-        ImGui::TextUnformatted("Txtr was not registered as an asset binding.");
+        ImGui::TextUnformatted(TR("Txtr was not registered as an asset binding."));
         return nullptr;
     }
 

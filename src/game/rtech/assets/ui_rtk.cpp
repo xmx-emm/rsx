@@ -4,6 +4,7 @@
 
 #include <game/rtech/utils/utils.h>
 #include <thirdparty/imgui/imgui.h>
+#include <core/i18n.h>
 
 extern RSXSettings_t g_rsxSettings;
 
@@ -72,8 +73,8 @@ void* PreviewRTKAsset(CAsset* const asset, const bool firstFrameForAsset)
 
     CPakAsset* pakAsset = static_cast<CPakAsset*>(asset);
     const RTKAsset* const hdr = reinterpret_cast<RTKAsset*>(pakAsset->extraData());
-    ImGui::Text("Name: %s", hdr->elementName);
-    ImGui::Text("Element Size: %d", hdr->elementDataSize);
+    ImGui::Text(TR("Name: %s"), hdr->elementName);
+    ImGui::Text(TR("Element Size: %d"), hdr->elementDataSize);
 
     if (ImGui::BeginChild("RTK Preview", ImVec2(-1, -1), true, ImGuiWindowFlags_HorizontalScrollbar))
     {

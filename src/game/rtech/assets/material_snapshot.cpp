@@ -2,6 +2,7 @@
 #include <game/rtech/assets/material_snapshot.h>
 
 #include <thirdparty/imgui/imgui.h>
+#include <core/i18n.h>
 
 
 #undef max
@@ -62,7 +63,7 @@ void* PreviewMaterialSnapshotAsset(CAsset* const asset, const bool firstFrameFor
 
     const MaterialSnapshotAsset* const snapshotAsset = pakAsset->extraData<const MaterialSnapshotAsset* const>();
 
-    ImGui::Text("Shaderset: %s (0x%llx)", snapshotAsset->shaderSetAsset ? snapshotAsset->shaderSetAsset->GetAssetName().c_str() : "unloaded", snapshotAsset->shaderSet);
+    ImGui::Text(TR("Shaderset: %s (0x%llx)"), snapshotAsset->shaderSetAsset ? snapshotAsset->shaderSetAsset->GetAssetName().c_str() : TR("unloaded"), snapshotAsset->shaderSet);
 
     if (ImGui::TreeNode("DX States"))
     {

@@ -4,6 +4,7 @@
 #include <game/rtech/utils/utils.h>
 
 #include <imgui.h>
+#include <core/i18n.h>
 
 extern CDXParentHandler* g_dxHandler;
 
@@ -508,7 +509,7 @@ void* PreviewShaderAsset(CAsset* const asset, const bool firstFrameForAsset)
 
 	const ShaderAsset* const shaderAsset = pakAsset->extraData<const ShaderAsset* const>();
 
-	ImGui::Text("Features: %016X", *(uint64_t*)shaderAsset->shaderFeatures);
+	ImGui::Text(TR("Features: %016X"), *(uint64_t*)shaderAsset->shaderFeatures);
 
 	//for (auto& it : shaderAsset->compilerStrings)
 	//{
@@ -538,7 +539,7 @@ void* PreviewShaderAsset(CAsset* const asset, const bool firstFrameForAsset)
 		inputFlagsStr += "]";
 
 		// yes i know the const_cast is bad, but the input is ReadOnly so it shouldn't be an issue
-		ImGui::InputTextMultiline("Shader Input Flags", const_cast<char*>(inputFlagsStr.c_str()), inputFlagsStr.length()+1, ImVec2(0, 800), ImGuiInputTextFlags_ReadOnly);
+		ImGui::InputTextMultiline(TR("Shader Input Flags"), const_cast<char*>(inputFlagsStr.c_str()), inputFlagsStr.length()+1, ImVec2(0, 800), ImGuiInputTextFlags_ReadOnly);
 	}
 
 

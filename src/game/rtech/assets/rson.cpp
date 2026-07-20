@@ -2,6 +2,7 @@
 #include <game/rtech/assets/rson.h>
 #include <game/rtech/cpakfile.h>
 #include <thirdparty/imgui/imgui.h>
+#include <core/i18n.h>
 
 extern RSXSettings_t g_rsxSettings;
 
@@ -42,7 +43,7 @@ void* PreviewRSONAsset(CAsset* const asset, const bool firstFrameForAsset)
 
     const RSONAsset* const rsonAsset = pakAsset->extraData<const RSONAsset* const>();
 
-    ImGui::Text("Root node type: 0x%x", rsonAsset->type);
+    ImGui::Text(TR("Root node type: 0x%x"), rsonAsset->type);
 
     if (ImGui::BeginChild("RSON Preview", ImVec2(-1, -1), true, ImGuiWindowFlags_HorizontalScrollbar))
     {

@@ -4,6 +4,7 @@
 #include <game/rtech/utils/utils.h>
 #include <game/bsp/bsp.h>
 #include <thirdparty/imgui/imgui.h>
+#include <core/i18n.h>
 #include <thirdparty/imgui/misc/imgui_memory_editor.h>
 
 void LoadWrapAsset(CAssetContainer* const pak, CAsset* const asset)
@@ -326,7 +327,7 @@ void* PreviewWrapAsset(CAsset* const asset, const bool firstFrameForAsset)
 #endif
     default:
     {
-        ImGui::Text("Preview for WRAP assets is currently not supported for BSP files");
+        ImGui::TextUnformatted(TR("Preview for WRAP assets is currently not supported for BSP files"));
         return nullptr;
     }
     }

@@ -1,6 +1,7 @@
 #include <pch.h>
 #include <game/rtech/assets/shaderset.h>
 #include <thirdparty/imgui/imgui.h>
+#include <core/i18n.h>
 
 extern RSXSettings_t g_rsxSettings;
 
@@ -119,15 +120,15 @@ void* PreviewShaderSetAsset(CAsset* const asset, const bool firstFrameForAsset)
 
 	const ShaderSetAsset* const shdsAsset = pakAsset->extraData<const ShaderSetAsset* const>();
 
-	ImGui::Text("Number of vertex shader textures: %i", shdsAsset->numVertexShaderTextures);
-	ImGui::Text("Number of pixel shader textures:  %i", shdsAsset->numPixelShaderTextures);
-	ImGui::Text("Number of samplers:  %i", shdsAsset->numSamplers);
+	ImGui::Text(TR("Number of vertex shader textures: %i"), shdsAsset->numVertexShaderTextures);
+	ImGui::Text(TR("Number of pixel shader textures:  %i"), shdsAsset->numPixelShaderTextures);
+	ImGui::Text(TR("Number of samplers:  %i"), shdsAsset->numSamplers);
 
-	ImGui::Text("First resource bind point: %i", shdsAsset->firstResourceBindPoint);
-	ImGui::Text("Number of Resources: %i", shdsAsset->numResources);
+	ImGui::Text(TR("First resource bind point: %i"), shdsAsset->firstResourceBindPoint);
+	ImGui::Text(TR("Number of Resources: %i"), shdsAsset->numResources);
 
-	const char* vertexShaderDebugName = "(no debug name)";
-	const char* pixelShaderDebugName = "(no debug name)";
+	const char* vertexShaderDebugName = TR("(no debug name)");
+	const char* pixelShaderDebugName = TR("(no debug name)");
 
 	// Vertex Shader
 	if (shdsAsset->vertexShaderAsset)
@@ -147,8 +148,8 @@ void* PreviewShaderSetAsset(CAsset* const asset, const bool firstFrameForAsset)
 			pixelShaderDebugName = shaderAsset->name;
 	}
 
-	ImGui::Text("Vertex Shader: %llX (%s)", shdsAsset->vertexShader, vertexShaderDebugName);
-	ImGui::Text("Pixel Shader: %llX (%s)", shdsAsset->pixelShader, pixelShaderDebugName);
+	ImGui::Text(TR("Vertex Shader: %llX (%s)"), shdsAsset->vertexShader, vertexShaderDebugName);
+	ImGui::Text(TR("Pixel Shader: %llX (%s)"), shdsAsset->pixelShader, pixelShaderDebugName);
 
 	return nullptr;
 }

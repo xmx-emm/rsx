@@ -5,6 +5,7 @@
 
 #include <core/render/dx.h>
 #include <thirdparty/imgui/imgui.h>
+#include <core/i18n.h>
 #include <thirdparty/imgui/misc/imgui_utility.h>
 #include <thirdparty/imgui/misc/imgui_memory_editor.h>
 
@@ -174,14 +175,14 @@ void* PreviewUIAsset(CAsset* const asset, const bool firstFrameForAsset)
         }
     }
 
-    ImGui::Text("Num Arg Clusters: %u", uiAsset->argClusterCount);
-    ImGui::Text("Struct Size: %u", uiAsset->ruiDataStructSize);
-    ImGui::Text("Constant Values Size: %u", uiAsset->argDefaultValueSize);
+    ImGui::Text(TR("Num Arg Clusters: %u"), uiAsset->argClusterCount);
+    ImGui::Text(TR("Struct Size: %u"), uiAsset->ruiDataStructSize);
+    ImGui::Text(TR("Constant Values Size: %u"), uiAsset->argDefaultValueSize);
 
     if (uiAsset->argClusterCount == 1)
     {
         const UIAssetArgCluster_t* const ac = &uiAsset->argClusters[0];
-        ImGui::Text("Hash Constants: MUL (0x%X), ADD (0x%X)", ac->hashMul, ac->hashAdd);
+        ImGui::Text(TR("Hash Constants: MUL (0x%X), ADD (0x%X)"), ac->hashMul, ac->hashAdd);
     }
 
     constexpr ImGuiTableFlags tableFlags =
@@ -194,11 +195,11 @@ void* PreviewUIAsset(CAsset* const asset, const bool firstFrameForAsset)
 
     if (ImGui::BeginTable("Arg Table", UIPreviewData_t::eColumnID::_TPC_COUNT, tableFlags, outerSize))
     {
-        ImGui::TableSetupColumn("Offset", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UIPreviewData_t::eColumnID::TPC_Offset);
-        ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_DefaultHide, 0.0f, UIPreviewData_t::eColumnID::TPC_Index);
-        ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UIPreviewData_t::eColumnID::TPC_Type);
-        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UIPreviewData_t::eColumnID::TPC_Name);
-        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UIPreviewData_t::eColumnID::TPC_DefaultVal);
+        ImGui::TableSetupColumn(TR("Offset"), ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UIPreviewData_t::eColumnID::TPC_Offset);
+        ImGui::TableSetupColumn(TR("Index"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_DefaultHide, 0.0f, UIPreviewData_t::eColumnID::TPC_Index);
+        ImGui::TableSetupColumn(TR("Type"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UIPreviewData_t::eColumnID::TPC_Type);
+        ImGui::TableSetupColumn(TR("Name"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UIPreviewData_t::eColumnID::TPC_Name);
+        ImGui::TableSetupColumn(TR("Value"), ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_WidthFixed, 0.0f, UIPreviewData_t::eColumnID::TPC_DefaultVal);
         ImGui::TableSetupScrollFreeze(1, 1);
 
         ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs(); // get the sorting settings from this table

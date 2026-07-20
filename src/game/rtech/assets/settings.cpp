@@ -3,6 +3,7 @@
 #include <game/rtech/cpakfile.h>
 #include <game/rtech/utils/utils.h>
 #include <thirdparty/imgui/imgui.h>
+#include <core/i18n.h>
 
 void LoadSettingsAsset(CAssetContainer* pak, CAsset* asset)
 {
@@ -495,7 +496,7 @@ static void* PreviewSettingsAsset(CAsset* const asset, const bool firstFrameForA
 
 	if (!RenderSettingsAsset(pakAsset, stringStream))
 	{
-		ImGui::Text("Settings asset unavailable");
+		ImGui::TextUnformatted(TR("Settings asset unavailable"));
 		return nullptr;
 	}
 
