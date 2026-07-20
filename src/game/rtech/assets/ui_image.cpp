@@ -481,6 +481,20 @@ std::shared_ptr<CTexture> CreateTextureForImage(CPakAsset* const asset, UIImageA
     return std::move(uiTexture);
 };
 
+std::shared_ptr<CTexture> UIIA_GetHighestTexture(CPakAsset* pakAsset, UIImageAsset* uiia)
+{
+
+    const UIImageAsset::QualityData* const qualData = &uiia->resData[eUIImageResType::LQ_RES];
+
+    // in the future, we should probably load LQ only if streamed data is not present ? (since HQ is using LQ data at that point)
+    std::shared_ptr<CTexture> tex = CreateTextureForImage(pakAsset, uiia, qualData, uiia->shouldStream, true);
+
+    if (tex)
+        tex->CreateShaderResourceView(g_dxHandler->GetDevice());
+
+    return tex;
+}
+
 #undef max
 void* PreviewUIImageAsset(CAsset* const asset, const bool firstFrameForAsset)
 {

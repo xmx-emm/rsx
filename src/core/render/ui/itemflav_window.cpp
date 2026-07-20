@@ -163,6 +163,20 @@ void ItemflavWindow_GetCharacterDataFromSettings(CAsset* asset)
             }
         );
     }
+
+    CAsset* iconAsset = g_assetData.FindAssetByGUID(RTech::StringToGuid(std::format("ui_image/{}.rpak", character->icon).c_str()));
+
+    if (iconAsset)
+    {
+        extern std::shared_ptr<CTexture> UIIA_GetHighestTexture(CPakAsset*, UIImageAsset*);
+
+        CPakAsset* pakAsset = reinterpret_cast<CPakAsset*>(iconAsset);
+        UIImageAsset* uiia = pakAsset->extraData<UIImageAsset*>();
+
+        character->iconTexture = UIIA_GetHighestTexture(pakAsset, uiia);
+        if (!character->iconTexture)
+            Log("WARNING: Failed to load uiia for %s\n", character->icon);
+    }
 }
 
 void ItemflavWindow_GetWeaponDataFromSettings(CAsset* asset)
