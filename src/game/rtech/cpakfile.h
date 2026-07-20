@@ -1236,7 +1236,10 @@ public:
 
         file.seek(offset);
 
-        std::unique_ptr<char[]> data(new char[size]);
+        // [rsx]: zero initialize so a short read (requested sizes are page aligned and can
+        // exceed the end of the file for the last entry) leaves deterministic zeroes instead
+        // of uninitialized heap memory in the exported data.
+        std::unique_ptr<char[]> data(new char[size]{});
         file.read(data.get(), size);
 
         return data;

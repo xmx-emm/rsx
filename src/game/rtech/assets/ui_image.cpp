@@ -303,7 +303,7 @@ std::unique_ptr<CTexture> CreateBC1TextureForUIImageAsset(CPakAsset* const asset
 
             if (tile->opcode != BC1_FLAG) // Transparent tile, replace with our own.
             {
-                memcpy_s(bc1Buf.get() + tileOffset, bc1BufSize, UIImageTileBc1, sizeof(UIImageTileBc1));
+                memcpy_s(bc1Buf.get() + tileOffset, bc1BufSize - tileOffset, UIImageTileBc1, sizeof(UIImageTileBc1));
                 continue;
             }
 
@@ -372,7 +372,7 @@ std::unique_ptr<CTexture> CreateBC7TextureForUIImageAsset(CPakAsset* const asset
 
             if (tile->opcode != BC7_FLAG) // Transparent tile, replace with our own.
             {
-                memcpy_s(bc7Buf.get() + tileOffset, bc7BufSize, UIImageTileBc7, sizeof(UIImageTileBc7));
+                memcpy_s(bc7Buf.get() + tileOffset, bc7BufSize - tileOffset, UIImageTileBc7, sizeof(UIImageTileBc7));
                 continue;
             }
 
@@ -395,7 +395,7 @@ std::unique_ptr<CTexture> CreateBC7TextureForUIImageAsset(CPakAsset* const asset
     }
     else
     {
-        assertm(bc7Texture->GetSlicePitch() < bc7BufSize, "bc7Buf greater than our texture buf?");
+        assertm(bc7BufSize <= bc7Texture->GetSlicePitch(), "bc7Buf greater than our texture buf?");
         memcpy_s(bc7Texture->GetPixels(), bc7Texture->GetSlicePitch(), bc7Buf.get(), bc7BufSize);
 
         return std::move(bc7Texture);

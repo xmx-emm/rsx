@@ -52,9 +52,11 @@ void LoadUIImageAtlasAsset(CAssetContainer* const pak, CAsset* const asset)
         // for fetching this from texture
         img.bounds = bounds + i;
 
-        // [rika]: should this have the same rounding as below ? todo study this
-		img.posX = static_cast<uint16_t>(img.bounds->minX * static_cast<float>(uiAsset->width));
-		img.posY = static_cast<uint16_t>(img.bounds->minY * static_cast<float>(uiAsset->height));
+        // [rsx]: round to nearest like the size calculation below. truncating can place the
+        // slice one pixel off when minX/minY * dimension lands just below a whole number
+        // (e.g. 99.99997 truncates to 99 instead of 100), shifting the exported image.
+		img.posX = static_cast<uint16_t>(img.bounds->minX * static_cast<float>(uiAsset->width) + 0.5f);
+		img.posY = static_cast<uint16_t>(img.bounds->minY * static_cast<float>(uiAsset->height) + 0.5f);
 
         // [rika]: size within the image, SampleLevel (shader) rounds to nearest fixed point (source: trust me bro), hence the + 0.5f
         // note: while at first glance it seems everything is fine, if for some reason artifacting or bad exporting happens check this first
@@ -264,7 +266,7 @@ void* PreviewUIImageAtlasAsset(CAsset* const asset, const bool firstFrameForAsse
             return nullptr;
 
         // This will be the main texture.
-        if (uiImage->width == uiAsset->width && uiImage->height == uiImage->height)
+        if (uiImage->width == uiAsset->width && uiImage->height == uiAsset->height)
             return uiAsset->rawTxtr;
 
         // invalid image

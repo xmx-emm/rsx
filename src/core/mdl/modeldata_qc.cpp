@@ -312,8 +312,10 @@ void QC_ParseStudioBone(qc::QCFile* const qc, const ModelParsedData_t* const par
 }
 
 constexpr const char* const s_QCModelNameFormat = "%s_%s%s\0"; // file name, model name, extension
-static uint32_t s_QCMaxVerts = 0u;
-void QC_ParseStudioBodypart(qc::QCFile* const qc, const ModelParsedData_t* const parsedData, const ModelBodyPart_t* const bodypart, const char* const stem, const int setting)
+// [rsx]: passed by reference instead of living in a global: exports run on multiple threads
+// and a shared global would race between two concurrent QC exports, writing a wrong $maxverts
+// value into one of the files.
+void QC_ParseStudioBodypart(qc::QCFile* const qc, const ModelParsedData_t* const parsedData, const ModelBodyPart_t* const bodypart, const char* const stem, const int setting, uint32_t& maxVerts)
 {
 	using namespace qc;
 
@@ -343,7 +345,7 @@ void QC_ParseStudioBodypart(qc::QCFile* const qc, const ModelParsedData_t* const
 
 		CmdParse(qc, QC_BODY, &bodyData, 1, true);
 
-		s_QCMaxVerts = modelData->vertCount > s_QCMaxVerts ? modelData->vertCount : s_QCMaxVerts;
+		maxVerts = modelData->vertCount > maxVerts ? modelData->vertCount : maxVerts;
 
 		return;
 	}
@@ -366,7 +368,7 @@ void QC_ParseStudioBodypart(qc::QCFile* const qc, const ModelParsedData_t* const
 
 		bodyGroupData.SetPart(qc, i, buf);
 
-		s_QCMaxVerts = modelData->vertCount > s_QCMaxVerts ? modelData->vertCount : s_QCMaxVerts;
+		maxVerts = modelData->vertCount > maxVerts ? modelData->vertCount : maxVerts;
 	}
 
 	CmdParse(qc, QC_BODYGROUP, &bodyGroupData, 1, true);
@@ -392,7 +394,7 @@ const uint32_t QC_ParseStudioLODBone(const ModelParsedData_t* const parsedData, 
 	return out;
 }
 
-void QC_ParseStudioLOD(qc::QCFile* const qc, const ModelParsedData_t* const parsedData, const size_t lod, const bool isShadowLOD, const char* const stem, const int setting)
+void QC_ParseStudioLOD(qc::QCFile* const qc, const ModelParsedData_t* const parsedData, const size_t lod, const bool isShadowLOD, const char* const stem, const int setting, uint32_t& maxVerts)
 {
 	using namespace qc;
 
@@ -431,7 +433,7 @@ void QC_ParseStudioLOD(qc::QCFile* const qc, const ModelParsedData_t* const pars
 
 		lodGroupData.ReplaceModel(qc, i, bufBase, bufReplace);
 
-		s_QCMaxVerts = modelData->vertCount > s_QCMaxVerts ? modelData->vertCount : s_QCMaxVerts;
+		maxVerts = modelData->vertCount > maxVerts ? modelData->vertCount : maxVerts;
 	}
 
 	// bones
@@ -1455,9 +1457,9 @@ bool ExportModelQC(const ModelParsedData_t* const parsedData, std::filesystem::p
 	for (int i = 0; i < parsedData->BoneCount(); i++)
 		QC_ParseStudioBone(&qcFile, parsedData, parsedData->pBone(i), version);
 
-	s_QCMaxVerts = 0u;
+	uint32_t maxVerts = 0u;
 	for (size_t i = 0; i < parsedData->bodyParts.size(); i++)
-		QC_ParseStudioBodypart(&qcFile, parsedData, parsedData->pBodypart(i), fileStem.c_str(), setting);
+		QC_ParseStudioBodypart(&qcFile, parsedData, parsedData->pBodypart(i), fileStem.c_str(), setting, maxVerts);
 
 	if (parsedData->lods.size() > 1)
 	{
@@ -1465,23 +1467,23 @@ bool ExportModelQC(const ModelParsedData_t* const parsedData, std::filesystem::p
 		{
 			if (parsedData->pStudioHdr()->flags & STUDIOHDR_FLAGS_HASSHADOWLOD && parsedData->pLOD(i)->switchPoint == -1.0f)
 			{
-				QC_ParseStudioLOD(&qcFile, parsedData, i, true, fileStem.c_str(), setting);
+				QC_ParseStudioLOD(&qcFile, parsedData, i, true, fileStem.c_str(), setting, maxVerts);
 				continue;
 			}
 
 
-			QC_ParseStudioLOD(&qcFile, parsedData, i, false, fileStem.c_str(), setting);
+			QC_ParseStudioLOD(&qcFile, parsedData, i, false, fileStem.c_str(), setting, maxVerts);
 		}
 	}
 
 	// do $maxverts command
-	s_QCMaxVerts++;
-	assertm(s_QCMaxVerts < s_MaxStudioVerts, "invalid max vert value");
+	maxVerts++;
+	assertm(maxVerts < s_MaxStudioVerts, "invalid max vert value");
 	
 	constexpr int maxVertThreshold = (s_MaxStudioVerts / 3);
-	if (s_QCMaxVerts > maxVertThreshold)
+	if (maxVerts > maxVertThreshold)
 	{
-		CmdParse(&qcFile, QC_MAXVERTS, &s_QCMaxVerts);
+		CmdParse(&qcFile, QC_MAXVERTS, &maxVerts);
 	}
 
 	// attachments

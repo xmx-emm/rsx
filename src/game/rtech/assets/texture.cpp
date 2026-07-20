@@ -419,7 +419,7 @@ struct TexCompare_t
             {
             case TexturePreviewData_t::eColumnID::TPC_Level:        delta = (static_cast<short>(a.level) - b.level);                        break; // no overflow please
             case TexturePreviewData_t::eColumnID::TPC_Dimensions:   delta = (static_cast<short>(a.level) - b.level);                        break; // no overflow please
-            case TexturePreviewData_t::eColumnID::TPC_Type:         delta = (static_cast<short>(a.type) - static_cast<short>(b.level));     break;
+            case TexturePreviewData_t::eColumnID::TPC_Type:         delta = (static_cast<short>(a.type) - static_cast<short>(b.type));      break;
             case TexturePreviewData_t::eColumnID::TPC_Comp:         delta = (static_cast<short>(a.comp) - static_cast<short>(b.comp));     break;
             default: IM_ASSERT(0); break;
             }

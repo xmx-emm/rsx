@@ -635,7 +635,7 @@ void ImGuiHandler::HandleProgressBar()
         else
         {
             ImGui::Separator();
-            ImGui::Text(event->eventName);
+            ImGui::TextUnformatted(event->eventName);
         }
 
         const uint32_t numEvents = event->eventNum;

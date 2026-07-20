@@ -1,4 +1,4 @@
-//===== Copyright � 1999-2024, Kawe Mazidjatari, All rights reserved. =======//
+//===== Copyright (c) 1999-2024, Kawe Mazidjatari, All rights reserved. =====//
 //
 // Purpose: A set of utilities for RapidJSON
 //

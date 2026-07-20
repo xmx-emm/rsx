@@ -281,7 +281,10 @@ namespace rmax
 
 	bool RMAXExporter::ToFile() const
 	{
-        char* buffer = new char[maxFileSize];
+        // [rsx]: zero initialize the buffer: ToFile() aligns section offsets with IALIGN16 and
+        // rounds the final file size up to 16 bytes, so the alignment gaps would otherwise be
+        // written to disk as uninitialized heap memory, making every export differ.
+        char* buffer = new char[maxFileSize]{};
 
         const bool success = ToFile(buffer);
 

@@ -123,19 +123,46 @@ ID3D11ShaderResourceView* const CTexture::GetSRV()
     return m_shaderResourceView;
 }
 
+// [rsx]: exports run on multiple threads and the same texture can end up being written to the
+// same path by different export tasks (e.g. two materials sharing a texture, or two selected
+// assets sharing a dependency). serialize writes per output path so concurrent writers cannot
+// interleave within one file and produce corrupted/nondeterministic output.
+static std::mutex& GetExportPathLock(const std::filesystem::path& exportPath)
+{
+    static std::mutex s_pathLocks[64];
+    return s_pathLocks[std::filesystem::hash_value(exportPath) & 63];
+}
+
 bool CTexture::ExportAsPng(const std::filesystem::path& exportPath)
 {
+    const DirectX::ScratchImage* srcImage = ToScratchImage;
+    DirectX::ScratchImage convertedImage; // holds the pixels when a format conversion is needed
+
     if (!IsValid32bppFormat())
     {
-        const DXGI_FORMAT convertFormat = DirectX::IsSRGB(ToScratchImage->GetMetadata().format) ? DXGI_FORMAT_B8G8R8A8_UNORM_SRGB : DXGI_FORMAT_B8G8R8A8_UNORM;
-        if (!ConvertToFormat(convertFormat))
+        const DirectX::TexMetadata& meta = srcImage->GetMetadata();
+        const DXGI_FORMAT convertFormat = DirectX::IsSRGB(meta.format) ? DXGI_FORMAT_B8G8R8A8_UNORM_SRGB : DXGI_FORMAT_B8G8R8A8_UNORM;
+
+        // [rsx]: convert into a temporary image instead of converting this texture in place.
+        // CTexture objects can be shared (atlas textures are used by both the atlas export and
+        // the per-image slice exports), so an in place conversion would 1) make a later dds
+        // export write converted data instead of the original format and 2) race with other
+        // threads exporting the same texture.
+        const HRESULT convertRes = DirectX::IsCompressed(meta.format)
+            ? DirectX::Decompress(srcImage->GetImages(), srcImage->GetImageCount(), meta, convertFormat, convertedImage)
+            : DirectX::Convert(srcImage->GetImages(), srcImage->GetImageCount(), meta, convertFormat, DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT, DirectX::TEX_THRESHOLD_DEFAULT, convertedImage);
+
+        if (FAILED(convertRes))
         {
             assertm(false, "Converting the texture format failed.");
             return false;
         }
+
+        srcImage = &convertedImage;
     }
 
-    const HRESULT res = DirectX::SaveToWICFile(*ToScratchImage->GetImages(), DirectX::WIC_FLAGS::WIC_FLAGS_FORCE_SRGB, DirectX::GetWICCodec(DirectX::WICCodecs::WIC_CODEC_PNG), exportPath.wstring().c_str(), nullptr, 
+    std::lock_guard<std::mutex> writeLock(GetExportPathLock(exportPath));
+    const HRESULT res = DirectX::SaveToWICFile(*srcImage->GetImages(), DirectX::WIC_FLAGS::WIC_FLAGS_FORCE_SRGB, DirectX::GetWICCodec(DirectX::WICCodecs::WIC_CODEC_PNG), exportPath.wstring().c_str(), nullptr, 
         [](IPropertyBag2* props)
         {
             PROPBAG2 options{};
@@ -152,6 +179,7 @@ bool CTexture::ExportAsPng(const std::filesystem::path& exportPath)
 
 bool CTexture::ExportAsDds(const std::filesystem::path& exportPath)
 {
+    std::lock_guard<std::mutex> writeLock(GetExportPathLock(exportPath));
     return SUCCEEDED(DirectX::SaveToDDSFile(ToScratchImage->GetImages(), ToScratchImage->GetImageCount(), ToScratchImage->GetMetadata(), DirectX::DDS_FLAGS::DDS_FLAGS_NONE, exportPath.wstring().c_str()));
 }
 
