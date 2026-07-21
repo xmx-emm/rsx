@@ -201,27 +201,39 @@ extern ImGuiHandler* g_pImGuiHandler;
 #include <string>
 
 // https://github.com/ocornut/imgui/issues/9169#issuecomment-3975678015
+//
+// Notes vs the original gallery helper:
+// - DockBuilderAddNode() is only called once. Calling it again for a second root
+//   Window() would RemoveNode() the dockspace and wipe earlier DockBuilderDockWindow
+//   assignments (this broke Scene after Skin Finder was added to the central node).
+// - lock applies ImGuiDockNodeFlags_NoUndocking to the current leaf node, not by
+//   recreating the dockspace.
+// - Finish() must be called on the root builder when the layout is complete.
 class DockBuilder
 {
 public:
     DockBuilder(ImGuiID parent_id, DockBuilder* parent = nullptr) :
         m_parentId{ parent_id },
+        m_rootId{ parent ? parent->m_rootId : parent_id },
         m_parent{ parent }
     {
-    }
-
-    DockBuilder& Window(const std::string& name, bool lock=false)
-    {
+        // Create the dockspace once when the root builder is constructed.
         if (m_parent == nullptr)
         {
-            ImGuiDockNodeFlags flags = ImGuiDockNodeFlags_DockSpace;
-            flags |= lock ? ImGuiDockNodeFlags_NoUndocking : 0;
-
-            ImGui::DockBuilderAddNode(m_parentId, flags);
+            ImGui::DockBuilderAddNode(m_parentId, ImGuiDockNodeFlags_DockSpace);
             ImGui::DockBuilderSetNodeSize(m_parentId, ImGui::GetMainViewport()->Size);
         }
+    }
 
+    DockBuilder& Window(const std::string& name, bool lock = false)
+    {
         ImGui::DockBuilderDockWindow(name.c_str(), m_parentId);
+
+        if (lock)
+        {
+            if (ImGuiDockNode* const node = ImGui::DockBuilderGetNode(m_parentId))
+                node->SetLocalFlags(node->LocalFlags | ImGuiDockNodeFlags_NoUndocking);
+        }
 
         return *this;
     }
@@ -265,29 +277,21 @@ public:
         return *m_parent;
     }
 
+    DockBuilder& Finish()
+    {
+        assert(m_parent == nullptr && "Finish() must be called on the root dock builder");
+        ImGui::DockBuilderFinish(m_rootId);
+        return *this;
+    }
+
 private:
     DockBuilder* m_parent;
     ImGuiID m_parentId;
+    ImGuiID m_rootId;
     std::unique_ptr<DockBuilder> m_left;
     std::unique_ptr<DockBuilder> m_right;
     std::unique_ptr<DockBuilder> m_top;
     std::unique_ptr<DockBuilder> m_bottom;
-
-    int NumOfNodes()
-    {
-        int count = 1; // count self
-
-        if (m_left != nullptr)
-            count++;
-        if (m_right != nullptr)
-            count++;
-        if (m_top != nullptr)
-            count++;
-        if (m_bottom != nullptr)
-            count++;
-
-        return count;
-    }
 };
 
 // https://github.com/libigl/libigl/issues/1300#issuecomment-1310174619

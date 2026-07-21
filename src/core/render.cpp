@@ -338,7 +338,7 @@ void SettingsWnd_Draw(CUIState* uiState)
 
         ImGui::Combo("Compression Level", reinterpret_cast<int*>(&UtilsConfig->compressionLevel), s_CompressionLevelSetting, static_cast<int>(ARRAYSIZE(s_CompressionLevelSetting)));
         ImGui::SameLine();
-        ImGuiExt::HelpMarker("Specifies the compression level used when storing parsed assets in memory.\nWARNING: Modify only if you know what you’re doing; otherwise, you may run out of memory.\nNone: no compression.\nSuper Fast: Fastest level with the lowest compression ratio.\nVery Fast: Standard setting; fastest level with a decent compression ratio.\nFast: Fastest level with a good compression ratio.\nNormal: Standard LZ speed with the highest compression ratio.");
+        ImGuiExt::HelpMarker("Specifies the compression level used when storing parsed assets in memory.\nWARNING: Modify only if you know what you?re doing; otherwise, you may run out of memory.\nNone: no compression.\nSuper Fast: Fastest level with the lowest compression ratio.\nVery Fast: Standard setting; fastest level with a decent compression ratio.\nFast: Fastest level with a good compression ratio.\nNormal: Standard LZ speed with the highest compression ratio.");
 
         ImGui::SliderScalar("Parse Threads", ImGuiDataType_U32, &UtilsConfig->parseThreadCount, &minThreads, reinterpret_cast<int*>(&g_maxConcurrentThreadCount));
         ImGui::SameLine();
@@ -793,17 +793,21 @@ void HandleRenderFrame()
     {
         const ImGuiID dockspaceId = ImGui::GetID("MainDockSpace");
 
-        // If the dockspace hasn't been created yet
+        // If the dockspace hasn't been created yet.
+        // Build side panels first, then dock Scene/Skin Finder into the remaining
+        // central node and lock that node so the preview cannot be undocked.
         if (ImGui::DockBuilderGetNode(dockspaceId) == nullptr)
         {
             DockBuilder(dockspaceId)
-                .Window("Scene", true)
-                .Window("Skin Finder", true)
                 .DockLeft(0.25f)
                     .Window("Asset List")
                     .Done()
                 .DockRight(0.25f)
-                    .Window("Asset Info");
+                    .Window("Asset Info")
+                    .Done()
+                .Window("Scene", true)
+                .Window("Skin Finder", true)
+                .Finish();
         }
 
         ImGui::DockSpaceOverViewport(dockspaceId, NULL, ImGuiDockNodeFlags_PassthruCentralNode, 0);
@@ -1092,9 +1096,10 @@ void HandleRenderFrame()
     }
     if(!SHOW_WELCOME_BOX) ImGui::End();
 
-    // The "scene" preview window must always be in the center.
-    // Setting NoMove seems to be the best way to stop it from being undocked
-    if (!SHOW_WELCOME_BOX && ImGui::Begin("Scene", nullptr, ImGuiWindowFlags_NoMove))
+    // The "scene" preview window must always stay in the central dock node.
+    // Undocking is prevented via ImGuiDockNodeFlags_NoUndocking on that node
+    // (see DockBuilder layout above), so NoMove is not needed here.
+    if (!SHOW_WELCOME_BOX && ImGui::Begin("Scene"))
     {
         const ImVec2 avail = ImGui::GetContentRegionAvail();
 
