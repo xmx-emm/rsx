@@ -252,6 +252,11 @@ static const std::unordered_map<std::string_view, const char*> s_StringsChineseS
     { "Exporting Sequences..", "正在导出动画序列.." },
     { "Exporting Materials..", "正在导出材质.." },
     { "Cancel", "取消" },
+    { "Estimating...", "正在估算..." },
+    { "ETA: {}", "预计剩余：{}" },
+    { "{}h {}m", "{}小时{}分" },
+    { "{}m {}s", "{}分{}秒" },
+    { "{}s", "{}秒" },
 
     // texture preview
     { "Texture Array Index:", "纹理数组索引：" },

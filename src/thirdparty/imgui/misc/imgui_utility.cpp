@@ -587,6 +587,8 @@ const ProgressBarEvent_t* const ImGuiHandler::AddProgressBarEvent(const char* co
         event->fnRemainingEvents = nullptr;
         event->fnCancelEvents = nullptr; // These progress bar events are currently used for loading assets, which requires a bit more cleanup to cancel
                                          // So for now, only export events (using ImGuiHandler::AddProgressBarEvent as defined in imgui_utility.h) are cancellable
+        event->startTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
 
         event->slotIsUsed = true;
         return event;
@@ -614,6 +616,40 @@ void ImGuiHandler::FinishProgressBarEvent(const ProgressBarEvent_t* const event)
     pbAvailSlots.push(eventIdx);
 }
 
+static std::string FormatProgressDuration(const int totalSeconds)
+{
+    const int clamped = std::max(totalSeconds, 0);
+    const int hours = clamped / 3600;
+    const int minutes = (clamped % 3600) / 60;
+    const int seconds = clamped % 60;
+
+    if (hours > 0)
+        return std::vformat(TR("{}h {}m"), std::make_format_args(hours, minutes));
+    if (minutes > 0)
+        return std::vformat(TR("{}m {}s"), std::make_format_args(minutes, seconds));
+    return std::vformat(TR("{}s"), std::make_format_args(seconds));
+}
+
+static std::string FormatProgressEta(const ProgressBarEvent_t* const event, const uint32_t completed, const uint32_t total)
+{
+    if (!event || total == 0 || completed >= total)
+        return {};
+
+    // Wait for a little progress so the estimate isn't nonsense.
+    if (completed == 0 || event->startTimeMs <= 0)
+        return TR("Estimating...");
+
+    const int64_t nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+    const double elapsedSec = static_cast<double>(nowMs - event->startTimeMs) / 1000.0;
+    if (elapsedSec < 0.5)
+        return TR("Estimating...");
+
+    const double remainingSec = (static_cast<double>(total - completed) * elapsedSec) / static_cast<double>(completed);
+    const std::string duration = FormatProgressDuration(static_cast<int>(remainingSec + 0.5));
+    return std::vformat(TR("ETA: {}"), std::make_format_args(duration));
+}
+
 void ImGuiHandler::HandleProgressBar()
 {
     // If the app is running without ImGui being initialised, don't try and run this method
@@ -634,18 +670,19 @@ void ImGuiHandler::HandleProgressBar()
             ImVec2 viewportCenter = ImGui::GetMainViewport()->GetWorkCenter();
 
             ImGui::SetNextWindowSize(ImVec2(0, 0));
+            // Appearing: center on first show, then allow the user to drag it elsewhere.
             ImGui::SetNextWindowPos(viewportCenter, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
             if (!ImGui::Begin(event->eventName, nullptr, ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize
                 | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings
                 | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse
-                | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse))
+                | ImGuiWindowFlags_NoCollapse))
                 continue;
         }
         else
         {
             ImGui::Separator();
-            ImGui::Text(event->eventName);
+            ImGui::TextUnformatted(event->eventName);
         }
 
         const uint32_t numEvents = event->eventNum;
@@ -653,7 +690,8 @@ void ImGuiHandler::HandleProgressBar()
 
         const uint32_t leftOverEvents = event->isInverted ? remainingEvents : numEvents - remainingEvents;
         const float progressFraction = std::clamp(static_cast<float>(leftOverEvents) / static_cast<float>(numEvents), 0.0f, 1.0f);
-        ImGuiExt::ProgressBarCentered(progressFraction, ImVec2(485, 48), std::format("{}/{}", leftOverEvents, numEvents).c_str(), event);
+        const std::string etaText = FormatProgressEta(event, leftOverEvents, numEvents);
+        ImGuiExt::ProgressBarCentered(progressFraction, ImVec2(485, 48), std::format("{}/{}", leftOverEvents, numEvents).c_str(), event, etaText.empty() ? nullptr : etaText.c_str());
 
         foundTopLevelBar = true;
     }
@@ -663,7 +701,7 @@ void ImGuiHandler::HandleProgressBar()
 }
 
 // size_arg (for each axis) < 0.0f: align to end, 0.0f: auto, > 0.0f: specified size
-void ImGuiExt::ProgressBarCentered(float fraction, const ImVec2& size_arg, const char* overlay, ProgressBarEvent_t* event)
+void ImGuiExt::ProgressBarCentered(float fraction, const ImVec2& size_arg, const char* overlay, ProgressBarEvent_t* event, const char* etaText)
 {
     if (g_pImGuiHandler->NoImGui())
         return;
@@ -688,7 +726,6 @@ void ImGuiExt::ProgressBarCentered(float fraction, const ImVec2& size_arg, const
     fraction = ImSaturate(fraction);
     RenderFrame(bb.Min, bb.Max, GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
     bb.Expand(ImVec2(-style.FrameBorderSize, -style.FrameBorderSize));
-    const ImVec2 fill_br = ImVec2(ImLerp(bb.Min.x, bb.Max.x, fraction), bb.Max.y);
     RenderRectFilledRangeH(window->DrawList, bb, GetColorU32(ImGuiCol_PlotHistogram), 0.0f, fraction, style.FrameRounding);
 
     // Default displaying the fraction as percentage string, but user can override it
@@ -703,12 +740,24 @@ void ImGuiExt::ProgressBarCentered(float fraction, const ImVec2& size_arg, const
     if (overlay_size.x > 0.0f)
         RenderTextClipped(ImVec2(bb.Min.x, bb.Min.y), bb.Max, overlay, NULL, &overlay_size, ImVec2(0.5f, 0.5f), &bb);
 
-    if (event && event->fnCancelEvents)
+    const bool hasEta = etaText && etaText[0] != '\0';
+    const bool hasCancel = event && event->fnCancelEvents;
+    if (!hasEta && !hasCancel)
+        return;
+
+    if (hasEta)
+    {
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextUnformatted(etaText);
+    }
+
+    if (hasCancel)
     {
         // https://github.com/ocornut/imgui/issues/4157
-        float cancelButtonWidth = ImGui::CalcTextSize(TR("Cancel")).x + style.FramePadding.x * 2.f;
-        float widthNeeded = style.ItemSpacing.x + cancelButtonWidth - 5.f;
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - widthNeeded);
+        const float cancelButtonWidth = ImGui::CalcTextSize(TR("Cancel")).x + style.FramePadding.x * 2.f;
+        if (hasEta)
+            ImGui::SameLine();
+        ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - cancelButtonWidth);
 
         if (ImGui::Button(TR("Cancel")))
             event->fnCancelEvents(event);

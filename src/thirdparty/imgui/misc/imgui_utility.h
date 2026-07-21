@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 #include <thirdparty/imgui/imgui.h>
 #include <thirdparty/imgui/imgui_internal.h>
 #include <core/utils/thread.h>
@@ -50,6 +51,7 @@ struct ProgressBarEvent_t
     void* eventClass;
     void* fnRemainingEvents;
     CancelEventCallback_f fnCancelEvents;
+    int64_t startTimeMs; // steady_clock ms since epoch; used for ETA
 };
 
 class ImGuiCustomTextFilter
@@ -144,6 +146,8 @@ public:
             event->eventClass = reinterpret_cast<void*>(eventClass);
             event->fnRemainingEvents = fnRemainingEvents;
             event->fnCancelEvents = fnCancelEvents;
+            event->startTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now().time_since_epoch()).count();
 
             event->slotIsUsed = true;
             return event;
@@ -311,7 +315,7 @@ static std::string _labelPrefix(const char* const label, int inputRelPosX)
 
 // ImGui extensions and helper functions
 namespace ImGuiExt {
-    void ProgressBarCentered(float fraction, const ImVec2& size_arg, const char* overlay, ProgressBarEvent_t* event);
+    void ProgressBarCentered(float fraction, const ImVec2& size_arg, const char* overlay, ProgressBarEvent_t* event, const char* etaText = nullptr);
     void HelpMarker(const char* const desc);
     void Tooltip(const char* const text);
 
